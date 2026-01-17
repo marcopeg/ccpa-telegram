@@ -73,7 +73,7 @@ Create a `ccpa.config.json` file in your project directory:
     "level": "info"
   },
   "transcription": {
-    "model": "turbo",
+    "model": "base.en",
     "showTranscription": true
   }
 }
@@ -87,7 +87,7 @@ Create a `ccpa.config.json` file in your project directory:
 | `access.allowedUserIds`         | Array of Telegram user IDs allowed to use the bot              | `[]`       |
 | `claude.command`                | Claude CLI command                                             | `"claude"` |
 | `logging.level`                 | Log level: debug, info, warn, error                            | `"info"`   |
-| `transcription.model`           | Whisper model: tiny, base, small, medium, large, turbo         | `"turbo"`  |
+| `transcription.model`           | Whisper model (see [Voice Messages](#voice-messages))          | `"base.en"`|
 | `transcription.showTranscription` | Show transcribed text before Claude response                 | `true`     |
 
 ### Environment Variables
@@ -166,22 +166,55 @@ To find your Telegram user ID:
 
 Voice messages are transcribed locally using [Whisper](https://github.com/openai/whisper) via the `nodejs-whisper` package. No audio data is sent to external services.
 
+### Prerequisites for Voice Messages
+
+Voice transcription requires additional setup:
+
+1. **ffmpeg** - For audio conversion
+   ```bash
+   # macOS
+   brew install ffmpeg
+
+   # Ubuntu/Debian
+   sudo apt install ffmpeg
+   ```
+
+2. **CMake** - For building the Whisper executable
+   ```bash
+   # macOS
+   brew install cmake
+
+   # Ubuntu/Debian
+   sudo apt install cmake
+   ```
+
+3. **Download and build Whisper** - Run this once after installation:
+   ```bash
+   npx nodejs-whisper download
+   ```
+   This downloads the Whisper model and compiles the `whisper-cli` executable. The build process takes a few minutes.
+
 ### Whisper Models
 
-| Model   | Size    | Speed vs Real-time | Quality                        |
-| ------- | ------- | ------------------ | ------------------------------ |
-| `tiny`  | ~1 GB   | ~10x faster        | Basic, English-focused         |
-| `base`  | ~1 GB   | ~7x faster         | Good for clear speech          |
-| `small` | ~2 GB   | ~4x faster         | Good multilingual              |
-| `medium`| ~5 GB   | ~2x faster         | Very good multilingual         |
-| `large` | ~10 GB  | ~1x (real-time)    | Best quality                   |
-| `turbo` | ~6 GB   | ~8x faster         | Near-large quality (default)   |
+| Model            | Size    | Speed    | Quality                        |
+| ---------------- | ------- | -------- | ------------------------------ |
+| `tiny`           | ~75 MB  | Fastest  | Basic quality                  |
+| `tiny.en`        | ~75 MB  | Fastest  | English-only, slightly better  |
+| `base`           | ~142 MB | Fast     | Good for clear speech          |
+| `base.en`        | ~142 MB | Fast     | English-only (default)         |
+| `small`          | ~466 MB | Medium   | Good multilingual              |
+| `small.en`       | ~466 MB | Medium   | English-only                   |
+| `medium`         | ~1.5 GB | Slower   | Very good multilingual         |
+| `medium.en`      | ~1.5 GB | Slower   | English-only                   |
+| `large-v1`       | ~2.9 GB | Slowest  | Best quality (v1)              |
+| `large`          | ~2.9 GB | Slowest  | Best quality (v2)              |
+| `large-v3-turbo` | ~1.5 GB | Fast     | Near-large quality, faster     |
 
-**First run**: The model will be downloaded automatically (~6GB for turbo). Subsequent runs use the cached model.
+**First run**: The selected model will be downloaded automatically. Subsequent runs use the cached model.
 
 ### Supported Languages
 
-Whisper supports 50+ languages including English, German, Serbian, Spanish, French, and many more. The `turbo` model provides excellent quality for most languages.
+Whisper supports 50+ languages including English, German, Spanish, French, and many more. Use models without `.en` suffix for multilingual support.
 
 ## Security Notice
 

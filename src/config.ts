@@ -33,11 +33,16 @@ export function getWorkingDirectory(): string {
 
 const TranscriptionModelSchema = z.enum([
   "tiny",
+  "tiny.en",
   "base",
+  "base.en",
   "small",
+  "small.en",
   "medium",
+  "medium.en",
+  "large-v1",
   "large",
-  "turbo",
+  "large-v3-turbo",
 ]);
 
 const ConfigSchema = z.object({
@@ -60,7 +65,7 @@ const ConfigSchema = z.object({
   }),
   transcription: z
     .object({
-      model: TranscriptionModelSchema.default("turbo"),
+      model: TranscriptionModelSchema.default("base.en"),
       showTranscription: z.boolean().default(true),
     })
     .optional(),
@@ -103,7 +108,7 @@ const ConfigFileSchema = z
       .optional(),
     transcription: z
       .object({
-        model: TranscriptionModelSchema,
+        model: TranscriptionModelSchema.default("base.en"),
         showTranscription: z.boolean(),
       })
       .partial()
@@ -189,7 +194,9 @@ export function loadConfig(): Config {
     },
     transcription: {
       model:
-        process.env.WHISPER_MODEL || fileConfig.transcription?.model || "turbo",
+        process.env.WHISPER_MODEL ||
+        fileConfig.transcription?.model ||
+        "base.en",
       showTranscription:
         process.env.SHOW_TRANSCRIPTION === "false"
           ? false

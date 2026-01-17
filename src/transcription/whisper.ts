@@ -38,7 +38,7 @@ export async function transcribeAudio(
   }
 
   const whisper = await getWhisper();
-  const modelName = config.transcription?.model || "turbo";
+  const modelName = config.transcription?.model || "base.en";
 
   logger.debug({ audioPath, model: modelName }, "Starting transcription");
 
@@ -53,6 +53,11 @@ export async function transcribeAudio(
       whisperOptions: {
         outputInText: true,
         language: "auto",
+      },
+      logger: {
+        debug: (message: string) => logger.debug(message),
+        error: (message: string) => logger.error(message),
+        log: (message: string) => logger.info(message),
       },
     });
 
