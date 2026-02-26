@@ -21,8 +21,8 @@ data/
 .idea/
 
 **/.env
-**/.ccpa
+**/.telegrapp
 
-**/ccpa.config.local.json
+**/config.local.json
 **/.env
 **/.env.local
