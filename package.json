@@ -12,7 +12,6 @@
   ],
   "packageManager": "pnpm@10.13.1",
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
     "dev": "tsx watch src/cli.ts start --cwd examples/basic",
     "start": "tsx src/cli.ts start --cwd examples/basic",
     "build": "tsc",
