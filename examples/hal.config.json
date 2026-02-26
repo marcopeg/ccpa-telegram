@@ -14,6 +14,10 @@
     "rateLimit": {
       "max": 10,
       "windowMs": 60000
+    },
+    "transcription": {
+      "model": "medium",
+      "showTranscription": true
     }
   },
   "context": {
@@ -23,6 +27,7 @@
     {
       "name": "obsidian",
       "cwd": "./obsidian",
+      "active": true,
       "engine": {
         "name": "copilot",
         "model": "claude-haiku-4.5"
