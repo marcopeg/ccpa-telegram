@@ -304,6 +304,8 @@ function loadEnvFiles(configDir: string, projectCwds: string[]): EnvSources {
   // Config-dir .env files (higher priority)
   candidates.push(join(configDir, ".env"));
   candidates.push(join(configDir, ".env.local"));
+  candidates.push(join(configDir, ".telegrapp", ".env"));
+  candidates.push(join(configDir, ".telegrapp", ".env.local"));
 
   for (const filePath of candidates) {
     if (!existsSync(filePath)) continue;
