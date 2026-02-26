@@ -12,8 +12,7 @@
   ],
   "packageManager": "pnpm@10.13.1",
   "scripts": {
-    "dev": "tsx watch src/cli.ts start --cwd examples/basic",
-    "start": "tsx src/cli.ts start --cwd examples/basic",
+    "start": "tsx watch src/cli.ts start --cwd examples",
     "build": "tsc && chmod +x dist/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src",
