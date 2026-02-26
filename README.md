@@ -11,6 +11,7 @@ A Telegram bot that provides access to Claude Code as a personal assistant. Run 
 - **File sending** — Claude can send files back to you
 - **Context injection** — every message includes metadata (timestamps, user info, custom values) and supports hot-reloaded hooks
 - **Custom slash commands** — add `.mjs` command files per-project or globally; hot-reloaded so Claude can create new commands at runtime
+- **Skills** — Claude Code `.claude/skills/` entries are automatically exposed as Telegram slash commands; no extra setup needed
 - Persistent conversation sessions per user
 - Per-project access control, rate limiting, and logging
 - Log persistence to file with daily rotation support
@@ -316,7 +317,11 @@ With a config at `~/workspace/ccpa.config.json`:
 │           └── 2026-02-26.txt
 ├── backend/
 │   ├── CLAUDE.md
-│   ├── .claude/settings.json
+│   ├── .claude/
+│   │   ├── settings.json
+│   │   └── skills/
+│   │       └── deploy/
+│   │           └── SKILL.md         (skill exposed as /deploy command)
 │   └── .ccpa/
 │       ├── hooks/
 │       │   └── context.mjs        (project context hook, optional)
@@ -498,9 +503,48 @@ The project-level context object. Useful fields:
 - [`examples/.ccpa/commands/context.mjs`](examples/.ccpa/commands/context.mjs) — global command that dumps the full resolved context
 - [`examples/.ccpa/commands/joke.mjs`](examples/.ccpa/commands/joke.mjs) — global command using `agent.call` with live status cycling and `onProgress` updates
 
+### Skills
+
+[Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) live in `.claude/skills/` inside the project directory. Each skill is a folder containing a `SKILL.md` file with a YAML frontmatter block and a prompt body:
+
+```
+<project-cwd>/
+└── .claude/
+    └── skills/
+        └── chuck/
+            └── SKILL.md
+```
+
+```markdown
+---
+name: chuck
+description: Tells a joke about Chuck Norris.
+---
+
+Tell a short, funny joke about Chuck Norris.
+```
+
+At boot time (and whenever `SKILL.md` files change) the bot reads every skill folder, parses the frontmatter, and registers the skills as Telegram slash commands via `setMyCommands`. The **folder name** is used as the command name — if the frontmatter `name` field differs from the folder name the bot logs a warning and uses the folder name.
+
+When a user invokes a skill command (e.g. `/chuck`) the bot:
+1. Reads the `SKILL.md` prompt body
+2. Appends any user arguments as `User input: <args>` if present
+3. Calls the AI engine with that prompt via the engine-agnostic `agent.call()` interface
+4. Sends the response back to the user
+
+Skills can be **overridden per-project**: create a `.ccpa/commands/<name>.mjs` file with the same name as the skill and the `.mjs` handler takes full precedence.
+
+**Command precedence** (highest wins):
+
+```
+project .ccpa/commands/<name>.mjs  >  global .ccpa/commands/<name>.mjs  >  .claude/skills/<name>/
+```
+
+See [`examples/obsidian/.claude/skills/chuck/`](examples/obsidian/.claude/skills/chuck/SKILL.md) and [`examples/obsidian/.claude/skills/weather/`](examples/obsidian/.claude/skills/weather/SKILL.md) for example skills.
+
 ### Hot-reload
 
-Commands are **hot-reloaded** — drop a new `.mjs` file into the commands directory and the bot registers it with Telegram automatically, with no restart. This means Claude can write new command files as part of a task and users see them in the `/` menu immediately.
+Commands and skills are **hot-reloaded** — drop a new `.mjs` file or `SKILL.md` into the relevant directory and the bot registers it with Telegram automatically, with no restart. This means Claude can write new command or skill files as part of a task and users see them in the `/` menu immediately.
 
 ## Creating a Telegram Bot
 
