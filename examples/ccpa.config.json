@@ -27,7 +27,7 @@
       "name": "timetracker",
       "cwd": "./timetracker",
       "telegram": {
-        "botToken": ""
+        "botToken": "${TIMETRACKER_TELEGRAM_TOKEN}"
       }
     }
   ]

@@ -150,7 +150,7 @@ async function runStart(configDir: string): Promise<void> {
   startupLogger.info({ configDir }, "Loading configuration");
 
   // Load and validate the multi-project config
-  const multiConfig = loadMultiConfig(configDir);
+  const { config: multiConfig, loadedFiles } = loadMultiConfig(configDir);
   const globals = multiConfig.globals ?? {};
 
   // Resolve all project configs
@@ -160,6 +160,15 @@ async function runStart(configDir: string): Promise<void> {
 
   // Boot-time validation (unique cwds, tokens, names)
   validateProjects(resolvedProjects);
+
+  // Boot-time sourcing log
+  const sourceLines = loadedFiles.map((f, i) => {
+    const isLocal = f.endsWith("ccpa.config.local.json");
+    const suffix = isLocal ? "  [local override]" : "";
+    return `  ${i + 1}. ${f}${suffix}`;
+  });
+  sourceLines.push("  env: process.env  (bash context, last resort)");
+  startupLogger.info(`Configuration sourced:\n${sourceLines.join("\n")}`);
 
   startupLogger.info(
     { count: resolvedProjects.length },

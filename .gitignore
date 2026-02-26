@@ -25,3 +25,4 @@ data/
 
 **/ccpa.config.local.json
 **/.env
+**/.env.local
