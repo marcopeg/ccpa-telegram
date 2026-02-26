@@ -166,10 +166,10 @@ function resolveDataDir(
   slug: string,
 ): string {
   if (!dataDirRaw) {
-    return resolve(projectCwd, ".ccpa", "users");
+    return resolve(projectCwd, ".telegrapp", "users");
   }
   if (dataDirRaw === "~") {
-    return resolve(configDir, ".ccpa", slug, "data");
+    return resolve(configDir, ".telegrapp", slug, "data");
   }
   if (isAbsolute(dataDirRaw)) {
     return dataDirRaw;
@@ -190,7 +190,7 @@ export function resolveProjectConfig(
     : resolve(configDir, project.cwd);
 
   const slug = deriveSlug(project.name, project.cwd);
-  const logDir = resolve(configDir, ".ccpa", slug, "logs");
+  const logDir = resolve(configDir, ".telegrapp", slug, "logs");
 
   const dataDir = resolveDataDir(
     project.dataDir ?? globals.dataDir,
@@ -399,7 +399,7 @@ function deepMerge<T extends object>(base: T, override: Partial<T>): T {
 // ─── Phase 3: Local config loading ───────────────────────────────────────────
 
 function loadLocalConfig(configDir: string): LocalConfigFile | null {
-  const localPath = join(configDir, "ccpa.config.local.json");
+  const localPath = join(configDir, ".telegrapp", "config.local.json");
   if (!existsSync(localPath)) return null;
 
   let raw: unknown;
@@ -408,7 +408,7 @@ function loadLocalConfig(configDir: string): LocalConfigFile | null {
     raw = JSON.parse(content);
   } catch (err) {
     console.error(
-      `Configuration error: failed to read ccpa.config.local.json — ${err instanceof Error ? err.message : String(err)}`,
+      `Configuration error: failed to read .telegrapp/config.local.json — ${err instanceof Error ? err.message : String(err)}`,
     );
     process.exit(1);
   }
@@ -418,7 +418,9 @@ function loadLocalConfig(configDir: string): LocalConfigFile | null {
     const issues = result.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    console.error(`Configuration error in ccpa.config.local.json:\n${issues}`);
+    console.error(
+      `Configuration error in .telegrapp/config.local.json:\n${issues}`,
+    );
     process.exit(1);
   }
 
@@ -460,8 +462,8 @@ function mergeLocalIntoBase(
 
     if (idx === -1) {
       console.error(
-        `Configuration error: local project "${matchKey}" not found in ccpa.config.json.\n` +
-          `  Every entry in ccpa.config.local.json projects must match a base project by name or cwd.`,
+        `Configuration error: local project "${matchKey}" not found in .telegrapp/config.json.\n` +
+          `  Every entry in .telegrapp/config.local.json projects must match a base project by name or cwd.`,
       );
       process.exit(1);
     }
@@ -482,15 +484,15 @@ function mergeLocalIntoBase(
 // ─── Phase 4: Config file loading (public API) ────────────────────────────────
 
 export function loadMultiConfig(configDir: string): LoadedConfigResult {
-  const configPath = join(configDir, "ccpa.config.json");
-  const localPath = join(configDir, "ccpa.config.local.json");
+  const configPath = join(configDir, ".telegrapp", "config.json");
+  const localPath = join(configDir, ".telegrapp", "config.local.json");
   const loadedFiles: string[] = [];
 
   // 1. Load base config
   if (!existsSync(configPath)) {
     console.error(
-      `Configuration error: ccpa.config.json not found in ${configDir}\n` +
-        `Run "npx ccpa-telegram init" to create one.`,
+      `Configuration error: .telegrapp/config.json not found in ${configDir}\n` +
+        `Run "npx telegrapp init" to create one.`,
     );
     process.exit(1);
   }
@@ -501,7 +503,7 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
     rawBase = JSON.parse(content);
   } catch (err) {
     console.error(
-      `Configuration error: failed to read ccpa.config.json — ${err instanceof Error ? err.message : String(err)}`,
+      `Configuration error: failed to read .telegrapp/config.json — ${err instanceof Error ? err.message : String(err)}`,
     );
     process.exit(1);
   }
@@ -514,7 +516,7 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
     const issues = baseResult.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    console.error(`Configuration error in ccpa.config.json:\n${issues}`);
+    console.error(`Configuration error in .telegrapp/config.json:\n${issues}`);
     process.exit(1);
   }
 

@@ -15,11 +15,11 @@ export interface CommandEntry {
 // ─── Directory helpers ───────────────────────────────────────────────────────
 
 function projectCommandDir(projectCwd: string): string {
-  return join(projectCwd, ".ccpa", "commands");
+  return join(projectCwd, ".telegrapp", "commands");
 }
 
 function globalCommandDir(configDir: string): string {
-  return join(configDir, ".ccpa", "commands");
+  return join(configDir, ".telegrapp", "commands");
 }
 
 // ─── Single-file import ──────────────────────────────────────────────────────
@@ -211,7 +211,7 @@ async function scanSkillsDir(
  * Scan command directories and optionally the skills dir, then return the merged list.
  *
  * Precedence (lowest → highest):
- *   engine skills  <  global .ccpa/commands  <  project .ccpa/commands
+ *   engine skills  <  global .telegrapp/commands  <  project .telegrapp/commands
  */
 export async function loadCommands(
   projectCwd: string,

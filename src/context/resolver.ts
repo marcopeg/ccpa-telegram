@@ -226,16 +226,16 @@ export async function resolveContext(
     }
   }
 
-  // 5. Run global hook (configDir/.ccpa/hooks/context.mjs)
+  // 5. Run global hook (configDir/.telegrapp/hooks/context.mjs)
   merged = await loadAndRunHook(
-    join(configDir, ".ccpa", "hooks", "context.mjs"),
+    join(configDir, ".telegrapp", "hooks", "context.mjs"),
     merged,
     logger,
   );
 
-  // 6. Run project hook (projectCwd/.ccpa/hooks/context.mjs)
+  // 6. Run project hook (projectCwd/.telegrapp/hooks/context.mjs)
   merged = await loadAndRunHook(
-    join(projectCwd, ".ccpa", "hooks", "context.mjs"),
+    join(projectCwd, ".telegrapp", "hooks", "context.mjs"),
     merged,
     logger,
   );

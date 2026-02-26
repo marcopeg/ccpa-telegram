@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { startBot } from "./bot.js";
 import {
@@ -60,26 +60,26 @@ interface ParsedArgs {
 
 function showHelp(): void {
   console.log(`
-ccpa-telegram - Claude Code Personal Assistant for Telegram
+telegrapp - Claude Code Personal Assistant for Telegram
 
 Usage:
-  npx ccpa-telegram [command] [options]
+  npx telegrapp [command] [options]
 
 Commands:
-  init            Create ccpa.config.json in the working directory
+  init            Create .telegrapp/config.json in the working directory
   start           Start the bots (default)
 
 Options:
-  --cwd <path>    Directory containing ccpa.config.json (default: current directory)
+  --cwd <path>    Directory containing .telegrapp/config.json (default: current directory)
   --help, -h      Show this help message
 
 Examples:
-  npx ccpa-telegram init
-  npx ccpa-telegram init --cwd ./workspace
-  npx ccpa-telegram
-  npx ccpa-telegram --cwd ./workspace
+  npx telegrapp init
+  npx telegrapp init --cwd ./workspace
+  npx telegrapp
+  npx telegrapp --cwd ./workspace
 
-Configuration (ccpa.config.json):
+Configuration (.telegrapp/config.json):
   {
     "globals": {
       "claude": { "command": "claude" },
@@ -127,22 +127,24 @@ function parseArgs(): ParsedArgs {
 // ─── init command ─────────────────────────────────────────────────────────────
 
 async function runInit(cwd: string): Promise<void> {
-  const configPath = join(cwd, "ccpa.config.json");
+  const telegrappDir = join(cwd, ".telegrapp");
+  const configPath = join(telegrappDir, "config.json");
 
   if (existsSync(configPath)) {
-    console.error(`Error: ccpa.config.json already exists in ${cwd}`);
+    console.error(`Error: .telegrapp/config.json already exists in ${cwd}`);
     process.exit(1);
   }
 
+  await mkdir(telegrappDir, { recursive: true });
   await writeFile(configPath, CONFIG_TEMPLATE, "utf-8");
-  console.log(`Created ccpa.config.json in ${cwd}`);
+  console.log(`Created .telegrapp/config.json in ${cwd}`);
   console.log(`\nNext steps:`);
   console.log(
-    `1. Edit ccpa.config.json and set your Telegram bot token in projects[0].telegram.botToken`,
+    `1. Edit .telegrapp/config.json and set your Telegram bot token in projects[0].telegram.botToken`,
   );
   console.log(`2. Set the project cwd to the folder Claude should work in`);
   console.log(`3. Add allowed user IDs to the "allowedUserIds" array`);
-  console.log(`4. Run: npx ccpa-telegram --cwd ${cwd}`);
+  console.log(`4. Run: npx telegrapp --cwd ${cwd}`);
   process.exit(0);
 }
 
@@ -168,7 +170,7 @@ async function runStart(configDir: string): Promise<void> {
 
   // Boot-time sourcing log
   const sourceLines = loadedFiles.map((f, i) => {
-    const isLocal = f.endsWith("ccpa.config.local.json");
+    const isLocal = f.endsWith("config.local.json");
     const suffix = isLocal ? "  [local override]" : "";
     return `  ${i + 1}. ${f}${suffix}`;
   });

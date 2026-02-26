@@ -1,0 +1,234 @@
+{"level":30,"time":1772096951725,"pid":57017,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772096951788,"pid":57017,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772096951884,"pid":57017,"hostname":"mac-se-marpeg","username":"marcopeg_test_multi_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772096970661,"pid":57017,"hostname":"mac-se-marpeg","command":"claude","args":["-p","i'm testing this stuff...\n\n[System: To send files to the user, write them to: /Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users/7974709349/downloads]","--output-format","stream-json","--verbose","--resume","127bc250-6eaa-4e01-995b-5d8bf0512098"],"cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","msg":"Executing Claude CLI"}
+{"level":30,"time":1772096999509,"pid":57017,"hostname":"mac-se-marpeg","command":"claude","args":["-p","log that i'm testing this stuff...\n\n[System: To send files to the user, write them to: /Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users/7974709349/downloads]","--output-format","stream-json","--verbose","--resume","127bc250-6eaa-4e01-995b-5d8bf0512098"],"cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","msg":"Executing Claude CLI"}
+{"level":30,"time":1772097002951,"pid":57017,"hostname":"mac-se-marpeg","tool":"Bash","input":{"command":"date +%H:%M","description":"Get current time"},"msg":"Running: date +%H:%M"}
+{"level":30,"time":1772097003401,"pid":57017,"hostname":"mac-se-marpeg","tool":"Read","input":{"file_path":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/marco_7974709349/2026/02/26.md"},"msg":"Reading: /Users/marpeg/Projects/ccpa-telegram/examples/timetracker/marco_7974709349/2026/02/26.md"}
+{"level":30,"time":1772097003417,"pid":57017,"hostname":"mac-se-marpeg","toolUseId":"toolu_016hVyrSjq3PcsXZ1ibunvKt","msg":"Tool result:      1→# February 26th, 2026\n     2→\n     3→## 08:00\n     4→\n     5→Had breakfast\n     6→\n     7→## 10:08\n     8→\n     9→Had a coffee\n    10→\n    11→## 10:08\n    12→\n    13→Had a 1-1 with Viktor\n    14→"}
+{"level":30,"time":1772097004082,"pid":57017,"hostname":"mac-se-marpeg","toolUseId":"toolu_01E1SikZ4kVThXDc6zDbMEiT","isError":false,"msg":"Tool result: 10:10"}
+{"level":30,"time":1772097007604,"pid":57017,"hostname":"mac-se-marpeg","tool":"Edit","input":{"replace_all":false,"file_path":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/marco_7974709349/2026/02/26.md","old_string":"## 10:08\n\nHad a 1-1 with Viktor\n","new_string":"## 10:08\n\nHad a 1-1 with Viktor\n\n## 10:10\n\nTesting this stuff\n"},"msg":"Editing: /Users/marpeg/Projects/ccpa-telegram/examples/timetracker/marco_7974709349/2026/02/26.md"}
+{"level":30,"time":1772097007614,"pid":57017,"hostname":"mac-se-marpeg","toolUseId":"toolu_01BHnhSKAZanZDZzLj68pCwM","msg":"Tool result: The file /Users/marpeg/Projects/ccpa-telegram/examples/timetracker/marco_7974709349/2026/02/26.md has been updated successfully."}
+{"level":30,"time":1772101370804,"pid":73228,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772101370865,"pid":73228,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772101591038,"pid":74630,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772101591091,"pid":74630,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104487142,"pid":86782,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104487199,"pid":86782,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104518482,"pid":87074,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104518542,"pid":87074,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104633448,"pid":87489,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104633512,"pid":87489,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104637736,"pid":87514,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104637794,"pid":87514,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104641794,"pid":87539,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104641852,"pid":87539,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104646234,"pid":87562,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104646294,"pid":87562,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104649840,"pid":87580,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104649903,"pid":87580,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104653564,"pid":87596,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104653623,"pid":87596,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104660941,"pid":87645,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104660997,"pid":87645,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104684898,"pid":87775,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104684959,"pid":87775,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772104780478,"pid":88219,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772104780540,"pid":88219,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772111160998,"pid":9675,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772111161062,"pid":9675,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772111269633,"pid":10144,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772111269688,"pid":10144,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772111407226,"pid":10784,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772111407286,"pid":10784,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772111410229,"pid":10784,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112223255,"pid":13894,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112223325,"pid":13894,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112223428,"pid":13894,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112311580,"pid":14326,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112311640,"pid":14326,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112311751,"pid":14326,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112527311,"pid":15189,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112527364,"pid":15189,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112527459,"pid":15189,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112531937,"pid":15246,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112531992,"pid":15246,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112532096,"pid":15246,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112537173,"pid":15277,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112537228,"pid":15277,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112537718,"pid":15277,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112546349,"pid":15320,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112546408,"pid":15320,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112546522,"pid":15320,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112555211,"pid":15373,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112555268,"pid":15373,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112555959,"pid":15373,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112574228,"pid":15494,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112574284,"pid":15494,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112574398,"pid":15494,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112588724,"pid":15694,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112588785,"pid":15694,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112588895,"pid":15694,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112746123,"pid":16308,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112746175,"pid":16308,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112746286,"pid":16308,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112751749,"pid":16341,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112751804,"pid":16341,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112751918,"pid":16341,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112789037,"pid":16709,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112789094,"pid":16709,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112789197,"pid":16709,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112976441,"pid":17857,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112976501,"pid":17857,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112976633,"pid":17857,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772112982540,"pid":17917,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772112982596,"pid":17917,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772112982699,"pid":17917,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772113303947,"pid":19504,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772113304005,"pid":19504,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772113304114,"pid":19504,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772113317187,"pid":19551,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772113317247,"pid":19551,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772113317336,"pid":19551,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772113332662,"pid":19602,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772113332721,"pid":19602,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772113332835,"pid":19602,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772113345898,"pid":19652,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772113345953,"pid":19652,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772113346052,"pid":19652,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115028798,"pid":24990,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115028856,"pid":24990,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115028956,"pid":24990,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115385102,"pid":26309,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115385165,"pid":26309,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115385261,"pid":26309,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115385367,"pid":26309,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115458925,"pid":26558,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115458987,"pid":26558,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115459082,"pid":26558,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115459138,"pid":26558,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115464086,"pid":26585,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115464147,"pid":26585,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115464247,"pid":26585,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115464286,"pid":26585,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115539295,"pid":26814,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115539353,"pid":26814,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115540389,"pid":26814,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115540446,"pid":26814,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115605216,"pid":27017,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115605279,"pid":27017,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115605424,"pid":27017,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115605477,"pid":27017,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115739923,"pid":27512,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115739983,"pid":27512,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115740095,"pid":27512,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115740156,"pid":27512,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115767518,"pid":27512,"hostname":"mac-se-marpeg","count":1,"commands":["context"],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772115774360,"pid":27732,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115774418,"pid":27732,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115774509,"pid":27732,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115774593,"pid":27732,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115783158,"pid":27732,"hostname":"mac-se-marpeg","count":1,"commands":["context"],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772115795644,"pid":27908,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772115795702,"pid":27908,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772115795812,"pid":27908,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772115795865,"pid":27908,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772115816482,"pid":27908,"hostname":"mac-se-marpeg","count":1,"commands":["context"],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772115834290,"pid":27908,"hostname":"mac-se-marpeg","count":1,"commands":["context1"],"msg":"Commands re-registered with Telegram"}
+{"level":50,"time":1772115845142,"pid":27908,"hostname":"mac-se-marpeg","filePath":"/Users/marpeg/Projects/ccpa-telegram/examples/.ccpa/commands/context1.mjs","error":"Private field '#export' must be declared in an enclosing class","stack":"SyntaxError: Private field '#export' must be declared in an enclosing class\n    at compileSourceTextModule (node:internal/modules/esm/utils:317:16)\n    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:111:18)\n    at #translate (node:internal/modules/esm/loader:541:20)\n    at afterLoad (node:internal/modules/esm/loader:594:29)\n    at async #link (node:internal/modules/esm/module_job:180:19)","msg":"Failed to import command file — skipping"}
+{"level":30,"time":1772115845301,"pid":27908,"hostname":"mac-se-marpeg","count":0,"commands":[],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772115846970,"pid":27908,"hostname":"mac-se-marpeg","count":1,"commands":["context1"],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772115852397,"pid":27908,"hostname":"mac-se-marpeg","count":1,"commands":["context"],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772115949950,"pid":27908,"hostname":"mac-se-marpeg","count":1,"commands":["context"],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772116565143,"pid":31644,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772116565196,"pid":31644,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772116565560,"pid":31644,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772116565635,"pid":31644,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772116890494,"pid":32720,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772116890551,"pid":32720,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772116890657,"pid":32720,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772116890709,"pid":32720,"hostname":"mac-se-marpeg","count":1,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772116904556,"pid":32720,"hostname":"mac-se-marpeg","count":2,"commands":["context","joke"],"msg":"Commands re-registered with Telegram"}
+{"level":30,"time":1772117089937,"pid":33331,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117090000,"pid":33331,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117090103,"pid":33331,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117090147,"pid":33331,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117095448,"pid":33348,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117095505,"pid":33348,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117095596,"pid":33348,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117095673,"pid":33348,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117913067,"pid":36333,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117913124,"pid":36333,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117913226,"pid":36333,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117913273,"pid":36333,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117921564,"pid":36386,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117921620,"pid":36386,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117921722,"pid":36386,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117921763,"pid":36386,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117943912,"pid":36454,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117943969,"pid":36454,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117944090,"pid":36454,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117944183,"pid":36454,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117957463,"pid":36507,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117957521,"pid":36507,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117957625,"pid":36507,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117957665,"pid":36507,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117968391,"pid":36544,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117968451,"pid":36544,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117968544,"pid":36544,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117968590,"pid":36544,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117974058,"pid":36567,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117974121,"pid":36567,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117974227,"pid":36567,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117974278,"pid":36567,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117985168,"pid":36608,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117985231,"pid":36608,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117985343,"pid":36608,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117985393,"pid":36608,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772117992712,"pid":36638,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772117992768,"pid":36638,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772117992878,"pid":36638,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772117992925,"pid":36638,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118008759,"pid":36782,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118008825,"pid":36782,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118008923,"pid":36782,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118008966,"pid":36782,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118396195,"pid":38144,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118396254,"pid":38144,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118396360,"pid":38144,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118396409,"pid":38144,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118407260,"pid":38190,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118407316,"pid":38190,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118407417,"pid":38190,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118407496,"pid":38190,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118412736,"pid":38215,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118412796,"pid":38215,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118412897,"pid":38215,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118413038,"pid":38215,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118421240,"pid":38245,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118421296,"pid":38245,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118421392,"pid":38245,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118421544,"pid":38245,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118431055,"pid":38282,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118431112,"pid":38282,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118431207,"pid":38282,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118431262,"pid":38282,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118435738,"pid":38303,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118435803,"pid":38303,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118435902,"pid":38303,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118435960,"pid":38303,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118447866,"pid":38345,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118447928,"pid":38345,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118448029,"pid":38345,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118448113,"pid":38345,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772118762405,"pid":39772,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118762479,"pid":39772,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118762567,"pid":39772,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118764806,"pid":39814,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.ccpa/users","msg":"Starting bot"}
+{"level":30,"time":1772118764853,"pid":39814,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772118764955,"pid":39814,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772118765019,"pid":39814,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}
+{"level":30,"time":1772119475110,"pid":42924,"hostname":"mac-se-marpeg","cwd":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker","dataDir":"/Users/marpeg/Projects/ccpa-telegram/examples/timetracker/.telegrapp/users","msg":"Starting bot"}
+{"level":30,"time":1772119475169,"pid":42924,"hostname":"mac-se-marpeg","command":"claude","msg":"Claude CLI verified"}
+{"level":30,"time":1772119475269,"pid":42924,"hostname":"mac-se-marpeg","username":"marcopeg_demo_timetracker_bot","slug":"timetracker","msg":"Bot is running"}
+{"level":30,"time":1772119475314,"pid":42924,"hostname":"mac-se-marpeg","count":2,"msg":"Commands registered with Telegram"}

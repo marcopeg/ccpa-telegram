@@ -1,4 +1,4 @@
-# ccpa-telegram
+# telegrapp
 
 A Telegram bot that provides access to Claude Code as a personal assistant. Run Claude Code across multiple projects simultaneously, each with its own dedicated Telegram bot.
 
@@ -39,29 +39,29 @@ See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) 
 ## Quick Start
 
 ```bash
-# Create a ccpa.config.json in the current directory
-npx ccpa-telegram init
+# Create .telegrapp/config.json in the current directory
+npx telegrapp init
 
-# Edit ccpa.config.json: add your bot token and project path
+# Edit .telegrapp/config.json: add your bot token and project path
 # then start all bots
-npx ccpa-telegram
+npx telegrapp
 ```
 
 ## Installation
 
 ```bash
 # Initialize config in a specific directory
-npx ccpa-telegram init --cwd ./workspace
+npx telegrapp init --cwd ./workspace
 
 # Start bots using the config in that directory
-npx ccpa-telegram --cwd ./workspace
+npx telegrapp --cwd ./workspace
 ```
 
 ## Configuration
 
-### ccpa.config.json
+### .telegrapp/config.json
 
-Create a `ccpa.config.json` in your workspace directory (where you run the CLI from). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead.
+Create a `.telegrapp/config.json` in your workspace directory (where you run the CLI from). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead.
 
 ```json
 {
@@ -89,9 +89,9 @@ Create a `ccpa.config.json` in your workspace directory (where you run the CLI f
 }
 ```
 
-### ccpa.config.local.json
+### .telegrapp/config.local.json
 
-An optional `ccpa.config.local.json` placed next to `ccpa.config.json` is deep-merged on top of the base config at boot time. It is gitignored and is the recommended place for machine-specific values or secrets that you don't want committed.
+An optional `.telegrapp/config.local.json` placed next to `.telegrapp/config.json` is deep-merged on top of the base config at boot time. It is gitignored and is the recommended place for machine-specific values or secrets that you don't want committed.
 
 Every field is optional. Project entries are matched to base projects by `name` (preferred) or `cwd` — they cannot introduce new projects.
 
@@ -109,7 +109,7 @@ Every field is optional. Project entries are matched to base projects by `name` 
 
 ### Environment variable substitution
 
-Any string value in `ccpa.config.json` or `ccpa.config.local.json` (except inside `context` blocks — see [Context Injection](#context-injection)) can reference an environment variable with `${VAR_NAME}` syntax. Variables are resolved at boot time from the following sources in priority order (first match wins):
+Any string value in `.telegrapp/config.json` or `.telegrapp/config.local.json` (except inside `context` blocks — see [Context Injection](#context-injection)) can reference an environment variable with `${VAR_NAME}` syntax. Variables are resolved at boot time from the following sources in priority order (first match wins):
 
 1. `<config-dir>/.env.local` _(gitignored)_
 2. `<config-dir>/.env`
@@ -160,7 +160,7 @@ These keys are injected for every message, even without any `context` configurat
 
 #### Custom context via config
 
-Add a `context` object at the root level of `ccpa.config.json` (applies to all projects) or inside individual projects (overrides root per key):
+Add a `context` object at the root level of `.telegrapp/config.json` (applies to all projects) or inside individual projects (overrides root per key):
 
 ```json
 {
@@ -202,13 +202,13 @@ For advanced enrichment, you can provide a `context.mjs` hook file that transfor
 
 | Location | Scope |
 |----------|-------|
-| `{configDir}/.ccpa/hooks/context.mjs` | Global — runs for all projects |
-| `{project.cwd}/.ccpa/hooks/context.mjs` | Project — runs for that project only |
+| `{configDir}/.telegrapp/hooks/context.mjs` | Global — runs for all projects |
+| `{project.cwd}/.telegrapp/hooks/context.mjs` | Project — runs for that project only |
 
 When both exist, they chain: global runs first, its output feeds into the project hook. Both are **hot-reloaded** on every message (no restart needed) — so Claude Code itself can create or modify hooks at runtime.
 
 ```js
-// .ccpa/hooks/context.mjs
+// .telegrapp/hooks/context.mjs
 export default async (context) => ({
   ...context,
   project: "my-tracker",
@@ -282,8 +282,8 @@ The slug is used as a folder name for log and data paths. It is derived from:
 
 | Value | Resolved Path |
 |-------|---------------|
-| _(empty)_ | `<project-cwd>/.ccpa/users` |
-| `~` | `<config-dir>/.ccpa/<slug>/data` |
+| _(empty)_ | `<project-cwd>/.telegrapp/users` |
+| `~` | `<config-dir>/.telegrapp/<slug>/data` |
 | Relative path (e.g. `.mydata`) | `<project-cwd>/<value>` |
 | Absolute path | Used as-is |
 
@@ -291,20 +291,18 @@ The slug is used as a folder name for log and data paths. It is derived from:
 
 When `logging.persist: true`, logs are written to:
 ```
-<config-dir>/.ccpa/<project-slug>/logs/YYYY-MM-DD.txt
+<config-dir>/.telegrapp/<project-slug>/logs/YYYY-MM-DD.txt
 ```
 
 ## Directory Structure
 
-With a config at `~/workspace/ccpa.config.json`:
+With a config at `~/workspace/.telegrapp/config.json`:
 
 ```
 ~/workspace/
-├── ccpa.config.json
-├── ccpa.config.local.json   (gitignored — local overrides / secrets)
-├── .env                     (variable declarations, safe to commit)
-├── .env.local               (gitignored — actual secret values)
-├── .ccpa/
+├── .telegrapp/
+│   ├── config.json
+│   ├── config.local.json    (gitignored — local overrides / secrets)
 │   ├── hooks/
 │   │   └── context.mjs            (global context hook, optional)
 │   ├── commands/
@@ -315,6 +313,8 @@ With a config at `~/workspace/ccpa.config.json`:
 │   └── frontend/
 │       └── logs/
 │           └── 2026-02-26.txt
+├── .env                     (variable declarations, safe to commit)
+├── .env.local               (gitignored — actual secret values)
 ├── backend/
 │   ├── CLAUDE.md
 │   ├── .claude/
@@ -322,7 +322,7 @@ With a config at `~/workspace/ccpa.config.json`:
 │   │   └── skills/
 │   │       └── deploy/
 │   │           └── SKILL.md         (skill exposed as /deploy command)
-│   └── .ccpa/
+│   └── .telegrapp/
 │       ├── hooks/
 │       │   └── context.mjs        (project context hook, optional)
 │       ├── commands/
@@ -334,7 +334,7 @@ With a config at `~/workspace/ccpa.config.json`:
 │               └── session.json   # Session data
 └── frontend/
     ├── CLAUDE.md
-    └── .ccpa/
+    └── .telegrapp/
         └── users/
 ```
 
@@ -342,15 +342,15 @@ With a config at `~/workspace/ccpa.config.json`:
 
 ```bash
 # Show help
-npx ccpa-telegram --help
+npx telegrapp --help
 
 # Initialize config file
-npx ccpa-telegram init
-npx ccpa-telegram init --cwd ./workspace
+npx telegrapp init
+npx telegrapp init --cwd ./workspace
 
 # Start all bots
-npx ccpa-telegram
-npx ccpa-telegram --cwd ./workspace
+npx telegrapp
+npx telegrapp --cwd ./workspace
 ```
 
 ## Bot Commands
@@ -369,15 +369,15 @@ You can add your own slash commands as `.mjs` files. When a user sends `/mycomma
 
 | Location | Scope |
 |----------|-------|
-| `{project.cwd}/.ccpa/commands/<name>.mjs` | Project-specific |
-| `{configDir}/.ccpa/commands/<name>.mjs` | Global — available to all projects |
+| `{project.cwd}/.telegrapp/commands/<name>.mjs` | Project-specific |
+| `{configDir}/.telegrapp/commands/<name>.mjs` | Global — available to all projects |
 
 Project-specific commands take precedence over global ones on name collision.
 
 ### Command file format
 
 ```js
-// .ccpa/commands/deploy.mjs
+// .telegrapp/commands/deploy.mjs
 export const description = 'Deploy the project'; // shown in Telegram's / menu
 
 export default async function({ args, ctx, projectCtx }) {
@@ -481,7 +481,7 @@ export default async function({ args, gram, agent }) {
 }
 ```
 
-See [`examples/.ccpa/commands/joke.mjs`](examples/.ccpa/commands/joke.mjs) for a full example that combines `gram` for live status cycling with `agent.call` + `onProgress` for activity updates.
+See [`examples/.telegrapp/commands/joke.mjs`](examples/.telegrapp/commands/joke.mjs) for a full example that combines `gram` for live status cycling with `agent.call` + `onProgress` for activity updates.
 
 #### `projectCtx: ProjectContext`
 
@@ -492,16 +492,16 @@ The project-level context object. Useful fields:
 | `projectCtx.config.name` | `string \| undefined` | Project name from config |
 | `projectCtx.config.slug` | `string` | Internal slug (used for log/data paths) |
 | `projectCtx.config.cwd` | `string` | Absolute path to the project directory |
-| `projectCtx.config.configDir` | `string` | Absolute path to the directory containing `ccpa.config.json` |
+| `projectCtx.config.configDir` | `string` | Absolute path to the directory containing `.telegrapp/config.json` |
 | `projectCtx.config.dataDir` | `string` | Absolute path to user data storage root |
 | `projectCtx.config.context` | `Record<string, string> \| undefined` | Raw config-level context values (pre-hook) |
 | `projectCtx.logger` | Pino logger | Structured logger — use for debug output that ends up in log files |
 
 ### Examples
 
-- [`examples/obsidian/.ccpa/commands/status.mjs`](examples/obsidian/.ccpa/commands/status.mjs) — project-specific command using `projectCtx.config`
-- [`examples/.ccpa/commands/context.mjs`](examples/.ccpa/commands/context.mjs) — global command that dumps the full resolved context
-- [`examples/.ccpa/commands/joke.mjs`](examples/.ccpa/commands/joke.mjs) — global command using `agent.call` with live status cycling and `onProgress` updates
+- [`examples/obsidian/.telegrapp/commands/status.mjs`](examples/obsidian/.telegrapp/commands/status.mjs) — project-specific command using `projectCtx.config`
+- [`examples/.telegrapp/commands/context.mjs`](examples/.telegrapp/commands/context.mjs) — global command that dumps the full resolved context
+- [`examples/.telegrapp/commands/joke.mjs`](examples/.telegrapp/commands/joke.mjs) — global command using `agent.call` with live status cycling and `onProgress` updates
 
 ### Skills
 
@@ -532,15 +532,16 @@ When a user invokes a skill command (e.g. `/chuck`) the bot:
 3. Calls the AI engine with that prompt via the engine-agnostic `agent.call()` interface
 4. Sends the response back to the user
 
-Skills can be **overridden per-project**: create a `.ccpa/commands/<name>.mjs` file with the same name as the skill and the `.mjs` handler takes full precedence.
+Skills can be **overridden per-project**: create a `.telegrapp/commands/<name>.mjs` file with the same name as the skill and the `.mjs` handler takes full precedence.
 
 **Command precedence** (highest wins):
 
 ```
-project .ccpa/commands/<name>.mjs  >  global .ccpa/commands/<name>.mjs  >  .claude/skills/<name>/
+project .telegrapp/commands/<name>.mjs  >  global .telegrapp/commands/<name>.mjs  >  .claude/skills/<name>/
 ```
 
 See [`examples/obsidian/.claude/skills/chuck/`](examples/obsidian/.claude/skills/chuck/SKILL.md) and [`examples/obsidian/.claude/skills/weather/`](examples/obsidian/.claude/skills/weather/SKILL.md) for example skills.
+
 
 ### Hot-reload
 
@@ -552,7 +553,7 @@ Commands and skills are **hot-reloaded** — drop a new `.mjs` file or `SKILL.md
 2. Send `/newbot`
 3. Choose a display name (e.g. "My Backend Assistant")
 4. Choose a username ending in `bot` (e.g. `my_backend_assistant_bot`)
-5. Add the token to `.env.local` and reference it via `${VAR_NAME}` in `ccpa.config.json`
+5. Add the token to `.env.local` and reference it via `${VAR_NAME}` in `.telegrapp/config.json`
 
 For each project you need a separate bot and token.
 
@@ -637,7 +638,7 @@ The old single-project config format is no longer supported. Migrate by wrapping
 }
 ```
 
-> **Note:** Named environment variable overrides from v1 (`TELEGRAM_BOT_TOKEN`, `ALLOWED_USER_IDS`, etc.) are no longer supported. Use `${VAR_NAME}` substitution in `ccpa.config.json` instead — see [Environment variable substitution](#environment-variable-substitution).
+> **Note:** Named environment variable overrides from v1 (`TELEGRAM_BOT_TOKEN`, `ALLOWED_USER_IDS`, etc.) are no longer supported. Use `${VAR_NAME}` substitution in `.telegrapp/config.json` instead — see [Environment variable substitution](#environment-variable-substitution).
 
 ## Security Notice
 
