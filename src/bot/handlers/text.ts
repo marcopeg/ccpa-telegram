@@ -1,5 +1,6 @@
 import { join, resolve } from "node:path";
 import type { Context } from "grammy";
+import { createAgent } from "../../agent/index.js";
 import { executeClaudeQuery } from "../../claude/executor.js";
 import { resolveContext } from "../../context/resolver.js";
 import { sendChunkedResponse } from "../../telegram/chunker.js";
@@ -62,12 +63,14 @@ export function createTextHandler(ctx: ProjectContext) {
               projectSlug: config.slug,
               logger,
             });
+            const agent = createAgent(ctx);
             // Cache-bust on every dispatch call
             const mod = await import(`${filePath}?t=${Date.now()}`);
             const result = await mod.default({
               args,
               ctx: context,
               gram: gramCtx,
+              agent,
               projectCtx: ctx,
             });
             if (typeof result === "string") {

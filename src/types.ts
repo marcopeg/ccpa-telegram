@@ -3,6 +3,17 @@ import type { ResolvedProjectConfig } from "./config.js";
 import type { BootContext } from "./context/resolver.js";
 
 /**
+ * Engine-agnostic interface for making one-shot AI calls from command handlers.
+ * The underlying provider (Claude Code, Codex, etc.) is an implementation detail.
+ */
+export interface Agent {
+  call(
+    prompt: string,
+    options?: { onProgress?: (message: string) => void },
+  ): Promise<string>;
+}
+
+/**
  * Per-project context object threaded through all bot internals.
  * Replaces the former global singletons (getConfig / getLogger).
  */

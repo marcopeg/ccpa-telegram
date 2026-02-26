@@ -409,14 +409,74 @@ Use `/context` (the built-in global command) to inspect the exact keys available
 
 #### `gram: Grammy Context`
 
-The raw [Grammy](https://grammy.dev) message context — gives access to the full Telegram Bot API. Only needed for advanced use cases such as sending multiple messages, uploading files directly, or reacting to the message.
+The raw [Grammy](https://grammy.dev) message context, giving direct access to the Telegram Bot API. Only needed for advanced use cases: sending multiple messages, editing or deleting messages, uploading files, reacting to messages, etc.
+
+Common patterns:
+
+```js
+// Send a temporary status message, then delete it
+const status = await gram.reply('Working...');
+// ... do work ...
+await gram.api.deleteMessage(gram.chat.id, status.message_id);
+
+// Edit the status message while working
+await gram.api.editMessageText(gram.chat.id, status.message_id, 'Still working...');
+
+// React to the original message
+await gram.react([{ type: 'emoji', emoji: '👍' }]);
+
+// Send a file
+await gram.replyWithDocument(new InputFile('/path/to/file.pdf'));
+```
+
+When using `gram` to send your own reply, return `null` or `undefined` to suppress the default text reply:
 
 ```js
 export default async function({ gram }) {
-  await gram.react([{ type: 'emoji', emoji: '👍' }]);
-  return null; // suppress default text reply
+  await gram.reply('Done!');
+  return null;
 }
 ```
+
+#### `agent: Agent`
+
+An engine-agnostic interface for making one-shot AI calls from within a command. The underlying provider is configured per-project — currently Claude Code, with support for other engines planned. Command handlers always use this interface and never talk to any engine directly.
+
+```ts
+interface Agent {
+  call(
+    prompt: string,
+    options?: { onProgress?: (message: string) => void }
+  ): Promise<string>;
+}
+```
+
+Unlike regular user messages, agent calls have no session history and no context header prepended — the prompt is sent to the engine as-is.
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `onProgress` | `(message: string) => void` | Called during execution with activity updates (e.g. `"Reading: /path/to/file"`). Use it to keep the user informed while the agent is working. |
+
+Returns the agent's final text output as a string. Throws on failure — the bot's command error handler will catch it and reply with `Command failed: <message>`.
+
+```js
+export default async function({ args, gram, agent }) {
+  const status = await gram.reply('Thinking...');
+
+  const answer = await agent.call(`Summarise: ${args.join(' ')}`, {
+    onProgress: async (activity) => {
+      try {
+        await gram.api.editMessageText(gram.chat.id, status.message_id, `⏳ ${activity}`);
+      } catch { /* ignore if message was already edited */ }
+    },
+  });
+
+  await gram.api.deleteMessage(gram.chat.id, status.message_id);
+  return answer;
+}
+```
+
+See [`examples/.ccpa/commands/joke.mjs`](examples/.ccpa/commands/joke.mjs) for a full example that combines `gram` for live status cycling with `agent.call` + `onProgress` for activity updates.
 
 #### `projectCtx: ProjectContext`
 
@@ -436,6 +496,7 @@ The project-level context object. Useful fields:
 
 - [`examples/obsidian/.ccpa/commands/status.mjs`](examples/obsidian/.ccpa/commands/status.mjs) — project-specific command using `projectCtx.config`
 - [`examples/.ccpa/commands/context.mjs`](examples/.ccpa/commands/context.mjs) — global command that dumps the full resolved context
+- [`examples/.ccpa/commands/joke.mjs`](examples/.ccpa/commands/joke.mjs) — global command using `agent.call` with live status cycling and `onProgress` updates
 
 ### Hot-reload
 
