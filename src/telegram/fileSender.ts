@@ -2,18 +2,19 @@ import { readdir, unlink } from "node:fs/promises";
 import { join } from "node:path";
 import type { Context } from "grammy";
 import { InputFile } from "grammy";
-import { getLogger } from "../logger.js";
+import type { ProjectContext } from "../types.js";
 import { getDownloadsPath } from "../user/setup.js";
 
 /**
- * Send all files from the user's downloads folder and delete them after sending
- * Returns the number of files sent
+ * Send all files from the user's downloads folder and delete them after sending.
+ * Returns the number of files sent.
  */
 export async function sendDownloadFiles(
-  ctx: Context,
+  gramCtx: Context,
   userDir: string,
+  ctx: ProjectContext,
 ): Promise<number> {
-  const logger = getLogger();
+  const { logger } = ctx;
   const downloadsPath = getDownloadsPath(userDir);
 
   let files: string[];
@@ -35,7 +36,7 @@ export async function sendDownloadFiles(
 
     try {
       // Send the file
-      await ctx.replyWithDocument(new InputFile(filePath, fileName));
+      await gramCtx.replyWithDocument(new InputFile(filePath, fileName));
       logger.info({ fileName }, "Sent file to user");
 
       // Delete the file after successful send

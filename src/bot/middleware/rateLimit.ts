@@ -1,75 +1,72 @@
 import type { Context, NextFunction } from "grammy";
-import { getConfig } from "../../config.js";
+import type { ProjectContext } from "../../types.js";
 
 interface RateLimitEntry {
   count: number;
   windowStart: number;
 }
 
-// In-memory store for rate limiting
-const rateLimitStore = new Map<number, RateLimitEntry>();
-
 /**
- * Clean up expired entries periodically
+ * Returns a per-bot rate limit middleware and a cleanup function.
+ * Each bot gets its own in-memory store — no cross-bot state.
  */
-function cleanupExpiredEntries(): void {
-  const config = getConfig();
-  const now = Date.now();
+export function createRateLimitMiddleware(ctx: ProjectContext): {
+  middleware: (gramCtx: Context, next: NextFunction) => Promise<void>;
+  cleanup: () => void;
+} {
+  const { max, windowMs } = ctx.config.rateLimit;
+  const store = new Map<number, RateLimitEntry>();
 
-  for (const [userId, entry] of rateLimitStore) {
-    if (now - entry.windowStart > config.rateLimit.windowMs) {
-      rateLimitStore.delete(userId);
+  const interval = setInterval(() => {
+    const now = Date.now();
+    for (const [userId, entry] of store) {
+      if (now - entry.windowStart > windowMs) {
+        store.delete(userId);
+      }
     }
-  }
-}
+  }, 60000);
 
-// Run cleanup every minute
-setInterval(cleanupExpiredEntries, 60000);
+  // Prevent the interval from keeping the process alive
+  if (interval.unref) interval.unref();
 
-/**
- * Middleware to rate limit requests per user
- */
-export async function rateLimitMiddleware(
-  ctx: Context,
-  next: NextFunction,
-): Promise<void> {
-  const config = getConfig();
-  const userId = ctx.from?.id;
+  const middleware = async (
+    gramCtx: Context,
+    next: NextFunction,
+  ): Promise<void> => {
+    const userId = gramCtx.from?.id;
 
-  if (!userId) {
-    await next();
-    return;
-  }
-
-  const now = Date.now();
-  const entry = rateLimitStore.get(userId);
-
-  if (entry) {
-    // Check if window has expired
-    if (now - entry.windowStart > config.rateLimit.windowMs) {
-      // Reset window
-      rateLimitStore.set(userId, { count: 1, windowStart: now });
+    if (!userId) {
       await next();
       return;
     }
 
-    // Check if limit exceeded
-    if (entry.count >= config.rateLimit.max) {
-      const remainingMs = config.rateLimit.windowMs - (now - entry.windowStart);
-      const remainingSec = Math.ceil(remainingMs / 1000);
+    const now = Date.now();
+    const entry = store.get(userId);
 
-      await ctx.reply(
-        `Rate limit exceeded. Please wait ${remainingSec} seconds before sending another message.`,
-      );
-      return;
+    if (entry) {
+      if (now - entry.windowStart > windowMs) {
+        // Reset window
+        store.set(userId, { count: 1, windowStart: now });
+        await next();
+        return;
+      }
+
+      if (entry.count >= max) {
+        const remainingMs = windowMs - (now - entry.windowStart);
+        const remainingSec = Math.ceil(remainingMs / 1000);
+        await gramCtx.reply(
+          `Rate limit exceeded. Please wait ${remainingSec} seconds before sending another message.`,
+        );
+        return;
+      }
+
+      entry.count++;
+    } else {
+      store.set(userId, { count: 1, windowStart: now });
     }
 
-    // Increment count
-    entry.count++;
-  } else {
-    // First request in window
-    rateLimitStore.set(userId, { count: 1, windowStart: now });
-  }
+    await next();
+  };
 
-  await next();
+  return { middleware, cleanup: () => clearInterval(interval) };
 }

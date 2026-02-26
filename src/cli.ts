@@ -4,29 +4,55 @@ import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { startBot } from "./bot.js";
-import { initConfig } from "./config.js";
-import { getLogger } from "./logger.js";
+import {
+  loadMultiConfig,
+  resolveProjectConfig,
+  validateProjects,
+} from "./config.js";
+import { createProjectLogger, createStartupLogger } from "./logger.js";
+import type { ProjectContext } from "./types.js";
+
+// ─── Config template ──────────────────────────────────────────────────────────
+
+const CONFIG_TEMPLATE = `{
+  "globals": {
+    "claude": {
+      "command": "claude"
+    },
+    "logging": {
+      "level": "info",
+      "flow": true,
+      "persist": false
+    },
+    "rateLimit": {
+      "max": 10,
+      "windowMs": 60000
+    },
+    "access": {
+      "allowedUserIds": []
+    }
+  },
+  "projects": [
+    {
+      "name": "my-project",
+      "cwd": ".",
+      "telegram": {
+        "botToken": "YOUR_BOT_TOKEN_HERE"
+      },
+      "access": {
+        "allowedUserIds": []
+      }
+    }
+  ]
+}
+`;
+
+// ─── CLI argument parsing ─────────────────────────────────────────────────────
 
 interface ParsedArgs {
   command: "start" | "init";
   cwd: string;
 }
-
-const CONFIG_TEMPLATE = `{
-  "telegram": {
-    "botToken": "YOUR_BOT_TOKEN_HERE"
-  },
-  "access": {
-    "allowedUserIds": []
-  },
-  "claude": {
-    "command": "claude"
-  },
-  "logging": {
-    "level": "info"
-  }
-}
-`;
 
 function showHelp(): void {
   console.log(`
@@ -37,36 +63,34 @@ Usage:
 
 Commands:
   init            Create ccpa.config.json in the working directory
-  start           Start the bot (default)
+  start           Start the bots (default)
 
 Options:
-  --cwd <path>    Working directory (default: current directory)
+  --cwd <path>    Directory containing ccpa.config.json (default: current directory)
   --help, -h      Show this help message
 
 Examples:
   npx ccpa-telegram init
-  npx ccpa-telegram init --cwd ./my-project
+  npx ccpa-telegram init --cwd ./workspace
   npx ccpa-telegram
-  npx ccpa-telegram --cwd ./my-project
+  npx ccpa-telegram --cwd ./workspace
 
 Configuration (ccpa.config.json):
   {
-    "telegram": {
-      "botToken": "your-bot-token"
+    "globals": {
+      "claude": { "command": "claude" },
+      "logging": { "level": "info", "flow": true, "persist": false },
+      "rateLimit": { "max": 10, "windowMs": 60000 }
     },
-    "access": {
-      "allowedUserIds": [123456789]
-    },
-    "claude": {
-      "command": "claude"
-    }
+    "projects": [
+      {
+        "name": "my-project",
+        "cwd": "./path/to/project",
+        "telegram": { "botToken": "your-bot-token" },
+        "access": { "allowedUserIds": [123456789] }
+      }
+    ]
   }
-
-Environment variables (override config file):
-  TELEGRAM_BOT_TOKEN    - Telegram bot token (required)
-  ALLOWED_USER_IDS      - Comma-separated user IDs
-  CLAUDE_COMMAND        - Claude CLI command (default: claude)
-  LOG_LEVEL             - Logging level (default: info)
 `);
 }
 
@@ -96,6 +120,8 @@ function parseArgs(): ParsedArgs {
   return { command, cwd };
 }
 
+// ─── init command ─────────────────────────────────────────────────────────────
+
 async function runInit(cwd: string): Promise<void> {
   const configPath = join(cwd, "ccpa.config.json");
 
@@ -107,21 +133,81 @@ async function runInit(cwd: string): Promise<void> {
   await writeFile(configPath, CONFIG_TEMPLATE, "utf-8");
   console.log(`Created ccpa.config.json in ${cwd}`);
   console.log(`\nNext steps:`);
-  console.log(`1. Edit ccpa.config.json and add your Telegram bot token`);
-  console.log(`2. Add allowed user IDs to the "allowedUserIds" array`);
-  console.log(`3. Run: npx ccpa-telegram --cwd ${cwd}`);
+  console.log(
+    `1. Edit ccpa.config.json and set your Telegram bot token in projects[0].telegram.botToken`,
+  );
+  console.log(`2. Set the project cwd to the folder Claude should work in`);
+  console.log(`3. Add allowed user IDs to the "allowedUserIds" array`);
+  console.log(`4. Run: npx ccpa-telegram --cwd ${cwd}`);
   process.exit(0);
 }
 
-async function runStart(cwd: string): Promise<void> {
-  // Initialize config with working directory
-  initConfig(cwd);
+// ─── start command ────────────────────────────────────────────────────────────
 
-  getLogger().info({ cwd }, "Starting ccpa-telegram");
+async function runStart(configDir: string): Promise<void> {
+  const startupLogger = createStartupLogger();
 
-  // Start the bot
-  await startBot();
+  startupLogger.info({ configDir }, "Loading configuration");
+
+  // Load and validate the multi-project config
+  const multiConfig = loadMultiConfig(configDir);
+  const globals = multiConfig.globals ?? {};
+
+  // Resolve all project configs
+  const resolvedProjects = multiConfig.projects.map((project) =>
+    resolveProjectConfig(project, globals, configDir),
+  );
+
+  // Boot-time validation (unique cwds, tokens, names)
+  validateProjects(resolvedProjects);
+
+  startupLogger.info(
+    { count: resolvedProjects.length },
+    "Configuration loaded",
+  );
+
+  // Build project contexts
+  const contexts: ProjectContext[] = resolvedProjects.map((config) => ({
+    config,
+    logger: createProjectLogger(config),
+  }));
+
+  // Emit startup notices for flow=false projects
+  for (const { config } of contexts) {
+    if (!config.logging.flow) {
+      startupLogger.info(
+        `Bot "${config.slug}" has terminal logging suppressed.${config.logging.persist ? ` Persisted logs can be read at: ${config.logDir}` : ""}`,
+      );
+    }
+  }
+
+  // Start all bots concurrently — abort all if any fails
+  let handles: { stop: () => Promise<void> }[];
+  try {
+    handles = await Promise.all(contexts.map((ctx) => startBot(ctx)));
+  } catch (err) {
+    startupLogger.error(
+      { error: err instanceof Error ? err.message : String(err) },
+      "Failed to start one or more bots — aborting",
+    );
+    process.exit(1);
+  }
+
+  startupLogger.info({ count: handles.length }, "All bots running");
+
+  // Graceful shutdown handler
+  async function shutdown(signal: string): Promise<void> {
+    startupLogger.info({ signal }, "Received shutdown signal");
+    await Promise.all(handles.map((h) => h.stop().catch(() => {})));
+    startupLogger.info("All bots stopped");
+    process.exit(0);
+  }
+
+  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
+
+// ─── Entry point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   const { command, cwd } = parseArgs();

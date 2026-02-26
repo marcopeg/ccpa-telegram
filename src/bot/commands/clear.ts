@@ -1,25 +1,31 @@
 import { join } from "node:path";
 import type { Context } from "grammy";
-import { getConfig } from "../../config.js";
+import type { ProjectContext } from "../../types.js";
 import { clearUserData } from "../../user/setup.js";
 
-export async function clearHandler(ctx: Context): Promise<void> {
-  const config = getConfig();
-  const userId = ctx.from?.id;
+/**
+ * Returns a handler for the /clear command.
+ */
+export function createClearHandler(ctx: ProjectContext) {
+  return async (gramCtx: Context): Promise<void> => {
+    const userId = gramCtx.from?.id;
 
-  if (!userId) {
-    await ctx.reply("Could not identify user.");
-    return;
-  }
+    if (!userId) {
+      await gramCtx.reply("Could not identify user.");
+      return;
+    }
 
-  const userDir = join(config.dataDir, String(userId));
+    const userDir = join(ctx.config.dataDir, String(userId));
 
-  try {
-    await clearUserData(userDir);
-    await ctx.reply(
-      "Conversation history cleared. Your next message will start a fresh conversation.",
-    );
-  } catch (_error) {
-    await ctx.reply("Failed to clear conversation history. Please try again.");
-  }
+    try {
+      await clearUserData(userDir);
+      await gramCtx.reply(
+        "Conversation history cleared. Your next message will start a fresh conversation.",
+      );
+    } catch (_error) {
+      await gramCtx.reply(
+        "Failed to clear conversation history. Please try again.",
+      );
+    }
+  };
 }

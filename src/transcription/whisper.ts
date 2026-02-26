@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
-import { getConfig } from "../config.js";
-import { getLogger } from "../logger.js";
+import type { ProjectContext } from "../types.js";
 
 // Dynamic import for optional dependency
 let whisperModule: typeof import("nodejs-whisper") | null = null;
@@ -29,16 +28,16 @@ export interface TranscriptionResult {
  */
 export async function transcribeAudio(
   audioPath: string,
+  ctx: ProjectContext,
 ): Promise<TranscriptionResult> {
-  const logger = getLogger();
-  const config = getConfig();
+  const { config, logger } = ctx;
 
   if (!existsSync(audioPath)) {
     throw new Error(`Audio file not found: ${audioPath}`);
   }
 
   const whisper = await getWhisper();
-  const modelName = config.transcription?.model || "base.en";
+  const modelName = config.transcription?.model ?? "base.en";
 
   logger.debug({ audioPath, model: modelName }, "Starting transcription");
 

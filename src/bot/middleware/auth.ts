@@ -1,31 +1,30 @@
 import type { Context, NextFunction } from "grammy";
-import { getConfig } from "../../config.js";
+import type { ProjectContext } from "../../types.js";
 
 /**
- * Middleware to check if user is in the whitelist
+ * Returns a middleware that checks if the user is in the project's whitelist.
  */
-export async function authMiddleware(
-  ctx: Context,
-  next: NextFunction,
-): Promise<void> {
-  const config = getConfig();
-  const userId = ctx.from?.id;
+export function createAuthMiddleware(ctx: ProjectContext) {
+  return async (gramCtx: Context, next: NextFunction): Promise<void> => {
+    const { allowedUserIds } = ctx.config.access;
+    const userId = gramCtx.from?.id;
 
-  // Allow if no whitelist is configured (open access)
-  if (config.access.allowedUserIds.length === 0) {
-    await next();
-    return;
-  }
+    // Allow if no whitelist is configured (open access)
+    if (allowedUserIds.length === 0) {
+      await next();
+      return;
+    }
 
-  // Check if user is in whitelist
-  if (userId && config.access.allowedUserIds.includes(userId)) {
-    await next();
-    return;
-  }
+    // Check if user is in whitelist
+    if (userId && allowedUserIds.includes(userId)) {
+      await next();
+      return;
+    }
 
-  // User not authorized
-  await ctx.reply(
-    "Sorry, you are not authorized to use this bot.\n" +
-      "Contact the administrator to request access.",
-  );
+    // User not authorized
+    await gramCtx.reply(
+      "Sorry, you are not authorized to use this bot.\n" +
+        "Contact the administrator to request access.",
+    );
+  };
 }

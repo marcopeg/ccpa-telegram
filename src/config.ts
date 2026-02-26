@@ -1,35 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
-import { config as dotenvConfig } from "dotenv";
+import { isAbsolute, join, resolve } from "node:path";
 import { z } from "zod";
-import { getLogger } from "./logger.js";
 
-// Working directory - set by CLI
-let workingDirectory: string = process.cwd();
-
-/**
- * Initialize the configuration with a working directory
- */
-export function initConfig(cwd: string): void {
-  workingDirectory = resolve(cwd);
-
-  // Only load .env from the working directory (don't traverse up)
-  const envPath = join(workingDirectory, ".env");
-  if (existsSync(envPath)) {
-    dotenvConfig({ path: envPath });
-  }
-  // Don't fall back to default behavior - only use explicit working directory
-
-  // Reset config instance to force reload
-  configInstance = null;
-}
-
-/**
- * Get the working directory
- */
-export function getWorkingDirectory(): string {
-  return workingDirectory;
-}
+// ─── Zod helpers ──────────────────────────────────────────────────────────────
 
 const TranscriptionModelSchema = z.enum([
   "tiny",
@@ -45,188 +18,268 @@ const TranscriptionModelSchema = z.enum([
   "large-v3-turbo",
 ]);
 
-const ConfigSchema = z.object({
-  telegram: z.object({
-    botToken: z.string().min(1, "telegram.botToken is required"),
-  }),
-  access: z.object({
-    allowedUserIds: z.array(z.number()),
-  }),
-  dataDir: z.string().default(".ccpa/users"),
-  rateLimit: z.object({
-    max: z.number().positive().default(10),
-    windowMs: z.number().positive().default(60000),
-  }),
-  logging: z.object({
-    level: z.enum(["debug", "info", "warn", "error"]).default("info"),
-  }),
-  claude: z.object({
-    command: z.string().default("claude"),
-  }),
-  transcription: z
-    .object({
-      model: TranscriptionModelSchema.default("base.en"),
-      showTranscription: z.boolean().default(true),
-    })
-    .optional(),
-});
+const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
 
-// Schema for the config file (all fields optional)
-const ConfigFileSchema = z
+// ─── Globals schema (all fields optional) ─────────────────────────────────────
+
+const GlobalsFileSchema = z
   .object({
-    telegram: z
-      .object({
-        botToken: z.string(),
-      })
-      .partial()
-      .optional(),
     access: z
-      .object({
-        allowedUserIds: z.array(z.number()),
-      })
+      .object({ allowedUserIds: z.array(z.number()) })
       .partial()
       .optional(),
-    dataDir: z.string().optional(),
-    rateLimit: z
-      .object({
-        max: z.number().positive(),
-        windowMs: z.number().positive(),
-      })
-      .partial()
-      .optional(),
+    claude: z.object({ command: z.string() }).partial().optional(),
     logging: z
       .object({
-        level: z.enum(["debug", "info", "warn", "error"]),
+        level: LogLevelSchema,
+        flow: z.boolean(),
+        persist: z.boolean(),
       })
       .partial()
       .optional(),
-    claude: z
-      .object({
-        command: z.string(),
-      })
+    rateLimit: z
+      .object({ max: z.number().positive(), windowMs: z.number().positive() })
       .partial()
       .optional(),
     transcription: z
       .object({
-        model: TranscriptionModelSchema.default("base.en"),
+        model: TranscriptionModelSchema,
         showTranscription: z.boolean(),
       })
       .partial()
       .optional(),
+    dataDir: z.string().optional(),
   })
-  .partial();
+  .optional();
 
-export type Config = z.infer<typeof ConfigSchema>;
+// ─── Per-project schema ────────────────────────────────────────────────────────
 
-function parseAllowedUserIds(value: string | undefined): number[] {
-  if (!value) return [];
-  return value
-    .split(",")
-    .map((id) => id.trim())
-    .filter((id) => id.length > 0)
-    .map((id) => {
-      const num = parseInt(id, 10);
-      if (Number.isNaN(num)) {
-        throw new Error(`Invalid user ID: ${id}`);
-      }
-      return num;
-    });
+const ProjectFileSchema = z.object({
+  name: z.string().optional(),
+  cwd: z.string().min(1, "project.cwd is required"),
+  telegram: z.object({
+    botToken: z.string().min(1, "project.telegram.botToken is required"),
+  }),
+  access: z
+    .object({ allowedUserIds: z.array(z.number()) })
+    .partial()
+    .optional(),
+  claude: z.object({ command: z.string() }).partial().optional(),
+  logging: z
+    .object({
+      level: LogLevelSchema,
+      flow: z.boolean(),
+      persist: z.boolean(),
+    })
+    .partial()
+    .optional(),
+  rateLimit: z
+    .object({ max: z.number().positive(), windowMs: z.number().positive() })
+    .partial()
+    .optional(),
+  transcription: z
+    .object({
+      model: TranscriptionModelSchema,
+      showTranscription: z.boolean(),
+    })
+    .partial()
+    .optional(),
+  dataDir: z.string().optional(),
+});
+
+// ─── Multi-project config file schema ─────────────────────────────────────────
+
+const MultiConfigFileSchema = z.object({
+  globals: GlobalsFileSchema,
+  projects: z
+    .array(ProjectFileSchema)
+    .min(1, "At least one project is required"),
+});
+
+type ProjectFileEntry = z.infer<typeof ProjectFileSchema>;
+type GlobalsFile = NonNullable<z.infer<typeof GlobalsFileSchema>>;
+type MultiConfigFile = z.infer<typeof MultiConfigFileSchema>;
+
+// ─── Resolved project config (what the rest of the app uses) ──────────────────
+
+export interface ResolvedProjectConfig {
+  slug: string;
+  name: string | undefined;
+  cwd: string;
+  dataDir: string;
+  logDir: string;
+  telegram: { botToken: string };
+  access: { allowedUserIds: number[] };
+  claude: { command: string };
+  logging: { level: string; flow: boolean; persist: boolean };
+  rateLimit: { max: number; windowMs: number };
+  transcription: { model: string; showTranscription: boolean } | undefined;
 }
 
-function loadConfigFile(): z.infer<typeof ConfigFileSchema> {
-  const configPath = join(workingDirectory, "ccpa.config.json");
+// ─── Slug derivation ──────────────────────────────────────────────────────────
 
-  if (!existsSync(configPath)) {
-    return {};
-  }
-
-  try {
-    const content = readFileSync(configPath, "utf-8");
-    const parsed = JSON.parse(content);
-    const result = ConfigFileSchema.safeParse(parsed);
-
-    if (!result.success) {
-      getLogger().error(
-        { error: result.error.format() },
-        "Invalid ccpa.config.json",
-      );
-      return {};
-    }
-
-    getLogger().info({ path: configPath }, "Loaded configuration");
-    return result.data;
-  } catch (error) {
-    getLogger().error({ error }, "Failed to read ccpa.config.json");
-    return {};
-  }
+export function deriveSlug(name: string | undefined, cwd: string): string {
+  if (name) return name;
+  return cwd
+    .replace(/^\.\//, "") // strip leading ./
+    .replace(/^\//, "") // strip leading /
+    .replace(/[/\\]/g, "-") // path separators → dash
+    .replace(/[^a-zA-Z0-9_-]/g, "-") // sanitize remaining chars
+    .replace(/-+/g, "-") // collapse multiple dashes
+    .replace(/^-|-$/g, ""); // trim leading/trailing dashes
 }
 
-export function loadConfig(): Config {
-  // Load config file first
-  const fileConfig = loadConfigFile();
+// ─── dataDir resolution ────────────────────────────────────────────────────────
 
-  // Build config with file values as defaults, env vars as overrides
-  const rawConfig = {
-    telegram: {
-      botToken:
-        process.env.TELEGRAM_BOT_TOKEN || fileConfig.telegram?.botToken || "",
-    },
+function resolveDataDir(
+  dataDirRaw: string | undefined,
+  projectCwd: string,
+  configDir: string,
+  slug: string,
+): string {
+  if (!dataDirRaw) {
+    return resolve(projectCwd, ".ccpa", "users");
+  }
+  if (dataDirRaw === "~") {
+    return resolve(configDir, ".ccpa", slug, "data");
+  }
+  if (isAbsolute(dataDirRaw)) {
+    return dataDirRaw;
+  }
+  return resolve(projectCwd, dataDirRaw);
+}
+
+// ─── Merge: project over globals over defaults ─────────────────────────────────
+
+export function resolveProjectConfig(
+  project: ProjectFileEntry,
+  globals: GlobalsFile,
+  configDir: string,
+): ResolvedProjectConfig {
+  const resolvedCwd = isAbsolute(project.cwd)
+    ? project.cwd
+    : resolve(configDir, project.cwd);
+
+  const slug = deriveSlug(project.name, project.cwd);
+  const logDir = resolve(configDir, ".ccpa", slug, "logs");
+
+  const dataDir = resolveDataDir(
+    project.dataDir ?? globals.dataDir,
+    resolvedCwd,
+    configDir,
+    slug,
+  );
+
+  const hasTranscription =
+    project.transcription !== undefined || globals.transcription !== undefined;
+
+  return {
+    slug,
+    name: project.name,
+    cwd: resolvedCwd,
+    dataDir,
+    logDir,
+    telegram: { botToken: project.telegram.botToken },
     access: {
-      allowedUserIds: process.env.ALLOWED_USER_IDS
-        ? parseAllowedUserIds(process.env.ALLOWED_USER_IDS)
-        : fileConfig.access?.allowedUserIds || [],
-    },
-    dataDir: process.env.DATA_DIR || fileConfig.dataDir || ".ccpa/users",
-    rateLimit: {
-      max: process.env.RATE_LIMIT_MAX
-        ? parseInt(process.env.RATE_LIMIT_MAX, 10)
-        : fileConfig.rateLimit?.max || 10,
-      windowMs: process.env.RATE_LIMIT_WINDOW_MS
-        ? parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10)
-        : fileConfig.rateLimit?.windowMs || 60000,
-    },
-    logging: {
-      level: process.env.LOG_LEVEL || fileConfig.logging?.level || "info",
+      allowedUserIds:
+        project.access?.allowedUserIds ?? globals.access?.allowedUserIds ?? [],
     },
     claude: {
-      command:
-        process.env.CLAUDE_COMMAND || fileConfig.claude?.command || "claude",
+      command: project.claude?.command ?? globals.claude?.command ?? "claude",
     },
-    transcription: {
-      model:
-        process.env.WHISPER_MODEL ||
-        fileConfig.transcription?.model ||
-        "base.en",
-      showTranscription:
-        process.env.SHOW_TRANSCRIPTION === "false"
-          ? false
-          : (fileConfig.transcription?.showTranscription ?? true),
+    logging: {
+      level: project.logging?.level ?? globals.logging?.level ?? "info",
+      flow: project.logging?.flow ?? globals.logging?.flow ?? true,
+      persist: project.logging?.persist ?? globals.logging?.persist ?? false,
     },
+    rateLimit: {
+      max: project.rateLimit?.max ?? globals.rateLimit?.max ?? 10,
+      windowMs:
+        project.rateLimit?.windowMs ?? globals.rateLimit?.windowMs ?? 60000,
+    },
+    transcription: hasTranscription
+      ? {
+          model:
+            project.transcription?.model ??
+            globals.transcription?.model ??
+            "base.en",
+          showTranscription:
+            project.transcription?.showTranscription ??
+            globals.transcription?.showTranscription ??
+            true,
+        }
+      : undefined,
   };
+}
 
-  const result = ConfigSchema.safeParse(rawConfig);
+// ─── Boot-time uniqueness validation ──────────────────────────────────────────
 
-  if (!result.success) {
-    getLogger().error(
-      { error: result.error.format() },
-      "Configuration validation failed",
+export function validateProjects(projects: ResolvedProjectConfig[]): void {
+  const cwds = new Set<string>();
+  const tokens = new Set<string>();
+  const names = new Set<string>();
+
+  for (const project of projects) {
+    if (cwds.has(project.cwd)) {
+      console.error(
+        `Configuration error: duplicate project cwd "${project.cwd}". Each project must have a unique cwd.`,
+      );
+      process.exit(1);
+    }
+    cwds.add(project.cwd);
+
+    if (tokens.has(project.telegram.botToken)) {
+      console.error(
+        `Configuration error: duplicate botToken in project "${project.slug}". Each project must use a unique Telegram bot token.`,
+      );
+      process.exit(1);
+    }
+    tokens.add(project.telegram.botToken);
+
+    if (project.name) {
+      if (names.has(project.name)) {
+        console.error(
+          `Configuration error: duplicate project name "${project.name}". Each named project must have a unique name.`,
+        );
+        process.exit(1);
+      }
+      names.add(project.name);
+    }
+  }
+}
+
+// ─── Config file loading ───────────────────────────────────────────────────────
+
+export function loadMultiConfig(configDir: string): MultiConfigFile {
+  const configPath = join(configDir, "ccpa.config.json");
+
+  if (!existsSync(configPath)) {
+    console.error(
+      `Configuration error: ccpa.config.json not found in ${configDir}\n` +
+        `Run "npx ccpa-telegram init" to create one.`,
     );
     process.exit(1);
   }
 
-  // Make dataDir absolute relative to working directory
-  const config = result.data;
-  config.dataDir = resolve(workingDirectory, config.dataDir);
-
-  return config;
-}
-
-// Singleton config instance
-let configInstance: Config | null = null;
-
-export function getConfig(): Config {
-  if (!configInstance) {
-    configInstance = loadConfig();
+  let raw: unknown;
+  try {
+    const content = readFileSync(configPath, "utf-8");
+    raw = JSON.parse(content);
+  } catch (err) {
+    console.error(
+      `Configuration error: failed to read ccpa.config.json — ${err instanceof Error ? err.message : String(err)}`,
+    );
+    process.exit(1);
   }
-  return configInstance;
+
+  const result = MultiConfigFileSchema.safeParse(raw);
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
+      .join("\n");
+    console.error(`Configuration error in ccpa.config.json:\n${issues}`);
+    process.exit(1);
+  }
+
+  return result.data;
 }

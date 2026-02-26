@@ -1,0 +1,33 @@
+{
+  "globals": {
+    "access": {
+      "allowedUserIds": []
+    },
+    "claude": {
+      "command": "claude"
+    },
+    "logging": {
+      "level": "info",
+      "flow": true,
+      "persist": true
+    },
+    "rateLimit": {
+      "max": 10,
+      "windowMs": 60000
+    }
+  },
+  "projects": [
+    {
+      "cwd": "./obsidian",
+      "telegram": {
+        "botToken": ""
+      }
+    },
+    {
+      "cwd": "./timetracker",
+      "telegram": {
+        "botToken": ""
+      }
+    }
+  ]
+}

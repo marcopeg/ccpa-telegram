@@ -1,123 +1,177 @@
 # ccpa-telegram
 
-A Telegram bot that provides access to Claude Code as a personal assistant. Run Claude Code in any directory and interact with it through Telegram.
+A Telegram bot that provides access to Claude Code as a personal assistant. Run Claude Code across multiple projects simultaneously, each with its own dedicated Telegram bot.
 
 ## Features
 
+- **Multi-project support** — run multiple bots from a single config, each connected to a different directory
 - Chat with Claude Code via Telegram
 - Send images and documents for analysis
 - **Voice message support** with local Whisper transcription
-- **File sending** - Claude can send files back to you
+- **File sending** — Claude can send files back to you
 - Persistent conversation sessions per user
-- Configurable Claude settings per project
-- Multi-user support with access control
+- Per-project access control, rate limiting, and logging
+- Log persistence to file with daily rotation support
 
 ## How It Works
 
-This bot runs Claude Code as a subprocess in your chosen working directory. Claude Code reads all its standard configuration files from that directory, exactly as it would when running directly in a terminal:
+This tool runs one Claude Code subprocess per project, each in its configured working directory. Claude Code reads all its standard config files from that directory:
 
-- `CLAUDE.md` - Project-specific instructions and context
-- `.claude/settings.json` - Permissions and tool settings
-- `.claude/commands/` - Custom slash commands
-- `.mcp.json` - MCP server configurations
+- `CLAUDE.md` — Project-specific instructions and context
+- `.claude/settings.json` — Permissions and tool settings
+- `.claude/commands/` — Custom slash commands
+- `.mcp.json` — MCP server configurations
 
-This means you get the full power of Claude Code - including file access, code execution, and any configured MCP tools - all accessible through Telegram.
+You get the full power of Claude Code — file access, code execution, configured MCP tools — all accessible through Telegram.
 
-For complete documentation on Claude Code configuration, see the [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code).
+See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) for details on Claude Code configuration.
 
 ## Prerequisites
 
 - Node.js 18+
-- [Claude Code CLI](https://github.com/anthropics/claude-code) installed and authenticated.
-- A Telegram bot token (from [@BotFather](https://t.me/BotFather)). See [Creating a Telegram Bot](#creating-a-telegram-bot) for instructions.
-- **ffmpeg** (required for voice messages) - install with `brew install ffmpeg` on macOS
+- [Claude Code CLI](https://github.com/anthropics/claude-code) installed and authenticated
+- A Telegram bot token per project (from [@BotFather](https://t.me/BotFather)) — see [Creating a Telegram Bot](#creating-a-telegram-bot)
+- **ffmpeg** (required for voice messages) — `brew install ffmpeg` on macOS
 
 ## Quick Start
 
 ```bash
-# Initialize a new project
+# Create a ccpa.config.json in the current directory
 npx ccpa-telegram init
 
-# Edit ccpa.config.json with your bot token and allowed user IDs
-
-# Start the bot
+# Edit ccpa.config.json: add your bot token and project path
+# then start all bots
 npx ccpa-telegram
 ```
 
 ## Installation
 
-### Using npx (recommended)
-
 ```bash
-npx ccpa-telegram init --cwd ./my-project
-npx ccpa-telegram --cwd ./my-project
+# Initialize config in a specific directory
+npx ccpa-telegram init --cwd ./workspace
+
+# Start bots using the config in that directory
+npx ccpa-telegram --cwd ./workspace
 ```
 
 ## Configuration
 
 ### ccpa.config.json
 
-Create a `ccpa.config.json` file in your project directory:
+Create a `ccpa.config.json` in your workspace directory (where you run the CLI from):
 
 ```json
 {
-  "telegram": {
-    "botToken": "YOUR_BOT_TOKEN_HERE"
+  "globals": {
+    "claude": { "command": "claude" },
+    "logging": { "level": "info", "flow": true, "persist": false },
+    "rateLimit": { "max": 10, "windowMs": 60000 },
+    "access": { "allowedUserIds": [] }
   },
-  "access": {
-    "allowedUserIds": [123456789]
-  },
-  "claude": {
-    "command": "claude"
-  },
-  "logging": {
-    "level": "info"
-  },
-  "transcription": {
-    "model": "base.en",
-    "showTranscription": true
-  }
+  "projects": [
+    {
+      "name": "backend",
+      "cwd": "./backend",
+      "telegram": { "botToken": "YOUR_BOT_TOKEN_HERE" },
+      "access": { "allowedUserIds": [123456789] },
+      "logging": { "persist": true }
+    },
+    {
+      "name": "frontend",
+      "cwd": "./frontend",
+      "telegram": { "botToken": "ANOTHER_BOT_TOKEN" },
+      "access": { "allowedUserIds": [123456789] }
+    }
+  ]
 }
 ```
 
-### Configuration Options
+### `globals`
 
-| Option                          | Description                                                    | Default    |
-| ------------------------------- | -------------------------------------------------------------- | ---------- |
-| `telegram.botToken`             | Telegram bot token from BotFather                              | Required   |
-| `access.allowedUserIds`         | Array of Telegram user IDs allowed to use the bot              | `[]`       |
-| `claude.command`                | Claude CLI command                                             | `"claude"` |
-| `logging.level`                 | Log level: debug, info, warn, error                            | `"info"`   |
-| `transcription.model`           | Whisper model (see [Voice Messages](#voice-messages))          | `"base.en"`|
-| `transcription.showTranscription` | Show transcribed text before Claude response                 | `true`     |
+Default settings applied to all projects. Any setting defined in a project overrides its global counterpart.
 
-### Environment Variables
+| Key | Description | Default |
+|-----|-------------|---------|
+| `globals.claude.command` | Claude CLI command | `"claude"` |
+| `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
+| `globals.logging.flow` | Write logs to terminal | `true` |
+| `globals.logging.persist` | Write logs to file | `false` |
+| `globals.rateLimit.max` | Max messages per window per user | `10` |
+| `globals.rateLimit.windowMs` | Rate limit window in ms | `60000` |
+| `globals.access.allowedUserIds` | Telegram user IDs allowed by default | `[]` |
+| `globals.dataDir` | Default user data directory | _(see below)_ |
+| `globals.transcription.model` | Whisper model for voice | `"base.en"` |
+| `globals.transcription.showTranscription` | Show transcribed text | `true` |
 
-Environment variables override config file values:
+### `projects[]`
 
-| Variable             | Description                          |
-| -------------------- | ------------------------------------ |
-| `TELEGRAM_BOT_TOKEN` | Telegram bot token                   |
-| `ALLOWED_USER_IDS`   | Comma-separated user IDs             |
-| `CLAUDE_COMMAND`     | Claude CLI command                   |
-| `LOG_LEVEL`          | Logging level                        |
-| `WHISPER_MODEL`      | Whisper model for voice transcription |
-| `SHOW_TRANSCRIPTION` | Show transcription (true/false)      |
+Each project entry creates one Telegram bot connected to one directory.
+
+| Key | Required | Description |
+|-----|----------|-------------|
+| `name` | No | Unique identifier used as a slug for logs/data paths |
+| `cwd` | **Yes** | Path to the project directory (relative to config file, or absolute) |
+| `telegram.botToken` | **Yes** | Telegram bot token from BotFather |
+| `access.allowedUserIds` | No | Override the global user whitelist for this bot |
+| `claude.command` | No | Override the Claude CLI command |
+| `logging.level` | No | Override log level |
+| `logging.flow` | No | Override terminal logging |
+| `logging.persist` | No | Override file logging |
+| `rateLimit.max` | No | Override rate limit max |
+| `rateLimit.windowMs` | No | Override rate limit window |
+| `transcription.model` | No | Override Whisper model |
+| `transcription.showTranscription` | No | Override transcription display |
+| `dataDir` | No | Override user data directory (see below) |
+
+### Project Slug
+
+The slug is used as a folder name for log and data paths. It is derived from:
+1. The `name` field, if provided
+2. Otherwise, the `cwd` value slugified (e.g. `./foo/bar` → `foo-bar`)
+
+### `dataDir` Values
+
+| Value | Resolved Path |
+|-------|---------------|
+| _(empty)_ | `<project-cwd>/.ccpa/users` |
+| `~` | `<config-dir>/.ccpa/<slug>/data` |
+| Relative path (e.g. `.mydata`) | `<project-cwd>/<value>` |
+| Absolute path | Used as-is |
+
+### Log Files
+
+When `logging.persist: true`, logs are written to:
+```
+<config-dir>/.ccpa/<project-slug>/logs/YYYY-MM-DD.txt
+```
 
 ## Directory Structure
 
+With a config at `~/workspace/ccpa.config.json`:
+
 ```
-my-project/
-├── ccpa.config.json      # Bot configuration
-├── CLAUDE.md             # Claude system prompt
-├── .claude/
-│   └── settings.json     # Claude settings
-└── .ccpa/
-    └── users/
-        └── {userId}/
-            ├── uploads/      # Files FROM user (to Claude)
-            ├── downloads/    # Files TO user (from Claude)
-            └── session.json  # Session data
+~/workspace/
+├── ccpa.config.json
+├── .ccpa/
+│   ├── backend/
+│   │   └── logs/
+│   │       └── 2026-02-26.txt     (when persist: true)
+│   └── frontend/
+│       └── logs/
+│           └── 2026-02-26.txt
+├── backend/
+│   ├── CLAUDE.md
+│   ├── .claude/settings.json
+│   └── .ccpa/
+│       └── users/
+│           └── {userId}/
+│               ├── uploads/       # Files FROM user (to Claude)
+│               ├── downloads/     # Files TO user (from Claude)
+│               └── session.json   # Session data
+└── frontend/
+    ├── CLAUDE.md
+    └── .ccpa/
+        └── users/
 ```
 
 ## CLI Commands
@@ -128,135 +182,124 @@ npx ccpa-telegram --help
 
 # Initialize config file
 npx ccpa-telegram init
-npx ccpa-telegram init --cwd ./my-project
+npx ccpa-telegram init --cwd ./workspace
 
-# Start the bot
+# Start all bots
 npx ccpa-telegram
-npx ccpa-telegram --cwd ./my-project
+npx ccpa-telegram --cwd ./workspace
 ```
 
 ## Bot Commands
 
 | Command  | Description                |
-| -------- | -------------------------- |
+|----------|----------------------------|
 | `/start` | Welcome message            |
 | `/help`  | Show help information      |
 | `/clear` | Clear conversation history |
 
 ## Creating a Telegram Bot
 
-To create a new Telegram bot and get your bot token:
+1. Message [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/newbot`
+3. Choose a display name (e.g. "My Backend Assistant")
+4. Choose a username ending in `bot` (e.g. `my_backend_assistant_bot`)
+5. Copy the token to your `ccpa.config.json`
 
-1. Open Telegram and message [@BotFather](https://t.me/BotFather)
-2. Send `/newbot` command
-3. Choose a **display name** for your bot (e.g., "My Claude Assistant")
-4. Choose a **username** - must be unique and end with `bot` (e.g., `my_claude_assistant_bot`). The length of the username must be between 5 and 32 characters.
-5. BotFather will reply with your bot token (looks like `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
-6. Copy this token to your `ccpa.config.json`
-
-For detailed instructions, see the [Telegram Bot API documentation](https://core.telegram.org/bots#how-do-i-create-a-bot).
+For each project you need a separate bot and token.
 
 ## Finding Your Telegram User ID
 
-To find your Telegram user ID:
-
 1. Message [@userinfobot](https://t.me/userinfobot) on Telegram
-2. It will reply with your user ID
-3. Add this ID to `allowedUserIds` in your config
+2. It will reply with your numeric user ID
+3. Add it to `allowedUserIds`
 
 ## Voice Messages
 
-Voice messages are transcribed locally using [Whisper](https://github.com/openai/whisper) via the `nodejs-whisper` package. No audio data is sent to external services.
+Voice messages are transcribed locally using [Whisper](https://github.com/openai/whisper) via the `nodejs-whisper` package. No audio is sent to external services.
 
-### Prerequisites for Voice Messages
+### Setup
 
-Voice transcription requires additional setup:
-
-1. **ffmpeg** - For audio conversion
+1. **ffmpeg** — for audio conversion
    ```bash
-   # macOS
-   brew install ffmpeg
-
-   # Ubuntu/Debian
-   sudo apt install ffmpeg
+   brew install ffmpeg         # macOS
+   sudo apt install ffmpeg     # Ubuntu/Debian
    ```
 
-2. **CMake** - For building the Whisper executable
+2. **CMake** — for building the Whisper executable
    ```bash
-   # macOS
-   brew install cmake
-
-   # Ubuntu/Debian
-   sudo apt install cmake
+   brew install cmake          # macOS
+   sudo apt install cmake      # Ubuntu/Debian
    ```
 
-3. **Download and build Whisper** - Run this once after installation:
+3. **Download and build Whisper** — run once after installation:
    ```bash
    npx nodejs-whisper download
    ```
-   This downloads the Whisper model and compiles the `whisper-cli` executable. The build process takes a few minutes.
 
 ### Whisper Models
 
-| Model            | Size    | Speed    | Quality                        |
-| ---------------- | ------- | -------- | ------------------------------ |
-| `tiny`           | ~75 MB  | Fastest  | Basic quality                  |
-| `tiny.en`        | ~75 MB  | Fastest  | English-only, slightly better  |
-| `base`           | ~142 MB | Fast     | Good for clear speech          |
-| `base.en`        | ~142 MB | Fast     | English-only (default)         |
-| `small`          | ~466 MB | Medium   | Good multilingual              |
-| `small.en`       | ~466 MB | Medium   | English-only                   |
-| `medium`         | ~1.5 GB | Slower   | Very good multilingual         |
-| `medium.en`      | ~1.5 GB | Slower   | English-only                   |
-| `large-v1`       | ~2.9 GB | Slowest  | Best quality (v1)              |
-| `large`          | ~2.9 GB | Slowest  | Best quality (v2)              |
-| `large-v3-turbo` | ~1.5 GB | Fast     | Near-large quality, faster     |
+| Model | Size | Speed | Quality |
+|-------|------|-------|---------|
+| `tiny` | ~75 MB | Fastest | Basic |
+| `tiny.en` | ~75 MB | Fastest | English-only |
+| `base` | ~142 MB | Fast | Good |
+| `base.en` | ~142 MB | Fast | English-only (default) |
+| `small` | ~466 MB | Medium | Good multilingual |
+| `medium` | ~1.5 GB | Slower | Very good multilingual |
+| `large-v3-turbo` | ~1.5 GB | Fast | Near-large quality |
 
-**First run**: The selected model will be downloaded automatically. Subsequent runs use the cached model.
+## Sending Files to Users
 
-### Supported Languages
+Claude can send files back through Telegram. Each user has a `downloads/` folder under their data directory. Claude is informed of this path in every prompt.
 
-Whisper supports 50+ languages including English, German, Spanish, French, and many more. Use models without `.en` suffix for multilingual support.
+1. Claude writes a file to the downloads folder
+2. The bot detects it after Claude's response completes
+3. The file is sent via Telegram (as a document)
+4. The file is deleted from the server after delivery
 
-## Sending Files to User
+## Migration from v1 (Single-Project Config)
 
-Claude can send files back to you through Telegram. Each user has a dedicated `downloads/` folder, and Claude is informed of this path in every prompt.
+The old single-project config format is no longer supported. Migrate by wrapping your config:
 
-### How It Works
-
-1. **Claude writes a file** to your downloads folder (e.g., `.ccpa/users/{userId}/downloads/report.pdf`)
-2. **The bot detects** the new file after Claude's response completes
-3. **The file is sent** to you via Telegram (as a document)
-4. **The file is deleted** from the server after successful delivery
-
-### Example Usage
-
-Ask Claude to create and send you a file:
-
-```
-Create a simple hello.txt file in my downloads folder with "Hello World" content
+**Before:**
+```json
+{
+  "telegram": { "botToken": "..." },
+  "access": { "allowedUserIds": [123] },
+  "claude": { "command": "claude" },
+  "logging": { "level": "info" }
+}
 ```
 
-Claude will write the file to your downloads path, and the bot will automatically send it to you.
+**After:**
+```json
+{
+  "globals": {
+    "claude": { "command": "claude" },
+    "logging": { "level": "info" }
+  },
+  "projects": [
+    {
+      "cwd": ".",
+      "telegram": { "botToken": "..." },
+      "access": { "allowedUserIds": [123] }
+    }
+  ]
+}
+```
 
-### Supported Files
-
-Any file type that Telegram supports can be sent, including:
-- Documents (PDF, TXT, CSV, JSON, etc.)
-- Images (PNG, JPG, etc.)
-- Archives (ZIP, TAR, etc.)
+> **Note:** Environment variable overrides (`TELEGRAM_BOT_TOKEN`, `ALLOWED_USER_IDS`, etc.) are no longer supported. Configure everything in `ccpa.config.json`.
 
 ## Security Notice
 
-**Important**: Conversations with this bot are not end-to-end encrypted. Messages pass through Telegram's servers and are processed by the Claude API. Do not share sensitive information such as:
+**Important**: Conversations with this bot are not end-to-end encrypted. Messages pass through Telegram's servers. Do not share:
 
 - Passwords or API keys
 - Personal identification numbers
 - Financial information
 - Confidential business data
-- Any other private or sensitive data
 
-This bot is intended for development assistance and general queries only. Treat all conversations as potentially visible to third parties.
+This bot is intended for development assistance only. Treat all conversations as potentially visible to third parties.
 
 ## License
 

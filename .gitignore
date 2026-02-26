@@ -22,3 +22,5 @@ data/
 
 **/.env
 **/.ccpa
+
+**/ccpa.config.local.json

@@ -1,4 +1,4 @@
-export { documentHandler } from "./document.js";
-export { photoHandler } from "./photo.js";
-export { textHandler } from "./text.js";
-export { voiceHandler } from "./voice.js";
+export { createDocumentHandler } from "./document.js";
+export { createPhotoHandler } from "./photo.js";
+export { createTextHandler } from "./text.js";
+export { createVoiceHandler } from "./voice.js";

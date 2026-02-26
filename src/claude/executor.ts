@@ -1,6 +1,5 @@
 import { spawn } from "node:child_process";
-import { getConfig, getWorkingDirectory } from "../config.js";
-import { getLogger } from "../logger.js";
+import type { ProjectContext } from "../types.js";
 
 export interface ExecuteOptions {
   prompt: string;
@@ -22,9 +21,10 @@ export interface ExecuteResult {
  */
 export async function executeClaudeQuery(
   options: ExecuteOptions,
+  ctx: ProjectContext,
 ): Promise<ExecuteResult> {
   const { prompt, downloadsPath, sessionId, onProgress } = options;
-  const logger = getLogger();
+  const { config, logger } = ctx;
 
   // Append downloads path info to prompt if provided
   const fullPrompt = downloadsPath
@@ -44,8 +44,8 @@ export async function executeClaudeQuery(
     args.push("--resume", sessionId);
   }
 
-  const claudeCommand = getConfig().claude.command;
-  const cwd = getWorkingDirectory();
+  const claudeCommand = config.claude.command;
+  const cwd = config.cwd;
   logger.info({ command: claudeCommand, args, cwd }, "Executing Claude CLI");
 
   return new Promise((resolve) => {
@@ -92,7 +92,6 @@ export async function executeClaudeQuery(
                 const toolName = block.name || "unknown";
                 let progressMsg = `Using ${toolName}...`;
 
-                // Add more context for specific tools
                 if (toolName === "Read" && block.input?.file_path) {
                   progressMsg = `Reading: ${block.input.file_path}`;
                 } else if (toolName === "Grep" && block.input?.pattern) {
@@ -142,7 +141,6 @@ export async function executeClaudeQuery(
           // Capture the final result
           if (event.type === "result") {
             logger.debug({ event }, "Claude result event");
-            // Error can be in event.result or event.errors array
             const errorMessage = event.is_error
               ? event.result ||
                 (event.errors?.length ? event.errors.join("; ") : undefined)
@@ -184,7 +182,6 @@ export async function executeClaudeQuery(
         }
         resolve(lastResult);
       } else if (code === 0) {
-        // No result event but process succeeded - use last assistant text
         resolve({
           success: true,
           output: lastAssistantText || "No response received",
