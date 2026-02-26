@@ -12,6 +12,12 @@ export interface CommandEntry {
   skillPrompt?: string; // prompt body from SKILL.md (skills only)
 }
 
+const TELEGRAM_COMMAND_RE = /^[a-z0-9_]{1,32}$/;
+
+function isValidTelegramCommandName(name: string): boolean {
+  return TELEGRAM_COMMAND_RE.test(name);
+}
+
 // ─── Directory helpers ───────────────────────────────────────────────────────
 
 function projectCommandDir(projectCwd: string): string {
@@ -43,6 +49,14 @@ async function importCommandFile(
     // Derive command name from filename (strip .mjs extension)
     const fileName = filePath.split("/").pop() ?? "";
     const command = fileName.replace(/\.mjs$/, "");
+
+    if (!isValidTelegramCommandName(command)) {
+      logger.warn(
+        { filePath, command },
+        "Invalid Telegram command name from filename — skipping",
+      );
+      return null;
+    }
 
     return {
       command,
@@ -194,6 +208,14 @@ async function scanSkillsDir(
       );
     }
 
+    if (!isValidTelegramCommandName(folder)) {
+      logger.warn(
+        { folder, skillMdPath },
+        "Invalid Telegram command name from skill folder — skipping",
+      );
+      continue;
+    }
+
     skills.push({
       command: folder,
       description: parsed.description,
@@ -251,6 +273,10 @@ export async function resolveSkillEntry(
   skillsDir: string,
   logger: pino.Logger,
 ): Promise<CommandEntry | null> {
+  if (!isValidTelegramCommandName(commandName)) {
+    return null;
+  }
+
   const skillMdPath = join(skillsDir, commandName, "SKILL.md");
   if (!existsSync(skillMdPath)) {
     return null;
