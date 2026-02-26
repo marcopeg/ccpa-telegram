@@ -190,7 +190,7 @@ export function resolveProjectConfig(
     : resolve(configDir, project.cwd);
 
   const slug = deriveSlug(project.name, project.cwd);
-  const logDir = resolve(configDir, ".telegrapp", slug, "logs");
+  const logDir = resolve(configDir, ".telegrapp", "logs", slug);
 
   const dataDir = resolveDataDir(
     project.dataDir ?? globals.dataDir,

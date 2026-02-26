@@ -21,8 +21,11 @@ data/
 .idea/
 
 **/.env
-**/.telegrapp
 
 **/config.local.json
 **/.env
 **/.env.local
+
+# Telegrapp runtime data
+**/.telegrapp/logs/
+**/.telegrapp/users/
