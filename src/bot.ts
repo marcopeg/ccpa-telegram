@@ -2,7 +2,9 @@ import { execSync } from "node:child_process";
 import { Bot } from "grammy";
 import { createClearHandler } from "./bot/commands/clear.js";
 import { helpHandler } from "./bot/commands/help.js";
+import { loadCommands } from "./bot/commands/loader.js";
 import { startHandler } from "./bot/commands/start.js";
+import { startCommandWatcher } from "./bot/commands/watcher.js";
 import {
   createDocumentHandler,
   createPhotoHandler,
@@ -97,8 +99,29 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   // Wait until the bot reports it's running (or fails)
   await startedPromise;
 
+  // Register project-specific commands with Telegram on startup
+  const commands = await loadCommands(config.cwd, config.configDir, logger);
+  if (commands.length > 0) {
+    await bot.api.setMyCommands(
+      commands.map((c) => ({ command: c.command, description: c.description })),
+    );
+    logger.info(
+      { count: commands.length },
+      "Commands registered with Telegram",
+    );
+  }
+
+  // Start file watcher for hot-reload of command files
+  const watcher = startCommandWatcher(
+    bot,
+    config.cwd,
+    config.configDir,
+    logger,
+  );
+
   return {
     stop: async () => {
+      await watcher.stop();
       rateLimitCleanup();
       await bot.stop();
       await runningPromise;

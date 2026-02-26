@@ -10,6 +10,7 @@ A Telegram bot that provides access to Claude Code as a personal assistant. Run 
 - **Voice message support** with local Whisper transcription
 - **File sending** — Claude can send files back to you
 - **Context injection** — every message includes metadata (timestamps, user info, custom values) and supports hot-reloaded hooks
+- **Custom slash commands** — add `.mjs` command files per-project or globally; hot-reloaded so Claude can create new commands at runtime
 - Persistent conversation sessions per user
 - Per-project access control, rate limiting, and logging
 - Log persistence to file with daily rotation support
@@ -305,6 +306,8 @@ With a config at `~/workspace/ccpa.config.json`:
 ├── .ccpa/
 │   ├── hooks/
 │   │   └── context.mjs            (global context hook, optional)
+│   ├── commands/
+│   │   └── mycommand.mjs          (global command, available to all projects)
 │   ├── backend/
 │   │   └── logs/
 │   │       └── 2026-02-26.txt     (when persist: true)
@@ -317,6 +320,8 @@ With a config at `~/workspace/ccpa.config.json`:
 │   └── .ccpa/
 │       ├── hooks/
 │       │   └── context.mjs        (project context hook, optional)
+│       ├── commands/
+│       │   └── deploy.mjs         (project-specific command, optional)
 │       └── users/
 │           └── {userId}/
 │               ├── uploads/       # Files FROM user (to Claude)
@@ -350,6 +355,91 @@ npx ccpa-telegram --cwd ./workspace
 | `/start` | Welcome message            |
 | `/help`  | Show help information      |
 | `/clear` | Clear conversation history |
+
+## Custom Commands
+
+You can add your own slash commands as `.mjs` files. When a user sends `/mycommand`, the bot looks for a matching file before passing the message to Claude.
+
+### File locations
+
+| Location | Scope |
+|----------|-------|
+| `{project.cwd}/.ccpa/commands/<name>.mjs` | Project-specific |
+| `{configDir}/.ccpa/commands/<name>.mjs` | Global — available to all projects |
+
+Project-specific commands take precedence over global ones on name collision.
+
+### Command file format
+
+```js
+// .ccpa/commands/deploy.mjs
+export const description = 'Deploy the project'; // shown in Telegram's / menu
+
+export default async function({ args, ctx, projectCtx }) {
+  const env = args[0] ?? 'staging';
+  return `Deploying to ${env}...`;
+}
+```
+
+The only required export is `description` (shown in Telegram's `/` suggestion menu) and a `default` function. The return value is sent to the user as a message. Return `null` or `undefined` to suppress the reply (e.g. if your command sends its own response via `gram`).
+
+### Handler arguments
+
+#### `args: string[]`
+
+Tokens following the command name, split on whitespace.
+
+```
+/deploy staging eu-west  →  args = ['staging', 'eu-west']
+/status                  →  args = []
+```
+
+#### `ctx: Record<string, string>`
+
+The fully-resolved context that would be sent to the AI for this message — identical to what Claude sees in its `# Context` header. Includes all implicit keys plus any config vars and hook results:
+
+| Key group | Description |
+|-----------|-------------|
+| `bot.*` | `bot.userId`, `bot.username`, `bot.firstName`, `bot.chatId`, `bot.messageId`, `bot.timestamp`, `bot.datetime`, `bot.messageType` |
+| `sys.*` | `sys.date`, `sys.time`, `sys.datetime`, `sys.ts`, `sys.tz` |
+| `project.*` | `project.name`, `project.cwd`, `project.slug` |
+| custom | Any keys defined in `context` config blocks, after `${}` / `#{}` / `@{}` substitution and context hook transforms |
+
+Use `/context` (the built-in global command) to inspect the exact keys available at runtime.
+
+#### `gram: Grammy Context`
+
+The raw [Grammy](https://grammy.dev) message context — gives access to the full Telegram Bot API. Only needed for advanced use cases such as sending multiple messages, uploading files directly, or reacting to the message.
+
+```js
+export default async function({ gram }) {
+  await gram.react([{ type: 'emoji', emoji: '👍' }]);
+  return null; // suppress default text reply
+}
+```
+
+#### `projectCtx: ProjectContext`
+
+The project-level context object. Useful fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `projectCtx.config.name` | `string \| undefined` | Project name from config |
+| `projectCtx.config.slug` | `string` | Internal slug (used for log/data paths) |
+| `projectCtx.config.cwd` | `string` | Absolute path to the project directory |
+| `projectCtx.config.configDir` | `string` | Absolute path to the directory containing `ccpa.config.json` |
+| `projectCtx.config.dataDir` | `string` | Absolute path to user data storage root |
+| `projectCtx.config.context` | `Record<string, string> \| undefined` | Raw config-level context values (pre-hook) |
+| `projectCtx.logger` | Pino logger | Structured logger — use for debug output that ends up in log files |
+
+### Examples
+
+- [`examples/obsidian/.ccpa/commands/status.mjs`](examples/obsidian/.ccpa/commands/status.mjs) — project-specific command using `projectCtx.config`
+- [`examples/.ccpa/commands/context.mjs`](examples/.ccpa/commands/context.mjs) — global command that dumps the full resolved context
+
+### Hot-reload
+
+Commands are **hot-reloaded** — drop a new `.mjs` file into the commands directory and the bot registers it with Telegram automatically, with no restart. This means Claude can write new command files as part of a task and users see them in the `/` menu immediately.
 
 ## Creating a Telegram Bot
 
