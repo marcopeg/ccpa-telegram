@@ -12,14 +12,15 @@ export interface CommandWatcher {
 // ─── Implementation ──────────────────────────────────────────────────────────
 
 /**
- * Start a file watcher that monitors both command directories and re-publishes
- * the full merged command list to Telegram whenever .mjs files change.
+ * Start a file watcher that monitors command directories and the skills dir,
+ * then re-publishes the full merged command list to Telegram on any change.
  */
 export function startCommandWatcher(
   bot: Bot,
   projectCwd: string,
   configDir: string,
   logger: pino.Logger,
+  skillsDir?: string,
 ): CommandWatcher {
   const projectCommandDir = join(projectCwd, ".ccpa", "commands");
   const globalCommandDir = join(configDir, ".ccpa", "commands");
@@ -28,7 +29,12 @@ export function startCommandWatcher(
 
   async function republish(): Promise<void> {
     try {
-      const commands = await loadCommands(projectCwd, configDir, logger);
+      const commands = await loadCommands(
+        projectCwd,
+        configDir,
+        logger,
+        skillsDir,
+      );
       await bot.api.setMyCommands(
         commands.map((c) => ({
           command: c.command,
@@ -67,33 +73,47 @@ export function startCommandWatcher(
   const watcherReady = (async () => {
     try {
       const chokidar = await import("chokidar");
-      const watcher = chokidar.watch([projectCommandDir, globalCommandDir], {
+
+      const watchPaths = [projectCommandDir, globalCommandDir];
+      if (skillsDir) {
+        watchPaths.push(skillsDir);
+      }
+
+      const watcher = chokidar.watch(watchPaths, {
         ignoreInitial: true,
         persistent: true,
         ignored: (path: string) => {
           const basename = path.split("/").pop() ?? "";
-          // Allow directories (no extension) and .mjs files; ignore everything else
-          return basename.includes(".") && !basename.endsWith(".mjs");
+          // Allow directories (no extension), .mjs files, and SKILL.md files
+          return (
+            basename.includes(".") &&
+            !basename.endsWith(".mjs") &&
+            basename !== "SKILL.md"
+          );
         },
       });
 
+      function isRelevant(filePath: string): boolean {
+        return filePath.endsWith(".mjs") || filePath.endsWith("SKILL.md");
+      }
+
       watcher.on("add", (filePath: string) => {
-        if (filePath.endsWith(".mjs")) {
-          logger.debug({ filePath }, "Command file added");
+        if (isRelevant(filePath)) {
+          logger.debug({ filePath }, "Command/skill file added");
           scheduleRepublish();
         }
       });
 
       watcher.on("change", (filePath: string) => {
-        if (filePath.endsWith(".mjs")) {
-          logger.debug({ filePath }, "Command file changed");
+        if (isRelevant(filePath)) {
+          logger.debug({ filePath }, "Command/skill file changed");
           scheduleRepublish();
         }
       });
 
       watcher.on("unlink", (filePath: string) => {
-        if (filePath.endsWith(".mjs")) {
-          logger.debug({ filePath }, "Command file removed");
+        if (isRelevant(filePath)) {
+          logger.debug({ filePath }, "Command/skill file removed");
           scheduleRepublish();
         }
       });
@@ -107,7 +127,7 @@ export function startCommandWatcher(
 
       watcherInstance = watcher;
       logger.debug(
-        { projectCommandDir, globalCommandDir },
+        { projectCommandDir, globalCommandDir, skillsDir },
         "Command watcher started",
       );
     } catch (err) {

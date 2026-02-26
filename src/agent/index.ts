@@ -1,5 +1,15 @@
+import { join } from "node:path";
 import { executeClaudeQuery } from "../claude/executor.js";
 import type { Agent, ProjectContext } from "../types.js";
+
+/**
+ * Return the engine-specific skills directory for the given project.
+ * Today Claude Code stores skills in `.claude/skills/`.
+ * When new engines are supported this function will branch on the engine type.
+ */
+export function getSkillsDir(projectCwd: string): string {
+  return join(projectCwd, ".claude", "skills");
+}
 
 /**
  * Create an Agent for the given project context.

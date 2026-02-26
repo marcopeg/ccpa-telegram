@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type pino from "pino";
 
@@ -96,27 +96,137 @@ async function scanCommandDir(
   return entries;
 }
 
+// ─── Skills scan ─────────────────────────────────────────────────────────────
+
+/**
+ * Parse a SKILL.md file's YAML frontmatter and return { name, description }.
+ * Returns null if the file cannot be parsed or is missing required fields.
+ */
+async function parseSkillMd(
+  filePath: string,
+  logger: pino.Logger,
+): Promise<{ name: string; description: string } | null> {
+  let content: string;
+  try {
+    content = await readFile(filePath, "utf-8");
+  } catch (err) {
+    logger.error(
+      { filePath, error: err instanceof Error ? err.message : String(err) },
+      "Failed to read SKILL.md — skipping",
+    );
+    return null;
+  }
+
+  // Extract YAML frontmatter between the first pair of `---` delimiters
+  const match = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!match) {
+    logger.warn({ filePath }, "SKILL.md missing frontmatter block — skipping");
+    return null;
+  }
+
+  const frontmatter = match[1];
+
+  const nameMatch = frontmatter.match(/^name:\s*(.+)$/m);
+  const descMatch = frontmatter.match(/^description:\s*(.+)$/m);
+
+  if (!nameMatch || !descMatch) {
+    logger.warn(
+      { filePath },
+      "SKILL.md frontmatter missing name or description — skipping",
+    );
+    return null;
+  }
+
+  return {
+    name: nameMatch[1].trim(),
+    description: descMatch[1].trim(),
+  };
+}
+
+/**
+ * Scan the engine's skills directory and return a CommandEntry for each skill.
+ * The command name is derived from the folder name (how the engine resolves it).
+ * A warning is logged when the frontmatter `name` differs from the folder name.
+ * Skills have no .mjs filePath — they fall through to the AI engine when invoked.
+ */
+async function scanSkillsDir(
+  dir: string,
+  logger: pino.Logger,
+): Promise<CommandEntry[]> {
+  if (!existsSync(dir)) {
+    return [];
+  }
+
+  let folders: string[];
+  try {
+    const entries = await readdir(dir, { withFileTypes: true });
+    folders = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+  } catch (err) {
+    logger.error(
+      { dir, error: err instanceof Error ? err.message : String(err) },
+      "Failed to read skills directory — skipping",
+    );
+    return [];
+  }
+
+  const skills: CommandEntry[] = [];
+
+  for (const folder of folders) {
+    const skillMdPath = join(dir, folder, "SKILL.md");
+    if (!existsSync(skillMdPath)) {
+      continue;
+    }
+
+    const parsed = await parseSkillMd(skillMdPath, logger);
+    if (!parsed) {
+      continue;
+    }
+
+    // Command name is the folder name; warn if frontmatter `name` disagrees
+    if (parsed.name !== folder) {
+      logger.warn(
+        { folder, frontmatterName: parsed.name },
+        "Skill frontmatter `name` differs from folder name — using folder name as command",
+      );
+    }
+
+    skills.push({
+      command: folder,
+      description: parsed.description,
+      filePath: "", // skills have no .mjs — they fall through to the AI engine
+    });
+  }
+
+  return skills;
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Scan both command directories, import all .mjs files, and return the merged list.
- * Project-specific commands take precedence over global commands on name collision.
+ * Scan command directories and optionally the skills dir, then return the merged list.
+ *
+ * Precedence (lowest → highest):
+ *   engine skills  <  global .ccpa/commands  <  project .ccpa/commands
  */
 export async function loadCommands(
   projectCwd: string,
   configDir: string,
   logger: pino.Logger,
+  skillsDir?: string,
 ): Promise<CommandEntry[]> {
   const globalDir = globalCommandDir(configDir);
   const projectDir = projectCommandDir(projectCwd);
 
-  // Load globals first, then project-specific (project wins on collision)
+  // Load in ascending precedence order; later entries overwrite earlier ones
+  const skillEntries = skillsDir ? await scanSkillsDir(skillsDir, logger) : [];
   const globalEntries = await scanCommandDir(globalDir, logger);
   const projectEntries = await scanCommandDir(projectDir, logger);
 
-  // Merge: globals first, project overwrites on collision
   const map = new Map<string, CommandEntry>();
 
+  for (const entry of skillEntries) {
+    map.set(entry.command, entry);
+  }
   for (const entry of globalEntries) {
     map.set(entry.command, entry);
   }

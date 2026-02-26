@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import { Bot } from "grammy";
+import { getSkillsDir } from "./agent/index.js";
 import { createClearHandler } from "./bot/commands/clear.js";
 import { helpHandler } from "./bot/commands/help.js";
 import { loadCommands } from "./bot/commands/loader.js";
@@ -99,8 +100,14 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   // Wait until the bot reports it's running (or fails)
   await startedPromise;
 
-  // Register project-specific commands with Telegram on startup
-  const commands = await loadCommands(config.cwd, config.configDir, logger);
+  // Register project-specific commands and skills with Telegram on startup
+  const skillsDir = getSkillsDir(config.cwd);
+  const commands = await loadCommands(
+    config.cwd,
+    config.configDir,
+    logger,
+    skillsDir,
+  );
   if (commands.length > 0) {
     await bot.api.setMyCommands(
       commands.map((c) => ({ command: c.command, description: c.description })),
@@ -111,12 +118,13 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     );
   }
 
-  // Start file watcher for hot-reload of command files
+  // Start file watcher for hot-reload of command and skill files
   const watcher = startCommandWatcher(
     bot,
     config.cwd,
     config.configDir,
     logger,
+    skillsDir,
   );
 
   return {
