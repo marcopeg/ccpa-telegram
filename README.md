@@ -1,4 +1,4 @@
-# telegrapp
+# TelegrAPP
 
 A Telegram bot that provides access to Claude Code as a personal assistant. Run Claude Code across multiple projects simultaneously, each with its own dedicated Telegram bot.
 
@@ -40,21 +40,21 @@ See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) 
 
 ```bash
 # Create .telegrapp/config.json in the current directory
-npx telegrapp init
+npx @marcopeg/telegrapp init
 
 # Edit .telegrapp/config.json: add your bot token and project path
 # then start all bots
-npx telegrapp
+npx @marcopeg/telegrapp
 ```
 
 ## Installation
 
 ```bash
 # Initialize config in a specific directory
-npx telegrapp init --cwd ./workspace
+npx @marcopeg/telegrapp init --cwd ./workspace
 
 # Start bots using the config in that directory
-npx telegrapp --cwd ./workspace
+npx @marcopeg/telegrapp --cwd ./workspace
 ```
 
 ## Configuration
@@ -342,15 +342,15 @@ With a config at `~/workspace/.telegrapp/config.json`:
 
 ```bash
 # Show help
-npx telegrapp --help
+npx @marcopeg/telegrapp --help
 
 # Initialize config file
-npx telegrapp init
-npx telegrapp init --cwd ./workspace
+npx @marcopeg/telegrapp init
+npx @marcopeg/telegrapp init --cwd ./workspace
 
 # Start all bots
-npx telegrapp
-npx telegrapp --cwd ./workspace
+npx @marcopeg/telegrapp
+npx @marcopeg/telegrapp --cwd ./workspace
 ```
 
 ## Bot Commands

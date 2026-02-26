@@ -492,7 +492,7 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
   if (!existsSync(configPath)) {
     console.error(
       `Configuration error: .telegrapp/config.json not found in ${configDir}\n` +
-        `Run "npx telegrapp init" to create one.`,
+        `Run "npx @marcopeg/telegrapp init" to create one.`,
     );
     process.exit(1);
   }

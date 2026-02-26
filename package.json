@@ -20,7 +20,8 @@
     "lint": "biome check src",
     "lint:fix": "biome check --write src",
     "prepublishOnly": "pnpm run build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "deploy": "npm version patch && npm publish --access public"
   },
   "keywords": [
     "telegram",

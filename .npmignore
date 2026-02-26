@@ -1,0 +1,5 @@
+src/
+tasks/
+examples/
+.claude/
+*.tsbuildinfo

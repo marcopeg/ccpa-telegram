@@ -63,7 +63,7 @@ function showHelp(): void {
 telegrapp - Claude Code Personal Assistant for Telegram
 
 Usage:
-  npx telegrapp [command] [options]
+  npx @marcopeg/telegrapp [command] [options]
 
 Commands:
   init            Create .telegrapp/config.json in the working directory
@@ -74,10 +74,10 @@ Options:
   --help, -h      Show this help message
 
 Examples:
-  npx telegrapp init
-  npx telegrapp init --cwd ./workspace
-  npx telegrapp
-  npx telegrapp --cwd ./workspace
+  npx @marcopeg/telegrapp init
+  npx @marcopeg/telegrapp init --cwd ./workspace
+  npx @marcopeg/telegrapp
+  npx @marcopeg/telegrapp --cwd ./workspace
 
 Configuration (.telegrapp/config.json):
   {
@@ -144,7 +144,7 @@ async function runInit(cwd: string): Promise<void> {
   );
   console.log(`2. Set the project cwd to the folder Claude should work in`);
   console.log(`3. Add allowed user IDs to the "allowedUserIds" array`);
-  console.log(`4. Run: npx telegrapp --cwd ${cwd}`);
+  console.log(`4. Run: npx @marcopeg/telegrapp --cwd ${cwd}`);
   process.exit(0);
 }
 
