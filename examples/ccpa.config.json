@@ -20,10 +20,11 @@
     {
       "cwd": "./obsidian",
       "telegram": {
-        "botToken": ""
+        "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"
       }
     },
     {
+      "name": "timetracker",
       "cwd": "./timetracker",
       "telegram": {
         "botToken": ""
