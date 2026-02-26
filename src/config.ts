@@ -86,12 +86,14 @@ const ProjectFileSchema = z.object({
     .partial()
     .optional(),
   dataDir: z.string().optional(),
+  context: z.record(z.string(), z.string()).optional(),
 });
 
 // ─── Multi-project config file schema ─────────────────────────────────────────
 
 const MultiConfigFileSchema = z.object({
   globals: GlobalsFileSchema,
+  context: z.record(z.string(), z.string()).optional(),
   projects: z
     .array(ProjectFileSchema)
     .min(1, "At least one project is required"),
@@ -107,6 +109,7 @@ const LocalProjectSchema = ProjectFileSchema.partial().extend({
 const LocalConfigFileSchema = z
   .object({
     globals: GlobalsFileSchema,
+    context: z.record(z.string(), z.string()).optional(),
     projects: z.array(LocalProjectSchema).optional(),
   })
   .optional();
@@ -122,6 +125,7 @@ export interface ResolvedProjectConfig {
   slug: string;
   name: string | undefined;
   cwd: string;
+  configDir: string;
   dataDir: string;
   logDir: string;
   telegram: { botToken: string };
@@ -130,6 +134,7 @@ export interface ResolvedProjectConfig {
   logging: { level: string; flow: boolean; persist: boolean };
   rateLimit: { max: number; windowMs: number };
   transcription: { model: string; showTranscription: boolean } | undefined;
+  context: Record<string, string> | undefined;
 }
 
 // ─── Config load result ────────────────────────────────────────────────────────
@@ -178,6 +183,7 @@ export function resolveProjectConfig(
   project: ProjectFileEntry,
   globals: GlobalsFile,
   configDir: string,
+  rootContext?: Record<string, string>,
 ): ResolvedProjectConfig {
   const resolvedCwd = isAbsolute(project.cwd)
     ? project.cwd
@@ -196,10 +202,13 @@ export function resolveProjectConfig(
   const hasTranscription =
     project.transcription !== undefined || globals.transcription !== undefined;
 
+  const hasContext = rootContext !== undefined || project.context !== undefined;
+
   return {
     slug,
     name: project.name,
     cwd: resolvedCwd,
+    configDir,
     dataDir,
     logDir,
     telegram: { botToken: project.telegram.botToken },
@@ -232,6 +241,7 @@ export function resolveProjectConfig(
             true,
         }
       : undefined,
+    context: hasContext ? { ...rootContext, ...project.context } : undefined,
   };
 }
 
@@ -340,6 +350,12 @@ function substituteEnvVars(
   if (obj !== null && typeof obj === "object") {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      // Skip "context" keys — their ${} patterns are resolved at message time
+      // by the context resolver, not at boot time as env vars.
+      if (key === "context") {
+        result[key] = value;
+        continue;
+      }
       result[key] = substituteEnvVars(
         value,
         env,
@@ -420,8 +436,15 @@ function mergeLocalIntoBase(
       ? deepMerge(base.globals ?? {}, local.globals)
       : base.globals;
 
+  const mergedContext =
+    local.context !== undefined
+      ? base.context
+        ? { ...base.context, ...local.context }
+        : local.context
+      : base.context;
+
   if (!local.projects || local.projects.length === 0) {
-    return { ...base, globals: mergedGlobals };
+    return { ...base, globals: mergedGlobals, context: mergedContext };
   }
 
   const mergedProjects = [...base.projects] as ProjectFileEntry[];
@@ -449,7 +472,11 @@ function mergeLocalIntoBase(
     );
   }
 
-  return { globals: mergedGlobals, projects: mergedProjects };
+  return {
+    globals: mergedGlobals,
+    context: mergedContext,
+    projects: mergedProjects,
+  };
 }
 
 // ─── Phase 4: Config file loading (public API) ────────────────────────────────

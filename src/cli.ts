@@ -9,6 +9,7 @@ import {
   resolveProjectConfig,
   validateProjects,
 } from "./config.js";
+import { evaluateBootTimeShells } from "./context/resolver.js";
 import { createProjectLogger, createStartupLogger } from "./logger.js";
 import type { ProjectContext } from "./types.js";
 
@@ -46,6 +47,9 @@ const CONFIG_TEMPLATE = `{
   ]
 }
 `;
+// Note: The "context" key can be added to globals or per-project to inject
+// metadata into every Claude prompt. Implicit context (bot.*, sys.*) is always
+// available. See the task docs or examples/ for details.
 
 // ─── CLI argument parsing ─────────────────────────────────────────────────────
 
@@ -154,8 +158,9 @@ async function runStart(configDir: string): Promise<void> {
   const globals = multiConfig.globals ?? {};
 
   // Resolve all project configs
+  const rootContext = multiConfig.context;
   const resolvedProjects = multiConfig.projects.map((project) =>
-    resolveProjectConfig(project, globals, configDir),
+    resolveProjectConfig(project, globals, configDir, rootContext),
   );
 
   // Boot-time validation (unique cwds, tokens, names)
@@ -175,11 +180,14 @@ async function runStart(configDir: string): Promise<void> {
     "Configuration loaded",
   );
 
-  // Build project contexts
-  const contexts: ProjectContext[] = resolvedProjects.map((config) => ({
-    config,
-    logger: createProjectLogger(config),
-  }));
+  // Build project contexts (evaluate boot-time #{} shell commands per project)
+  const contexts: ProjectContext[] = resolvedProjects.map((config) => {
+    const logger = createProjectLogger(config);
+    const shellCache = config.context
+      ? evaluateBootTimeShells(config.context, logger)
+      : {};
+    return { config, logger, bootContext: { shellCache } };
+  });
 
   // Emit startup notices for flow=false projects
   for (const { config } of contexts) {

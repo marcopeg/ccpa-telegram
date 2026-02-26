@@ -137,7 +137,7 @@ export function createDocumentHandler(ctx: ProjectContext) {
 
       logger.debug("Executing Claude query with document");
       const result = await executeClaudeQuery(
-        { prompt, userDir, downloadsPath, sessionId, onProgress },
+        { prompt, gramCtx, userDir, downloadsPath, sessionId, onProgress },
         ctx,
       );
 

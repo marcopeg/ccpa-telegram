@@ -1,9 +1,12 @@
 import { spawn } from "node:child_process";
+import type { Context as GrammyContext } from "grammy";
+import { formatContextPrompt, resolveContext } from "../context/resolver.js";
 import type { ProjectContext } from "../types.js";
 
 export interface ExecuteOptions {
   prompt: string;
   userDir: string;
+  gramCtx?: GrammyContext;
   downloadsPath?: string;
   sessionId?: string | null;
   onProgress?: (message: string) => void;
@@ -23,13 +26,29 @@ export async function executeClaudeQuery(
   options: ExecuteOptions,
   ctx: ProjectContext,
 ): Promise<ExecuteResult> {
-  const { prompt, downloadsPath, sessionId, onProgress } = options;
-  const { config, logger } = ctx;
+  const { prompt, gramCtx, downloadsPath, sessionId, onProgress } = options;
+  const { config, logger, bootContext } = ctx;
+
+  // Resolve context and format prompt if Grammy context is available
+  let contextualPrompt = prompt;
+  if (gramCtx) {
+    const resolvedCtx = await resolveContext({
+      gramCtx,
+      configContext: config.context,
+      bootContext,
+      configDir: config.configDir,
+      projectCwd: config.cwd,
+      projectName: config.name,
+      projectSlug: config.slug,
+      logger,
+    });
+    contextualPrompt = formatContextPrompt(resolvedCtx, prompt);
+  }
 
   // Append downloads path info to prompt if provided
   const fullPrompt = downloadsPath
-    ? `${prompt}\n\n[System: To send files to the user, write them to: ${downloadsPath}]`
-    : prompt;
+    ? `${contextualPrompt}\n\n[System: To send files to the user, write them to: ${downloadsPath}]`
+    : contextualPrompt;
 
   const args: string[] = [
     "-p",

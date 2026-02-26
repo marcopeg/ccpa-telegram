@@ -88,7 +88,7 @@ export function createPhotoHandler(ctx: ProjectContext) {
 
       logger.debug("Executing Claude query with image");
       const result = await executeClaudeQuery(
-        { prompt, userDir, downloadsPath, sessionId, onProgress },
+        { prompt, gramCtx, userDir, downloadsPath, sessionId, onProgress },
         ctx,
       );
 

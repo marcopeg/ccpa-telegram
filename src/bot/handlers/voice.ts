@@ -175,6 +175,7 @@ export function createVoiceHandler(ctx: ProjectContext) {
       const result = await executeClaudeQuery(
         {
           prompt: transcription.text,
+          gramCtx,
           userDir,
           downloadsPath,
           sessionId,

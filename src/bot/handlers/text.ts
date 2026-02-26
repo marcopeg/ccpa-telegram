@@ -74,7 +74,14 @@ export function createTextHandler(ctx: ProjectContext) {
 
       logger.debug("Executing Claude query");
       const result = await executeClaudeQuery(
-        { prompt: messageText, userDir, downloadsPath, sessionId, onProgress },
+        {
+          prompt: messageText,
+          gramCtx,
+          userDir,
+          downloadsPath,
+          sessionId,
+          onProgress,
+        },
         ctx,
       );
       logger.debug(
