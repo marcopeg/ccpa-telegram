@@ -8,7 +8,8 @@ import type pino from "pino";
 export interface CommandEntry {
   command: string; // name without leading slash (e.g. "deploy")
   description: string; // from file's `description` export
-  filePath: string; // absolute path to the .mjs file
+  filePath: string; // absolute path to the .mjs file, or "" for skills
+  skillPrompt?: string; // prompt body from SKILL.md (skills only)
 }
 
 // ─── Directory helpers ───────────────────────────────────────────────────────
@@ -99,13 +100,14 @@ async function scanCommandDir(
 // ─── Skills scan ─────────────────────────────────────────────────────────────
 
 /**
- * Parse a SKILL.md file's YAML frontmatter and return { name, description }.
+ * Parse a SKILL.md file and return { name, description, prompt }.
+ * `prompt` is the body text after the closing frontmatter delimiter.
  * Returns null if the file cannot be parsed or is missing required fields.
  */
 async function parseSkillMd(
   filePath: string,
   logger: pino.Logger,
-): Promise<{ name: string; description: string } | null> {
+): Promise<{ name: string; description: string; prompt: string } | null> {
   let content: string;
   try {
     content = await readFile(filePath, "utf-8");
@@ -117,14 +119,15 @@ async function parseSkillMd(
     return null;
   }
 
-  // Extract YAML frontmatter between the first pair of `---` delimiters
-  const match = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  // Match frontmatter block and capture everything after the closing ---
+  const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)/);
   if (!match) {
     logger.warn({ filePath }, "SKILL.md missing frontmatter block — skipping");
     return null;
   }
 
   const frontmatter = match[1];
+  const prompt = match[2].trim();
 
   const nameMatch = frontmatter.match(/^name:\s*(.+)$/m);
   const descMatch = frontmatter.match(/^description:\s*(.+)$/m);
@@ -140,6 +143,7 @@ async function parseSkillMd(
   return {
     name: nameMatch[1].trim(),
     description: descMatch[1].trim(),
+    prompt,
   };
 }
 
@@ -193,7 +197,8 @@ async function scanSkillsDir(
     skills.push({
       command: folder,
       description: parsed.description,
-      filePath: "", // skills have no .mjs — they fall through to the AI engine
+      filePath: "",
+      skillPrompt: parsed.prompt,
     });
   }
 
@@ -235,6 +240,40 @@ export async function loadCommands(
   }
 
   return Array.from(map.values());
+}
+
+/**
+ * Resolve a skill entry by command name from the engine's skills directory.
+ * Returns null if the skill doesn't exist or its SKILL.md can't be parsed.
+ */
+export async function resolveSkillEntry(
+  commandName: string,
+  skillsDir: string,
+  logger: pino.Logger,
+): Promise<CommandEntry | null> {
+  const skillMdPath = join(skillsDir, commandName, "SKILL.md");
+  if (!existsSync(skillMdPath)) {
+    return null;
+  }
+
+  const parsed = await parseSkillMd(skillMdPath, logger);
+  if (!parsed) {
+    return null;
+  }
+
+  if (parsed.name !== commandName) {
+    logger.warn(
+      { commandName, frontmatterName: parsed.name },
+      "Skill frontmatter `name` differs from folder name — using folder name as command",
+    );
+  }
+
+  return {
+    command: commandName,
+    description: parsed.description,
+    filePath: "",
+    skillPrompt: parsed.prompt,
+  };
 }
 
 /**

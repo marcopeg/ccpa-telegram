@@ -1,6 +1,6 @@
 import { join, resolve } from "node:path";
 import type { Context } from "grammy";
-import { createAgent } from "../../agent/index.js";
+import { createAgent, getSkillsDir } from "../../agent/index.js";
 import { executeClaudeQuery } from "../../claude/executor.js";
 import { resolveContext } from "../../context/resolver.js";
 import { sendChunkedResponse } from "../../telegram/chunker.js";
@@ -12,7 +12,7 @@ import {
   getSessionId,
   saveSessionId,
 } from "../../user/setup.js";
-import { resolveCommandPath } from "../commands/loader.js";
+import { resolveCommandPath, resolveSkillEntry } from "../commands/loader.js";
 
 /**
  * Returns a handler for text messages.
@@ -92,7 +92,74 @@ export function createTextHandler(ctx: ProjectContext) {
           }
           return;
         }
-        // No file found — fall through to Claude
+
+        // No .mjs handler — check if this is a registered skill
+        const skillEntry = await resolveSkillEntry(
+          commandName,
+          getSkillsDir(config.cwd),
+          logger,
+        );
+
+        if (skillEntry?.skillPrompt) {
+          const prompt =
+            args.length > 0
+              ? `${skillEntry.skillPrompt}\n\nUser input: ${args.join(" ")}`
+              : skillEntry.skillPrompt;
+
+          const agent = createAgent(ctx);
+          const statusMsg = await gramCtx.reply("_Processing..._", {
+            parse_mode: "Markdown",
+          });
+          let lastProgressUpdate = Date.now();
+
+          try {
+            const result = await agent.call(prompt, {
+              onProgress: async (message: string) => {
+                const now = Date.now();
+                if (now - lastProgressUpdate > 2000) {
+                  lastProgressUpdate = now;
+                  try {
+                    await gramCtx.api.editMessageText(
+                      gramCtx.chat!.id,
+                      statusMsg.message_id,
+                      `_${message}_`,
+                      { parse_mode: "Markdown" },
+                    );
+                  } catch {
+                    // Ignore edit errors
+                  }
+                }
+              },
+            });
+            await gramCtx.api.deleteMessage(
+              gramCtx.chat!.id,
+              statusMsg.message_id,
+            );
+            await sendChunkedResponse(gramCtx, result);
+          } catch (err) {
+            logger.error(
+              {
+                commandName,
+                error: err instanceof Error ? err.message : String(err),
+                stack: err instanceof Error ? err.stack : undefined,
+              },
+              "Skill execution failed",
+            );
+            try {
+              await gramCtx.api.deleteMessage(
+                gramCtx.chat!.id,
+                statusMsg.message_id,
+              );
+            } catch {
+              // Ignore delete errors
+            }
+            const errorMessage =
+              err instanceof Error ? err.message : String(err);
+            await gramCtx.reply(`Skill failed: ${errorMessage}`);
+          }
+          return;
+        }
+        // Not a .mjs command or skill — fall through to Claude
       }
     }
     // ── End slash command interception ────────────────────────────────────────
