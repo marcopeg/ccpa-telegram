@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { startBot } from "./bot.js";
 import {
@@ -60,26 +60,26 @@ interface ParsedArgs {
 
 function showHelp(): void {
   console.log(`
-telegrapp - Claude Code Personal Assistant for Telegram
+HAL - Claude Code Personal Assistant for Telegram
 
 Usage:
-  npx @marcopeg/telegrapp [command] [options]
+  npx @marcopeg/hal [command] [options]
 
 Commands:
-  init            Create .telegrapp/config.json in the working directory
+  init            Create hal.config.json in the working directory
   start           Start the bots (default)
 
 Options:
-  --cwd <path>    Directory containing .telegrapp/config.json (default: current directory)
+  --cwd <path>    Directory containing hal.config.json (default: current directory)
   --help, -h      Show this help message
 
 Examples:
-  npx @marcopeg/telegrapp init
-  npx @marcopeg/telegrapp init --cwd ./workspace
-  npx @marcopeg/telegrapp
-  npx @marcopeg/telegrapp --cwd ./workspace
+  npx @marcopeg/hal init
+  npx @marcopeg/hal init --cwd ./workspace
+  npx @marcopeg/hal
+  npx @marcopeg/hal --cwd ./workspace
 
-Configuration (.telegrapp/config.json):
+Configuration (hal.config.json):
   {
     "globals": {
       "claude": { "command": "claude" },
@@ -127,24 +127,22 @@ function parseArgs(): ParsedArgs {
 // ─── init command ─────────────────────────────────────────────────────────────
 
 async function runInit(cwd: string): Promise<void> {
-  const telegrappDir = join(cwd, ".telegrapp");
-  const configPath = join(telegrappDir, "config.json");
+  const configPath = join(cwd, "hal.config.json");
 
   if (existsSync(configPath)) {
-    console.error(`Error: .telegrapp/config.json already exists in ${cwd}`);
+    console.error(`Error: hal.config.json already exists in ${cwd}`);
     process.exit(1);
   }
 
-  await mkdir(telegrappDir, { recursive: true });
   await writeFile(configPath, CONFIG_TEMPLATE, "utf-8");
-  console.log(`Created .telegrapp/config.json in ${cwd}`);
+  console.log(`Created hal.config.json in ${cwd}`);
   console.log(`\nNext steps:`);
   console.log(
-    `1. Edit .telegrapp/config.json and set your Telegram bot token in projects[0].telegram.botToken`,
+    `1. Edit hal.config.json and set your Telegram bot token in projects[0].telegram.botToken`,
   );
   console.log(`2. Set the project cwd to the folder Claude should work in`);
   console.log(`3. Add allowed user IDs to the "allowedUserIds" array`);
-  console.log(`4. Run: npx @marcopeg/telegrapp --cwd ${cwd}`);
+  console.log(`4. Run: npx @marcopeg/hal --cwd ${cwd}`);
   process.exit(0);
 }
 
@@ -170,7 +168,7 @@ async function runStart(configDir: string): Promise<void> {
 
   // Boot-time sourcing log
   const sourceLines = loadedFiles.map((f, i) => {
-    const isLocal = f.endsWith("config.local.json");
+    const isLocal = f.endsWith("hal.config.local.json");
     const suffix = isLocal ? "  [local override]" : "";
     return `  ${i + 1}. ${f}${suffix}`;
   });

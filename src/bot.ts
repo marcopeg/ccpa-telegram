@@ -26,7 +26,7 @@ function checkClaudeCommand(command: string): void {
     throw new Error(
       `Claude CLI command "${command}" not found or not executable. ` +
         `Please ensure Claude Code is installed and the command is in your PATH. ` +
-        `You can also set a custom command in .telegrapp/config.json under "claude.command".`,
+        `You can also set a custom command in hal.config.json under "claude.command".`,
     );
   }
 }

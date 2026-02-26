@@ -1,4 +1,4 @@
-# telegrapp
+# HAL
 
 Telegram bot that runs Claude Code as a personal assistant.
 
@@ -24,7 +24,7 @@ pnpm run lint:fix  # Fix linting and formatting
 
 - `src/cli.ts` - CLI entry point
 - `src/bot.ts` - Bot initialization
-- `src/config.ts` - Configuration loading (.telegrapp/config.json + env vars)
+- `src/config.ts` - Configuration loading (hal.config.json + env vars)
 - `src/bot/handlers/` - Message handlers (text, photo, document)
 - `src/bot/commands/` - Bot commands (/start, /help, /clear)
 - `src/claude/` - Claude Code CLI integration
@@ -32,7 +32,7 @@ pnpm run lint:fix  # Fix linting and formatting
 
 ## Key Patterns
 
-- Config loaded from `.telegrapp/config.json` with env var overrides
-- User data stored in `.telegrapp/users/{userId}/`
+- Config loaded from `hal.config.json` with env var overrides
+- User data stored in `.hal/users/{userId}/`
 - Claude runs as subprocess reading config from working directory
 - Streaming JSON output parsed for progress updates

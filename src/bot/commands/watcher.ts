@@ -22,8 +22,8 @@ export function startCommandWatcher(
   logger: pino.Logger,
   skillsDir?: string,
 ): CommandWatcher {
-  const projectCommandDir = join(projectCwd, ".telegrapp", "commands");
-  const globalCommandDir = join(configDir, ".telegrapp", "commands");
+  const projectCommandDir = join(projectCwd, ".hal", "commands");
+  const globalCommandDir = join(configDir, ".hal", "commands");
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 

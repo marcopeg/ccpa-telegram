@@ -1,10 +1,10 @@
 {
-  "name": "@marcopeg/telegrapp",
+  "name": "@marcopeg/hal",
   "version": "1.0.10",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "telegrapp": "dist/cli.js"
+    "hal": "dist/cli.js"
   },
   "files": [
     "dist",

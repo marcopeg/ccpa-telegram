@@ -166,10 +166,10 @@ function resolveDataDir(
   slug: string,
 ): string {
   if (!dataDirRaw) {
-    return resolve(projectCwd, ".telegrapp", "users");
+    return resolve(projectCwd, ".hal", "users");
   }
   if (dataDirRaw === "~") {
-    return resolve(configDir, ".telegrapp", slug, "data");
+    return resolve(configDir, ".hal", slug, "data");
   }
   if (isAbsolute(dataDirRaw)) {
     return dataDirRaw;
@@ -190,7 +190,7 @@ export function resolveProjectConfig(
     : resolve(configDir, project.cwd);
 
   const slug = deriveSlug(project.name, project.cwd);
-  const logDir = resolve(configDir, ".telegrapp", "logs", slug);
+  const logDir = resolve(configDir, ".hal", "logs", slug);
 
   const dataDir = resolveDataDir(
     project.dataDir ?? globals.dataDir,
@@ -304,8 +304,6 @@ function loadEnvFiles(configDir: string, projectCwds: string[]): EnvSources {
   // Config-dir .env files (higher priority)
   candidates.push(join(configDir, ".env"));
   candidates.push(join(configDir, ".env.local"));
-  candidates.push(join(configDir, ".telegrapp", ".env"));
-  candidates.push(join(configDir, ".telegrapp", ".env.local"));
 
   for (const filePath of candidates) {
     if (!existsSync(filePath)) continue;
@@ -401,7 +399,7 @@ function deepMerge<T extends object>(base: T, override: Partial<T>): T {
 // ─── Phase 3: Local config loading ───────────────────────────────────────────
 
 function loadLocalConfig(configDir: string): LocalConfigFile | null {
-  const localPath = join(configDir, ".telegrapp", "config.local.json");
+  const localPath = join(configDir, "hal.config.local.json");
   if (!existsSync(localPath)) return null;
 
   let raw: unknown;
@@ -410,7 +408,7 @@ function loadLocalConfig(configDir: string): LocalConfigFile | null {
     raw = JSON.parse(content);
   } catch (err) {
     console.error(
-      `Configuration error: failed to read .telegrapp/config.local.json — ${err instanceof Error ? err.message : String(err)}`,
+      `Configuration error: failed to read hal.config.local.json — ${err instanceof Error ? err.message : String(err)}`,
     );
     process.exit(1);
   }
@@ -420,9 +418,7 @@ function loadLocalConfig(configDir: string): LocalConfigFile | null {
     const issues = result.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    console.error(
-      `Configuration error in .telegrapp/config.local.json:\n${issues}`,
-    );
+    console.error(`Configuration error in hal.config.local.json:\n${issues}`);
     process.exit(1);
   }
 
@@ -464,8 +460,8 @@ function mergeLocalIntoBase(
 
     if (idx === -1) {
       console.error(
-        `Configuration error: local project "${matchKey}" not found in .telegrapp/config.json.\n` +
-          `  Every entry in .telegrapp/config.local.json projects must match a base project by name or cwd.`,
+        `Configuration error: local project "${matchKey}" not found in hal.config.json.\n` +
+          `  Every entry in hal.config.local.json projects must match a base project by name or cwd.`,
       );
       process.exit(1);
     }
@@ -486,15 +482,15 @@ function mergeLocalIntoBase(
 // ─── Phase 4: Config file loading (public API) ────────────────────────────────
 
 export function loadMultiConfig(configDir: string): LoadedConfigResult {
-  const configPath = join(configDir, ".telegrapp", "config.json");
-  const localPath = join(configDir, ".telegrapp", "config.local.json");
+  const configPath = join(configDir, "hal.config.json");
+  const localPath = join(configDir, "hal.config.local.json");
   const loadedFiles: string[] = [];
 
   // 1. Load base config
   if (!existsSync(configPath)) {
     console.error(
-      `Configuration error: .telegrapp/config.json not found in ${configDir}\n` +
-        `Run "npx @marcopeg/telegrapp init" to create one.`,
+      `Configuration error: hal.config.json not found in ${configDir}\n` +
+        `Run "npx @marcopeg/hal init" to create one.`,
     );
     process.exit(1);
   }
@@ -505,7 +501,7 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
     rawBase = JSON.parse(content);
   } catch (err) {
     console.error(
-      `Configuration error: failed to read .telegrapp/config.json — ${err instanceof Error ? err.message : String(err)}`,
+      `Configuration error: failed to read hal.config.json — ${err instanceof Error ? err.message : String(err)}`,
     );
     process.exit(1);
   }
@@ -518,7 +514,7 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
     const issues = baseResult.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    console.error(`Configuration error in .telegrapp/config.json:\n${issues}`);
+    console.error(`Configuration error in hal.config.json:\n${issues}`);
     process.exit(1);
   }
 

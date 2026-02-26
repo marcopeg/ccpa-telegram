@@ -26,6 +26,6 @@ data/
 **/.env
 **/.env.local
 
-# Telegrapp runtime data
-**/.telegrapp/logs/
-**/.telegrapp/users/
+# HAL runtime data
+**/.hal/logs/
+**/.hal/users/
