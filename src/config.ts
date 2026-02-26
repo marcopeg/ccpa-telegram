@@ -68,6 +68,7 @@ const GlobalsFileSchema = z
 
 const ProjectFileSchema = z.object({
   name: z.string().optional(),
+  active: z.boolean().optional(),
   cwd: z.string().min(1, "project.cwd is required"),
   telegram: z.object({
     botToken: z.string().min(1, "project.telegram.botToken is required"),

@@ -26,11 +26,12 @@ export function createTextHandler(ctx: ProjectContext) {
       return;
     }
 
-    logger.debug(
+    logger.info(
       {
         userId,
         username: gramCtx.from?.username,
         name: gramCtx.from?.first_name,
+        message: messageText,
       },
       "Message received",
     );
@@ -202,7 +203,7 @@ export function createTextHandler(ctx: ProjectContext) {
 
       const downloadsPath = getDownloadsPath(userDir);
 
-      logger.debug("Executing engine query");
+      logger.info("Executing engine query");
       const result = await ctx.engine.execute(
         {
           prompt: messageText,
@@ -214,8 +215,12 @@ export function createTextHandler(ctx: ProjectContext) {
         },
         ctx,
       );
-      logger.debug(
-        { success: result.success, error: result.error },
+      logger.info(
+        {
+          success: result.success,
+          error: result.error,
+          response: result.output?.slice(0, 200),
+        },
         "Engine result",
       );
 

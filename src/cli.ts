@@ -207,11 +207,22 @@ async function runStart(configDir: string): Promise<void> {
   const { config: multiConfig, loadedFiles } = loadMultiConfig(configDir);
   const globals = multiConfig.globals ?? {};
 
-  // Resolve all project configs
+  // Resolve all project configs, skip inactive ones
   const rootContext = multiConfig.context;
-  const resolvedProjects = multiConfig.projects.map((project) =>
+  const allProjects = multiConfig.projects.map((project) =>
     resolveProjectConfig(project, globals, configDir, rootContext),
   );
+
+  const resolvedProjects = allProjects.filter((_, i) => {
+    const project = multiConfig.projects[i];
+    if (project.active === false) {
+      startupLogger.info(
+        `Skipping inactive project "${project.name ?? project.cwd}"`,
+      );
+      return false;
+    }
+    return true;
+  });
 
   // Boot-time validation (unique cwds, tokens, names)
   validateProjects(resolvedProjects);

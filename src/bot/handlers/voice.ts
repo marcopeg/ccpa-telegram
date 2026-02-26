@@ -60,7 +60,7 @@ export function createVoiceHandler(ctx: ProjectContext) {
       return;
     }
 
-    logger.debug(
+    logger.info(
       { userId, duration: voice.duration, fileSize: voice.file_size },
       "Voice message received",
     );
@@ -166,7 +166,7 @@ export function createVoiceHandler(ctx: ProjectContext) {
 
       const downloadsPath = getDownloadsPath(userDir);
 
-      logger.debug(
+      logger.info(
         { transcription: transcription.text },
         "Executing engine query",
       );

@@ -78,7 +78,7 @@ export function createDocumentHandler(ctx: ProjectContext) {
       return;
     }
 
-    logger.debug({ fileName, mimeType }, "Document received");
+    logger.info({ fileName, mimeType }, "Document received");
 
     const userDir = resolve(join(config.dataDir, String(userId)));
 
@@ -133,7 +133,7 @@ export function createDocumentHandler(ctx: ProjectContext) {
 
       const downloadsPath = getDownloadsPath(userDir);
 
-      logger.debug("Executing engine query with document");
+      logger.info("Executing engine query with document");
       const result = await ctx.engine.execute(
         { prompt, gramCtx, userDir, downloadsPath, sessionId, onProgress },
         ctx,

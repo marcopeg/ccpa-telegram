@@ -26,7 +26,7 @@ export function createPhotoHandler(ctx: ProjectContext) {
       return;
     }
 
-    logger.debug({ userId }, "Photo received");
+    logger.info({ userId }, "Photo received");
 
     const userDir = resolve(join(config.dataDir, String(userId)));
 
@@ -84,7 +84,7 @@ export function createPhotoHandler(ctx: ProjectContext) {
 
       const downloadsPath = getDownloadsPath(userDir);
 
-      logger.debug("Executing engine query with image");
+      logger.info("Executing engine query with image");
       const result = await ctx.engine.execute(
         { prompt, gramCtx, userDir, downloadsPath, sessionId, onProgress },
         ctx,

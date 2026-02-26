@@ -47,7 +47,7 @@ export function createCopilotAdapter(
       //   --allow-all     Enable all permissions (tools + paths + urls)
       //   --model <model> Override the AI model
       //   --resume [id]   Resume a previous session
-      const args: string[] = ["-p", fullPrompt, "-s", "--allow-all"];
+      const args: string[] = ["-p", fullPrompt, "--allow-all"];
 
       // Set model if specified
       if (model) {
@@ -87,12 +87,12 @@ export function createCopilotAdapter(
           const chunk = data.toString().trim();
           if (chunk) {
             stderrOutput += `${chunk}\n`;
-            logger.debug({ stderr: chunk }, "Copilot stderr");
+            logger.info({ stderr: chunk }, "Copilot stderr");
           }
         });
 
         proc.on("close", (code) => {
-          logger.debug({ code }, "Copilot process closed");
+          logger.info({ code }, "Copilot process closed");
 
           if (code === 0) {
             resolve({

@@ -1,38 +1,54 @@
 # HAL
 
-A Telegram bot that provides access to Claude Code as a personal assistant. Run Claude Code across multiple projects simultaneously, each with its own dedicated Telegram bot.
+A Telegram bot that provides access to AI coding agents as a personal assistant. Run multiple engines (Claude Code, GitHub Copilot, and more) across multiple projects simultaneously, each with its own dedicated Telegram bot.
 
 ## Features
 
+- **Multi-engine support** — use Claude Code, GitHub Copilot, Codex, or OpenCode per project
 - **Multi-project support** — run multiple bots from a single config, each connected to a different directory
-- Chat with Claude Code via Telegram
+- Chat with your AI coding agent via Telegram
 - Send images and documents for analysis
 - **Voice message support** with local Whisper transcription
-- **File sending** — Claude can send files back to you
+- **File sending** — the engine can send files back to you
 - **Context injection** — every message includes metadata (timestamps, user info, custom values) and supports hot-reloaded hooks
-- **Custom slash commands** — add `.mjs` command files per-project or globally; hot-reloaded so Claude can create new commands at runtime
-- **Skills** — Claude Code `.claude/skills/` entries are automatically exposed as Telegram slash commands; no extra setup needed
+- **Custom slash commands** — add `.mjs` command files per-project or globally; hot-reloaded so the engine can create new commands at runtime
+- **Skills** — `.claude/skills/` entries are automatically exposed as Telegram slash commands; no extra setup needed
 - Persistent conversation sessions per user
 - Per-project access control, rate limiting, and logging
 - Log persistence to file with daily rotation support
 
 ## How It Works
 
-This tool runs one Claude Code subprocess per project, each in its configured working directory. Claude Code reads all its standard config files from that directory:
+This tool runs one AI coding agent subprocess per project, each in its configured working directory. The default engine is Claude Code, but each project can use a different engine.
 
-- `CLAUDE.md` — Project-specific instructions and context
-- `.claude/settings.json` — Permissions and tool settings
+The engine reads its standard config files from the project directory:
+
+- `CLAUDE.md` / `AGENTS.md` — Project-specific instructions and context (filename depends on engine)
+- `.claude/settings.json` — Permissions and tool settings (Claude Code)
 - `.claude/commands/` — Custom slash commands
 - `.mcp.json` — MCP server configurations
 
-You get the full power of Claude Code — file access, code execution, configured MCP tools — all accessible through Telegram.
+You get the full power of your chosen AI coding agent — file access, code execution, configured MCP tools — all accessible through Telegram.
 
-See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) for details on Claude Code configuration.
+### Supported Engines
+
+| Engine | CLI Command | Status | Instructions File |
+|--------|-------------|--------|-------------------|
+| **Claude Code** | `claude` | Full support | `CLAUDE.md` |
+| **GitHub Copilot** | `copilot` | Full support | `AGENTS.md` |
+| **Codex** | `codex` | Stub (basic prompt/response) | `AGENTS.md` |
+| **OpenCode** | `opencode` | Stub (basic prompt/response) | `AGENTS.md` |
+
+See [Engine Configuration](#engine-configuration) for setup details.
+
+See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) and [GitHub Copilot CLI documentation](https://docs.github.com/en/copilot/concepts/agents/copilot-cli) for engine-specific configuration.
 
 ## Prerequisites
 
 - Node.js 18+
-- [Claude Code CLI](https://github.com/anthropics/claude-code) installed and authenticated
+- At least one supported AI coding CLI installed and authenticated:
+  - [Claude Code CLI](https://github.com/anthropics/claude-code) — `claude`
+  - [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/copilot-cli) — `copilot`
 - A Telegram bot token per project (from [@BotFather](https://t.me/BotFather)) — see [Creating a Telegram Bot](#creating-a-telegram-bot)
 - **ffmpeg** (required for voice messages) — `brew install ffmpeg` on macOS
 
@@ -41,6 +57,9 @@ See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) 
 ```bash
 # Create hal.config.json in the current directory
 npx @marcopeg/hal init
+
+# Initialize with a specific engine
+npx @marcopeg/hal init --engine copilot
 
 # Edit hal.config.json: add your bot token and project path
 # then start all bots
@@ -66,7 +85,7 @@ Create a `hal.config.json` in your workspace directory (where you run the CLI fr
 ```json
 {
   "globals": {
-    "claude": { "command": "claude" },
+    "engine": { "name": "claude" },
     "logging": { "level": "info", "flow": true, "persist": false },
     "rateLimit": { "max": 10, "windowMs": 60000 },
     "access": { "allowedUserIds": [] }
@@ -82,6 +101,7 @@ Create a `hal.config.json` in your workspace directory (where you run the CLI fr
     {
       "name": "frontend",
       "cwd": "./frontend",
+      "engine": { "name": "copilot", "model": "gpt-5-mini" },
       "telegram": { "botToken": "${FRONTEND_BOT_TOKEN}" },
       "access": { "allowedUserIds": [123456789] }
     }
@@ -133,7 +153,7 @@ On every boot an `info`-level log lists all config and env files that were loade
 
 ### Context Injection
 
-Every message sent to Claude is automatically enriched with a structured context header. This provides metadata (message info, timestamps, custom values) so Claude can reason about the current request without extra tool calls.
+Every message sent to the engine is automatically enriched with a structured context header. This provides metadata (message info, timestamps, custom values) so the AI can reason about the current request without extra tool calls.
 
 #### Implicit context (always-on)
 
@@ -151,7 +171,7 @@ These keys are injected for every message, even without any `context` configurat
 | `bot.messageType` | `text` / `photo` / `document` / `voice` |
 | `project.name` | Project name (falls back to internal slug if not set) |
 | `project.cwd` | Resolved absolute project working directory |
-| `project.slug` | Claude Code-compatible slug (full path with `/` → `-`) |
+| `project.slug` | Project slug (full path with `/` → `-`) |
 | `sys.datetime` | Current local datetime with timezone |
 | `sys.date` | Current date, `YYYY-MM-DD` |
 | `sys.time` | Current time, `HH:MM:SS` |
@@ -205,7 +225,7 @@ For advanced enrichment, you can provide a `context.mjs` hook file that transfor
 | `{configDir}/.hal/hooks/context.mjs` | Global — runs for all projects |
 | `{project.cwd}/.hal/hooks/context.mjs` | Project — runs for that project only |
 
-When both exist, they chain: global runs first, its output feeds into the project hook. Both are **hot-reloaded** on every message (no restart needed) — so Claude Code itself can create or modify hooks at runtime.
+When both exist, they chain: global runs first, its output feeds into the project hook. Both are **hot-reloaded** on every message (no restart needed) — so the AI engine itself can create or modify hooks at runtime.
 
 ```js
 // .hal/hooks/context.mjs
@@ -217,12 +237,12 @@ export default async (context) => ({
 ```
 
 - **Input**: fully-resolved `Record<string, string>` context
-- **Output**: a `Record<string, string>` — the final context passed to Claude
+- **Output**: a `Record<string, string>` — the final context passed to the engine
 - If a hook throws, the bot logs the error and falls back to the pre-hook context
 
 #### Prompt format
 
-The resolved context is prepended to the user message before passing to Claude:
+The resolved context is prepended to the user message before passing to the engine:
 
 ```
 # Context
@@ -240,7 +260,9 @@ Default settings applied to all projects. Any setting defined in a project overr
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `globals.claude.command` | Claude CLI command | `"claude"` |
+| `globals.engine.name` | Engine: `claude`, `copilot`, `codex`, `opencode` | `"claude"` |
+| `globals.engine.command` | Override the CLI command path | _(engine name)_ |
+| `globals.engine.model` | Override the AI model | _(engine default)_ |
 | `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
 | `globals.logging.flow` | Write logs to terminal | `true` |
 | `globals.logging.persist` | Write logs to file | `false` |
@@ -258,16 +280,13 @@ Each project entry creates one Telegram bot connected to one directory.
 | Key | Required | Description |
 |-----|----------|-------------|
 | `name` | No | Unique identifier used as a slug for logs/data paths |
+| `active` | No | Set to `false` to skip this project at boot (default: `true`) |
 | `cwd` | **Yes** | Path to the project directory (relative to config file, or absolute) |
 | `telegram.botToken` | **Yes** | Telegram bot token from BotFather |
 | `access.allowedUserIds` | No | Override the global user whitelist for this bot |
-| `claude.command` | No | Override the Claude CLI command |
-| `logging.level` | No | Override log level |
-| `logging.flow` | No | Override terminal logging |
-| `logging.persist` | No | Override file logging |
-| `rateLimit.max` | No | Override rate limit max |
-| `rateLimit.windowMs` | No | Override rate limit window |
-| `transcription.model` | No | Override Whisper model |
+| `engine.name` | No | Override the engine for this project |
+| `engine.command` | No | Override the CLI command path |
+| `engine.model` | No | Override the AI model |
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context Injection](#context-injection)) |
@@ -293,6 +312,76 @@ When `logging.persist: true`, logs are written to:
 ```
 <config-dir>/.hal/logs/<project-slug>/YYYY-MM-DD.txt
 ```
+
+### Engine Configuration
+
+Set the engine globally or per-project. The engine determines which AI coding CLI is invoked for each message.
+
+```json
+{
+  "globals": {
+    "engine": { "name": "claude" }
+  },
+  "projects": [
+    {
+      "name": "backend",
+      "cwd": "./backend",
+      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" }
+    },
+    {
+      "name": "frontend",
+      "cwd": "./frontend",
+      "engine": { "name": "copilot", "model": "gpt-5-mini" },
+      "telegram": { "botToken": "${FRONTEND_BOT_TOKEN}" }
+    },
+    {
+      "name": "legacy",
+      "active": false,
+      "cwd": "./legacy",
+      "telegram": { "botToken": "${LEGACY_BOT_TOKEN}" }
+    }
+  ]
+}
+```
+
+In this example:
+- **backend** inherits the global engine (Claude Code, default model)
+- **frontend** uses GitHub Copilot with the `gpt-5-mini` model
+- **legacy** is inactive and will be skipped at boot
+
+The `engine` object supports three fields:
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `name` | Engine identifier: `claude`, `copilot`, `codex`, `opencode` | `"claude"` |
+| `command` | Custom path to the CLI binary | _(engine name)_ |
+| `model` | AI model override (omit to use the engine's default) | _(engine default)_ |
+
+#### GitHub Copilot Models
+
+When using the `copilot` engine, the following models are available via `engine.model`:
+
+| Model | Description |
+|-------|-------------|
+| `claude-sonnet-4.6` | Anthropic Claude Sonnet 4.6 |
+| `claude-sonnet-4.5` | Anthropic Claude Sonnet 4.5 |
+| `claude-haiku-4.5` | Anthropic Claude Haiku 4.5 |
+| `claude-opus-4.6` | Anthropic Claude Opus 4.6 |
+| `claude-opus-4.6-fast` | Anthropic Claude Opus 4.6 (fast) |
+| `claude-opus-4.5` | Anthropic Claude Opus 4.5 |
+| `claude-sonnet-4` | Anthropic Claude Sonnet 4 |
+| `gemini-3-pro-preview` | Google Gemini 3 Pro (preview) |
+| `gpt-5.3-codex` | OpenAI GPT-5.3 Codex |
+| `gpt-5.2-codex` | OpenAI GPT-5.2 Codex |
+| `gpt-5.2` | OpenAI GPT-5.2 |
+| `gpt-5.1-codex-max` | OpenAI GPT-5.1 Codex Max |
+| `gpt-5.1-codex` | OpenAI GPT-5.1 Codex |
+| `gpt-5.1` | OpenAI GPT-5.1 |
+| `gpt-5.1-codex-mini` | OpenAI GPT-5.1 Codex Mini |
+| `gpt-5-mini` | OpenAI GPT-5 Mini |
+| `gpt-4.1` | OpenAI GPT-4.1 |
+
+If `engine.model` is omitted, the engine uses its own default model.
 
 ## Directory Structure
 
@@ -400,7 +489,7 @@ Tokens following the command name, split on whitespace.
 
 #### `ctx: Record<string, string>`
 
-The fully-resolved context that would be sent to the AI for this message — identical to what Claude sees in its `# Context` header. Includes all implicit keys plus any config vars and hook results:
+The fully-resolved context that would be sent to the AI for this message — identical to what the engine sees in its `# Context` header. Includes all implicit keys plus any config vars and hook results:
 
 | Key group | Description |
 |-----------|-------------|
@@ -504,7 +593,7 @@ The project-level context object. Useful fields:
 
 ### Skills
 
-[Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) live in `.claude/skills/` inside the project directory. Each skill is a folder containing a `SKILL.md` file with a YAML frontmatter block and a prompt body:
+[Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) live in `.claude/skills/` inside the project directory (shared across all engines). Each skill is a folder containing a `SKILL.md` file with a YAML frontmatter block and a prompt body:
 
 ```
 <project-cwd>/
@@ -544,7 +633,7 @@ See [`examples/obsidian/.claude/skills/chuck/`](examples/obsidian/.claude/skills
 
 ### Hot-reload
 
-Commands and skills are **hot-reloaded** — drop a new `.mjs` file or `SKILL.md` into the relevant directory and the bot registers it with Telegram automatically, with no restart. This means Claude can write new command or skill files as part of a task and users see them in the `/` menu immediately.
+Commands and skills are **hot-reloaded** — drop a new `.mjs` file or `SKILL.md` into the relevant directory and the bot registers it with Telegram automatically, with no restart. This means the AI engine can write new command or skill files as part of a task and users see them in the `/` menu immediately.
 
 ## Creating a Telegram Bot
 
@@ -599,10 +688,10 @@ Voice messages are transcribed locally using [Whisper](https://github.com/openai
 
 ## Sending Files to Users
 
-Claude can send files back through Telegram. Each user has a `downloads/` folder under their data directory. Claude is informed of this path in every prompt.
+The engine can send files back through Telegram. Each user has a `downloads/` folder under their data directory. The engine is informed of this path in every prompt.
 
-1. Claude writes a file to the downloads folder
-2. The bot detects it after Claude's response completes
+1. The engine writes a file to the downloads folder
+2. The bot detects it after the engine's response completes
 3. The file is sent via Telegram (as a document)
 4. The file is deleted from the server after delivery
 
@@ -624,7 +713,7 @@ The old single-project config format is no longer supported. Migrate by wrapping
 ```json
 {
   "globals": {
-    "claude": { "command": "claude" },
+    "engine": { "name": "claude" },
     "logging": { "level": "info" }
   },
   "projects": [
