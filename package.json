@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "tsx watch src/cli.ts start --cwd examples/basic",
     "start": "tsx src/cli.ts start --cwd examples/basic",
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src",
     "lint:fix": "biome check --write src",
