@@ -58,7 +58,7 @@ npx ccpa-telegram --cwd ./workspace
 
 ### ccpa.config.json
 
-Create a `ccpa.config.json` in your workspace directory (where you run the CLI from):
+Create a `ccpa.config.json` in your workspace directory (where you run the CLI from). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead.
 
 ```json
 {
@@ -72,19 +72,61 @@ Create a `ccpa.config.json` in your workspace directory (where you run the CLI f
     {
       "name": "backend",
       "cwd": "./backend",
-      "telegram": { "botToken": "YOUR_BOT_TOKEN_HERE" },
+      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" },
       "access": { "allowedUserIds": [123456789] },
       "logging": { "persist": true }
     },
     {
       "name": "frontend",
       "cwd": "./frontend",
-      "telegram": { "botToken": "ANOTHER_BOT_TOKEN" },
+      "telegram": { "botToken": "${FRONTEND_BOT_TOKEN}" },
       "access": { "allowedUserIds": [123456789] }
     }
   ]
 }
 ```
+
+### ccpa.config.local.json
+
+An optional `ccpa.config.local.json` placed next to `ccpa.config.json` is deep-merged on top of the base config at boot time. It is gitignored and is the recommended place for machine-specific values or secrets that you don't want committed.
+
+Every field is optional. Project entries are matched to base projects by `name` (preferred) or `cwd` — they cannot introduce new projects.
+
+```json
+{
+  "projects": [
+    {
+      "name": "backend",
+      "telegram": { "botToken": "7123456789:AAHActual-token-here" },
+      "logging": { "persist": true }
+    }
+  ]
+}
+```
+
+### Environment variable substitution
+
+Any string value in `ccpa.config.json` or `ccpa.config.local.json` can reference an environment variable with `${VAR_NAME}` syntax. Variables are resolved at boot time from the following sources in priority order (first match wins):
+
+1. `<config-dir>/.env.local` _(gitignored)_
+2. `<config-dir>/.env`
+3. `<project-cwd>/.env.local` _(gitignored)_
+4. `<project-cwd>/.env`
+5. Shell environment (`process.env`)
+
+```bash
+# .env  (safe to commit — no real secrets)
+BACKEND_BOT_TOKEN=
+FRONTEND_BOT_TOKEN=
+
+# .env.local  (gitignored — real secrets go here)
+BACKEND_BOT_TOKEN=7123456789:AAHActual-token-here
+FRONTEND_BOT_TOKEN=7987654321:AAHAnother-token-here
+```
+
+If a referenced variable cannot be resolved from any source the bot exits at boot with a clear error message naming the variable and the config field that references it.
+
+On every boot an `info`-level log lists all config and env files that were loaded, in resolution order, so you can always see exactly where each value came from.
 
 ### `globals`
 
@@ -152,6 +194,9 @@ With a config at `~/workspace/ccpa.config.json`:
 ```
 ~/workspace/
 ├── ccpa.config.json
+├── ccpa.config.local.json   (gitignored — local overrides / secrets)
+├── .env                     (variable declarations, safe to commit)
+├── .env.local               (gitignored — actual secret values)
 ├── .ccpa/
 │   ├── backend/
 │   │   └── logs/
@@ -203,7 +248,7 @@ npx ccpa-telegram --cwd ./workspace
 2. Send `/newbot`
 3. Choose a display name (e.g. "My Backend Assistant")
 4. Choose a username ending in `bot` (e.g. `my_backend_assistant_bot`)
-5. Copy the token to your `ccpa.config.json`
+5. Add the token to `.env.local` and reference it via `${VAR_NAME}` in `ccpa.config.json`
 
 For each project you need a separate bot and token.
 
@@ -288,7 +333,7 @@ The old single-project config format is no longer supported. Migrate by wrapping
 }
 ```
 
-> **Note:** Environment variable overrides (`TELEGRAM_BOT_TOKEN`, `ALLOWED_USER_IDS`, etc.) are no longer supported. Configure everything in `ccpa.config.json`.
+> **Note:** Named environment variable overrides from v1 (`TELEGRAM_BOT_TOKEN`, `ALLOWED_USER_IDS`, etc.) are no longer supported. Use `${VAR_NAME}` substitution in `ccpa.config.json` instead — see [Environment variable substitution](#environment-variable-substitution).
 
 ## Security Notice
 
