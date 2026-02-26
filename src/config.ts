@@ -23,13 +23,24 @@ const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
 
 // ─── Globals schema (all fields optional) ─────────────────────────────────────
 
+const EngineNameSchema = z.enum(["claude", "copilot", "codex", "opencode"]);
+
+const EngineConfigSchema = z
+  .object({
+    name: EngineNameSchema,
+    command: z.string(),
+    model: z.string(),
+  })
+  .partial()
+  .optional();
+
 const GlobalsFileSchema = z
   .object({
     access: z
       .object({ allowedUserIds: z.array(z.number()) })
       .partial()
       .optional(),
-    claude: z.object({ command: z.string() }).partial().optional(),
+    engine: EngineConfigSchema,
     logging: z
       .object({
         level: LogLevelSchema,
@@ -65,7 +76,7 @@ const ProjectFileSchema = z.object({
     .object({ allowedUserIds: z.array(z.number()) })
     .partial()
     .optional(),
-  claude: z.object({ command: z.string() }).partial().optional(),
+  engine: EngineConfigSchema,
   logging: z
     .object({
       level: LogLevelSchema,
@@ -121,6 +132,8 @@ type LocalConfigFile = NonNullable<z.infer<typeof LocalConfigFileSchema>>;
 
 // ─── Resolved project config (what the rest of the app uses) ──────────────────
 
+export type EngineName = z.infer<typeof EngineNameSchema>;
+
 export interface ResolvedProjectConfig {
   slug: string;
   name: string | undefined;
@@ -130,7 +143,9 @@ export interface ResolvedProjectConfig {
   logDir: string;
   telegram: { botToken: string };
   access: { allowedUserIds: number[] };
-  claude: { command: string };
+  engine: EngineName;
+  engineCommand: string;
+  engineModel: string | undefined;
   logging: { level: string; flow: boolean; persist: boolean };
   rateLimit: { max: number; windowMs: number };
   transcription: { model: string; showTranscription: boolean } | undefined;
@@ -216,9 +231,16 @@ export function resolveProjectConfig(
       allowedUserIds:
         project.access?.allowedUserIds ?? globals.access?.allowedUserIds ?? [],
     },
-    claude: {
-      command: project.claude?.command ?? globals.claude?.command ?? "claude",
-    },
+    engine: (project.engine?.name ??
+      globals.engine?.name ??
+      "claude") as EngineName,
+    engineCommand:
+      project.engine?.command ??
+      globals.engine?.command ??
+      project.engine?.name ??
+      globals.engine?.name ??
+      "claude",
+    engineModel: project.engine?.model ?? globals.engine?.model,
     logging: {
       level: project.logging?.level ?? globals.logging?.level ?? "info",
       flow: project.logging?.flow ?? globals.logging?.flow ?? true,

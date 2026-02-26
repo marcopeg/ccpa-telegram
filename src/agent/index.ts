@@ -1,28 +1,29 @@
 import { join } from "node:path";
-import { executeClaudeQuery } from "../claude/executor.js";
 import type { Agent, ProjectContext } from "../types.js";
 
 /**
  * Return the engine-specific skills directory for the given project.
- * Today Claude Code stores skills in `.claude/skills/`.
- * When new engines are supported this function will branch on the engine type.
+ * Delegates to the engine adapter attached to the project context.
+ * Falls back to .claude/skills/ when no engine is available (e.g. during init).
  */
-export function getSkillsDir(projectCwd: string): string {
+export function getSkillsDir(projectCwd: string, ctx?: ProjectContext): string {
+  if (ctx?.engine) {
+    return ctx.engine.skillsDir(projectCwd);
+  }
   return join(projectCwd, ".claude", "skills");
 }
 
 /**
  * Create an Agent for the given project context.
  *
- * This factory is the single place where the underlying AI engine is selected.
- * Today it always returns a Claude Code-backed agent. When support for other
- * providers (Codex, Copilot, …) is added, engine selection will happen here
- * based on project config — command handlers never need to change.
+ * This factory delegates to the engine adapter on the project context.
+ * Command handlers never need to know which engine is in use.
  */
 export function createAgent(projectCtx: ProjectContext): Agent {
+  const { engine } = projectCtx;
   return {
     async call(prompt, options) {
-      const result = await executeClaudeQuery(
+      const result = await engine.execute(
         { prompt, userDir: "", onProgress: options?.onProgress },
         projectCtx,
       );

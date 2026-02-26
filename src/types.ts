@@ -1,10 +1,11 @@
 import type pino from "pino";
 import type { ResolvedProjectConfig } from "./config.js";
 import type { BootContext } from "./context/resolver.js";
+import type { EngineAdapter } from "./engine/types.js";
 
 /**
  * Engine-agnostic interface for making one-shot AI calls from command handlers.
- * The underlying provider (Claude Code, Codex, etc.) is an implementation detail.
+ * The underlying provider (Claude Code, Copilot, etc.) is an implementation detail.
  */
 export interface Agent {
   call(
@@ -21,4 +22,5 @@ export interface ProjectContext {
   config: ResolvedProjectConfig;
   logger: pino.Logger;
   bootContext: BootContext;
+  engine: EngineAdapter;
 }

@@ -1,8 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { Context } from "grammy";
-import { executeClaudeQuery } from "../../claude/executor.js";
-import { parseClaudeOutput } from "../../claude/parser.js";
 import { sendChunkedResponse } from "../../telegram/chunker.js";
 import { sendDownloadFiles } from "../../telegram/fileSender.js";
 import type { ProjectContext } from "../../types.js";
@@ -86,8 +84,8 @@ export function createPhotoHandler(ctx: ProjectContext) {
 
       const downloadsPath = getDownloadsPath(userDir);
 
-      logger.debug("Executing Claude query with image");
-      const result = await executeClaudeQuery(
+      logger.debug("Executing engine query with image");
+      const result = await ctx.engine.execute(
         { prompt, gramCtx, userDir, downloadsPath, sessionId, onProgress },
         ctx,
       );
@@ -98,7 +96,7 @@ export function createPhotoHandler(ctx: ProjectContext) {
         // Ignore delete errors
       }
 
-      const parsed = parseClaudeOutput(result);
+      const parsed = ctx.engine.parse(result);
 
       if (parsed.sessionId) {
         await saveSessionId(userDir, parsed.sessionId);

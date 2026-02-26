@@ -1,7 +1,6 @@
 import { join, resolve } from "node:path";
 import type { Context } from "grammy";
 import { createAgent, getSkillsDir } from "../../agent/index.js";
-import { executeClaudeQuery } from "../../claude/executor.js";
 import { resolveContext } from "../../context/resolver.js";
 import { sendChunkedResponse } from "../../telegram/chunker.js";
 import { sendDownloadFiles } from "../../telegram/fileSender.js";
@@ -96,7 +95,7 @@ export function createTextHandler(ctx: ProjectContext) {
         // No .mjs handler — check if this is a registered skill
         const skillEntry = await resolveSkillEntry(
           commandName,
-          getSkillsDir(config.cwd),
+          getSkillsDir(config.cwd, ctx),
           logger,
         );
 
@@ -203,8 +202,8 @@ export function createTextHandler(ctx: ProjectContext) {
 
       const downloadsPath = getDownloadsPath(userDir);
 
-      logger.debug("Executing Claude query");
-      const result = await executeClaudeQuery(
+      logger.debug("Executing engine query");
+      const result = await ctx.engine.execute(
         {
           prompt: messageText,
           gramCtx,
@@ -217,7 +216,7 @@ export function createTextHandler(ctx: ProjectContext) {
       );
       logger.debug(
         { success: result.success, error: result.error },
-        "Claude result",
+        "Engine result",
       );
 
       try {

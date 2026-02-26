@@ -10,15 +10,18 @@ import {
   validateProjects,
 } from "./config.js";
 import { evaluateBootTimeShells } from "./context/resolver.js";
+import { getEngine } from "./engine/index.js";
+import type { EngineName } from "./engine/types.js";
 import { createProjectLogger, createStartupLogger } from "./logger.js";
 import type { ProjectContext } from "./types.js";
 
 // ─── Config template ──────────────────────────────────────────────────────────
 
-const CONFIG_TEMPLATE = `{
+function buildConfigTemplate(engineName: EngineName): string {
+  return `{
   "globals": {
-    "claude": {
-      "command": "claude"
+    "engine": {
+      "name": "${engineName}"
     },
     "logging": {
       "level": "info",
@@ -47,8 +50,9 @@ const CONFIG_TEMPLATE = `{
   ]
 }
 `;
+}
 // Note: The "context" key can be added to globals or per-project to inject
-// metadata into every Claude prompt. Implicit context (bot.*, sys.*) is always
+// metadata into every prompt. Implicit context (bot.*, sys.*) is always
 // available. See the task docs or examples/ for details.
 
 // ─── CLI argument parsing ─────────────────────────────────────────────────────
@@ -56,11 +60,12 @@ const CONFIG_TEMPLATE = `{
 interface ParsedArgs {
   command: "start" | "init";
   cwd: string;
+  engine: EngineName;
 }
 
 function showHelp(): void {
   console.log(`
-HAL - Claude Code Personal Assistant for Telegram
+HAL - AI Code Personal Assistant for Telegram
 
 Usage:
   npx @marcopeg/hal [command] [options]
@@ -70,11 +75,13 @@ Commands:
   start           Start the bots (default)
 
 Options:
-  --cwd <path>    Directory containing hal.config.json (default: current directory)
-  --help, -h      Show this help message
+  --cwd <path>      Directory containing hal.config.json (default: current directory)
+  --engine <name>   Engine to use: claude, copilot, codex, opencode (default: claude)
+  --help, -h        Show this help message
 
 Examples:
   npx @marcopeg/hal init
+  npx @marcopeg/hal init --engine copilot
   npx @marcopeg/hal init --cwd ./workspace
   npx @marcopeg/hal
   npx @marcopeg/hal --cwd ./workspace
@@ -82,7 +89,7 @@ Examples:
 Configuration (hal.config.json):
   {
     "globals": {
-      "claude": { "command": "claude" },
+      "engine": { "name": "claude" },
       "logging": { "level": "info", "flow": true, "persist": false },
       "rateLimit": { "max": 10, "windowMs": 60000 }
     },
@@ -98,10 +105,18 @@ Configuration (hal.config.json):
 `);
 }
 
+const VALID_ENGINES: readonly EngineName[] = [
+  "claude",
+  "copilot",
+  "codex",
+  "opencode",
+];
+
 function parseArgs(): ParsedArgs {
   const args = process.argv.slice(2);
   let cwd = process.cwd();
   let command: "start" | "init" = "start";
+  let engine: EngineName = "claude";
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -111,6 +126,25 @@ function parseArgs(): ParsedArgs {
       i++;
     } else if (arg.startsWith("--cwd=")) {
       cwd = resolve(process.cwd(), arg.slice(6));
+    } else if (arg === "--engine" && args[i + 1]) {
+      const val = args[i + 1] as EngineName;
+      if (!VALID_ENGINES.includes(val)) {
+        console.error(
+          `Error: unknown engine "${val}". Valid engines: ${VALID_ENGINES.join(", ")}`,
+        );
+        process.exit(1);
+      }
+      engine = val;
+      i++;
+    } else if (arg.startsWith("--engine=")) {
+      const val = arg.slice(9) as EngineName;
+      if (!VALID_ENGINES.includes(val)) {
+        console.error(
+          `Error: unknown engine "${val}". Valid engines: ${VALID_ENGINES.join(", ")}`,
+        );
+        process.exit(1);
+      }
+      engine = val;
     } else if (arg === "--help" || arg === "-h") {
       showHelp();
       process.exit(0);
@@ -121,12 +155,12 @@ function parseArgs(): ParsedArgs {
     }
   }
 
-  return { command, cwd };
+  return { command, cwd, engine };
 }
 
 // ─── init command ─────────────────────────────────────────────────────────────
 
-async function runInit(cwd: string): Promise<void> {
+async function runInit(cwd: string, engineName: EngineName): Promise<void> {
   const configPath = join(cwd, "hal.config.json");
 
   if (existsSync(configPath)) {
@@ -134,13 +168,29 @@ async function runInit(cwd: string): Promise<void> {
     process.exit(1);
   }
 
-  await writeFile(configPath, CONFIG_TEMPLATE, "utf-8");
-  console.log(`Created hal.config.json in ${cwd}`);
+  // Write config with the selected engine
+  const template = buildConfigTemplate(engineName);
+  await writeFile(configPath, template, "utf-8");
+  console.log(`Created hal.config.json in ${cwd} (engine: ${engineName})`);
+
+  // Scaffold engine-specific instructions file
+  const engine = getEngine(engineName);
+  const instrFile = engine.instructionsFile();
+  const instrPath = join(cwd, instrFile);
+  if (!existsSync(instrPath)) {
+    await writeFile(
+      instrPath,
+      `# Project Instructions\n\nAdd your project-specific instructions here.\n`,
+      "utf-8",
+    );
+    console.log(`Created ${instrFile}`);
+  }
+
   console.log(`\nNext steps:`);
   console.log(
     `1. Edit hal.config.json and set your Telegram bot token in projects[0].telegram.botToken`,
   );
-  console.log(`2. Set the project cwd to the folder Claude should work in`);
+  console.log(`2. Set the project cwd to the folder the engine should work in`);
   console.log(`3. Add allowed user IDs to the "allowedUserIds" array`);
   console.log(`4. Run: npx @marcopeg/hal --cwd ${cwd}`);
   process.exit(0);
@@ -186,7 +236,12 @@ async function runStart(configDir: string): Promise<void> {
     const shellCache = config.context
       ? evaluateBootTimeShells(config.context, logger)
       : {};
-    return { config, logger, bootContext: { shellCache } };
+    const engine = getEngine(
+      config.engine,
+      config.engineCommand,
+      config.engineModel,
+    );
+    return { config, logger, bootContext: { shellCache }, engine };
   });
 
   // Emit startup notices for flow=false projects
@@ -227,10 +282,10 @@ async function runStart(configDir: string): Promise<void> {
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const { command, cwd } = parseArgs();
+  const { command, cwd, engine } = parseArgs();
 
   if (command === "init") {
-    await runInit(cwd);
+    await runInit(cwd, engine);
   } else {
     await runStart(cwd);
   }

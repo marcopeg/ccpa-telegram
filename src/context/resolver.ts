@@ -157,13 +157,14 @@ async function loadAndRunHook(
   }
 }
 
-// ─── Claude Code-compatible slug ────────────────────────────────────────────
+// ─── Project slug ───────────────────────────────────────────────────────────
 
 /**
- * Derives a slug from the absolute project cwd matching Claude Code's convention
- * for ~/.claude/projects/ folder names: full path with `/` → `-`, keeping leading `-`.
+ * Derives a slug from the absolute project cwd by converting path separators
+ * to dashes. Originally matched Claude Code's ~/.claude/projects/ convention;
+ * now used engine-independently for all projects.
  */
-function claudeSlug(absoluteCwd: string): string {
+function deriveProjectSlug(absoluteCwd: string): string {
   return absoluteCwd
     .replace(/[/\\]/g, "-")
     .replace(/[^a-zA-Z0-9_-]/g, "-")
@@ -187,7 +188,7 @@ export async function resolveContext(
   } = options;
 
   // 1. Implicit context (bot.* + sys.* + project.*)
-  const slug = claudeSlug(projectCwd);
+  const slug = deriveProjectSlug(projectCwd);
   const implicit = {
     ...buildImplicitContext(gramCtx),
     ...buildSystemContext(),

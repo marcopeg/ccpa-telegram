@@ -3,8 +3,6 @@ import { unlink, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import type { Context } from "grammy";
-import { executeClaudeQuery } from "../../claude/executor.js";
-import { parseClaudeOutput } from "../../claude/parser.js";
 import { sendChunkedResponse } from "../../telegram/chunker.js";
 import { sendDownloadFiles } from "../../telegram/fileSender.js";
 import { transcribeAudio } from "../../transcription/whisper.js";
@@ -170,9 +168,9 @@ export function createVoiceHandler(ctx: ProjectContext) {
 
       logger.debug(
         { transcription: transcription.text },
-        "Executing Claude query",
+        "Executing engine query",
       );
-      const result = await executeClaudeQuery(
+      const result = await ctx.engine.execute(
         {
           prompt: transcription.text,
           gramCtx,
@@ -190,7 +188,7 @@ export function createVoiceHandler(ctx: ProjectContext) {
         // Ignore delete errors
       }
 
-      const parsed = parseClaudeOutput(result);
+      const parsed = ctx.engine.parse(result);
 
       if (parsed.sessionId) {
         await saveSessionId(userDir, parsed.sessionId);

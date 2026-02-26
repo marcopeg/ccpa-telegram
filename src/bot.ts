@@ -1,6 +1,4 @@
-import { execSync } from "node:child_process";
 import { Bot } from "grammy";
-import { getSkillsDir } from "./agent/index.js";
 import { createClearHandler } from "./bot/commands/clear.js";
 import { helpHandler } from "./bot/commands/help.js";
 import { loadCommands } from "./bot/commands/loader.js";
@@ -16,21 +14,6 @@ import { createAuthMiddleware } from "./bot/middleware/auth.js";
 import { createRateLimitMiddleware } from "./bot/middleware/rateLimit.js";
 import type { ProjectContext } from "./types.js";
 
-/**
- * Check if the Claude CLI command is available, throwing on failure.
- */
-function checkClaudeCommand(command: string): void {
-  try {
-    execSync(`${command} --version`, { stdio: "pipe" });
-  } catch {
-    throw new Error(
-      `Claude CLI command "${command}" not found or not executable. ` +
-        `Please ensure Claude Code is installed and the command is in your PATH. ` +
-        `You can also set a custom command in hal.config.json under "claude.command".`,
-    );
-  }
-}
-
 export interface BotHandle {
   stop: () => Promise<void>;
 }
@@ -41,14 +24,20 @@ export interface BotHandle {
  * Returns a handle with a stop() function for graceful shutdown.
  */
 export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
-  const { config, logger } = projectCtx;
+  const { config, logger, engine } = projectCtx;
 
   logger.info({ cwd: config.cwd, dataDir: config.dataDir }, "Starting bot");
 
-  // Verify Claude CLI is available (throws on failure)
-  logger.debug({ command: config.claude.command }, "Checking Claude CLI");
-  checkClaudeCommand(config.claude.command);
-  logger.info({ command: config.claude.command }, "Claude CLI verified");
+  // Verify the engine CLI is available (throws on failure)
+  logger.debug(
+    { engine: config.engine, command: engine.command },
+    "Checking engine CLI",
+  );
+  engine.check();
+  logger.info(
+    { engine: config.engine, command: engine.command },
+    "Engine CLI verified",
+  );
 
   const bot = new Bot(config.telegram.botToken);
 
@@ -101,7 +90,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   await startedPromise;
 
   // Register project-specific commands and skills with Telegram on startup
-  const skillsDir = getSkillsDir(config.cwd);
+  const skillsDir = engine.skillsDir(config.cwd);
   const commands = await loadCommands(
     config.cwd,
     config.configDir,
