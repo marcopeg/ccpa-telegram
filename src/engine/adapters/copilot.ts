@@ -54,7 +54,7 @@ export function createCopilotAdapter(
         args.push("--model", model);
       }
 
-      // Continue session only when persistence is enabled and not explicitly disabled (e.g. /new, /clean)
+      // Continue session only when persistence is enabled and not explicitly disabled (e.g. /clean)
       if (config.engineSession && continueSession !== false) {
         args.push("--continue");
       }

@@ -36,6 +36,37 @@ const EngineConfigSchema = z
   .partial()
   .optional();
 
+const CommandMessageSchema = z
+  .object({
+    text: z.string().optional(),
+    from: z.string().optional(),
+  })
+  .refine((m) => !!m.text !== !!m.from, {
+    message: "commands.*.message must have exactly one of 'text' or 'from'",
+  });
+
+const StartConfigSchema = z
+  .object({
+    session: z.object({ reset: z.boolean() }).partial().optional(),
+    message: CommandMessageSchema,
+  })
+  .optional();
+
+const SimpleCommandConfigSchema = z
+  .object({
+    message: CommandMessageSchema,
+  })
+  .optional();
+
+const CommandsConfigSchema = z
+  .object({
+    start: StartConfigSchema,
+    help: SimpleCommandConfigSchema,
+    reset: SimpleCommandConfigSchema,
+    clean: SimpleCommandConfigSchema,
+  })
+  .optional();
+
 const GlobalsFileSchema = z
   .object({
     access: z
@@ -63,6 +94,7 @@ const GlobalsFileSchema = z
       .partial()
       .optional(),
     dataDir: z.string().optional(),
+    commands: CommandsConfigSchema,
   })
   .optional();
 
@@ -101,6 +133,7 @@ const ProjectFileSchema = z.object({
     .optional(),
   dataDir: z.string().optional(),
   context: z.record(z.string(), z.string()).optional(),
+  commands: CommandsConfigSchema,
 });
 
 // ─── Multi-project config file schema ─────────────────────────────────────────
@@ -155,6 +188,15 @@ export interface ResolvedProjectConfig {
   rateLimit: { max: number; windowMs: number };
   transcription: { model: string; showTranscription: boolean } | undefined;
   context: Record<string, string> | undefined;
+  commands: {
+    start?: {
+      sessionReset: boolean;
+      message: string;
+    };
+    help?: { message: string };
+    reset?: { message: string };
+    clean?: { message: string };
+  };
 }
 
 // ─── Config load result ────────────────────────────────────────────────────────
@@ -224,6 +266,54 @@ export function resolveProjectConfig(
 
   const hasContext = rootContext !== undefined || project.context !== undefined;
 
+  function resolveMessageTemplate(
+    msg: { text?: string; from?: string },
+    label: string,
+  ): string {
+    if (msg.from) {
+      const filePath = resolve(resolvedCwd, msg.from);
+      if (!existsSync(filePath)) {
+        console.error(
+          `Configuration error: ${label}.message.from file not found: ${filePath}`,
+        );
+        process.exit(1);
+      }
+      try {
+        return readFileSync(filePath, "utf-8");
+      } catch (err) {
+        console.error(
+          `Configuration error: cannot read ${label}.message.from file: ${filePath} — ${err instanceof Error ? err.message : String(err)}`,
+        );
+        process.exit(1);
+      }
+    }
+    return msg.text!;
+  }
+
+  const rawStart = project.commands?.start ?? globals.commands?.start;
+  let resolvedStart: ResolvedProjectConfig["commands"]["start"];
+  if (rawStart) {
+    resolvedStart = {
+      sessionReset: rawStart.session?.reset ?? false,
+      message: resolveMessageTemplate(rawStart.message, "commands.start"),
+    };
+  }
+
+  const rawHelp = project.commands?.help ?? globals.commands?.help;
+  const resolvedHelp = rawHelp
+    ? { message: resolveMessageTemplate(rawHelp.message, "commands.help") }
+    : undefined;
+
+  const rawReset = project.commands?.reset ?? globals.commands?.reset;
+  const resolvedReset = rawReset
+    ? { message: resolveMessageTemplate(rawReset.message, "commands.reset") }
+    : undefined;
+
+  const rawClean = project.commands?.clean ?? globals.commands?.clean;
+  const resolvedClean = rawClean
+    ? { message: resolveMessageTemplate(rawClean.message, "commands.clean") }
+    : undefined;
+
   return {
     slug,
     name: project.name,
@@ -272,6 +362,12 @@ export function resolveProjectConfig(
         }
       : undefined,
     context: hasContext ? { ...rootContext, ...project.context } : undefined,
+    commands: {
+      start: resolvedStart,
+      help: resolvedHelp,
+      reset: resolvedReset,
+      clean: resolvedClean,
+    },
   };
 }
 
@@ -380,9 +476,9 @@ function substituteEnvVars(
   if (obj !== null && typeof obj === "object") {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-      // Skip "context" keys — their ${} patterns are resolved at message time
+      // Skip keys whose ${} patterns are resolved at message time
       // by the context resolver, not at boot time as env vars.
-      if (key === "context") {
+      if (key === "context" || key === "commands") {
         result[key] = value;
         continue;
       }

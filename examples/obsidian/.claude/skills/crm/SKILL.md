@@ -1,6 +1,7 @@
 ---
 name: crm
 description: Explains how to navigate the project file system to find and relate documents. Use it every time the user wants to read or write about people, projects, meetings, notes, todos, tasks and any other crm-related topic.
+public: false
 ---
 
 # CRM Skill

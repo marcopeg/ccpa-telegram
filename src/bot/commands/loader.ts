@@ -10,6 +10,7 @@ export interface CommandEntry {
   description: string; // from file's `description` export
   filePath: string; // absolute path to the .mjs file, or "" for skills
   skillPrompt?: string; // prompt body from SKILL.md (skills only)
+  public?: boolean; // from SKILL.md frontmatter `public: true`
 }
 
 const TELEGRAM_COMMAND_RE = /^[a-z0-9_]{1,32}$/;
@@ -121,7 +122,12 @@ async function scanCommandDir(
 async function parseSkillMd(
   filePath: string,
   logger: pino.Logger,
-): Promise<{ name: string; description: string; prompt: string } | null> {
+): Promise<{
+  name: string;
+  description: string;
+  prompt: string;
+  public: boolean;
+} | null> {
   let content: string;
   try {
     content = await readFile(filePath, "utf-8");
@@ -145,6 +151,7 @@ async function parseSkillMd(
 
   const nameMatch = frontmatter.match(/^name:\s*(.+)$/m);
   const descMatch = frontmatter.match(/^description:\s*(.+)$/m);
+  const publicMatch = frontmatter.match(/^public:\s*(.+)$/m);
 
   if (!nameMatch || !descMatch) {
     logger.warn(
@@ -158,6 +165,7 @@ async function parseSkillMd(
     name: nameMatch[1].trim(),
     description: descMatch[1].trim(),
     prompt,
+    public: publicMatch?.[1].trim().toLowerCase() === "true",
   };
 }
 
@@ -221,6 +229,7 @@ async function scanSkillsDir(
       description: parsed.description,
       filePath: "",
       skillPrompt: parsed.prompt,
+      public: parsed.public,
     });
   }
 
@@ -236,9 +245,12 @@ async function scanSkillsDir(
 export const BUILTIN_COMMANDS: CommandEntry[] = [
   { command: "start", description: "Welcome message", filePath: "" },
   { command: "help", description: "Show help", filePath: "" },
-  { command: "clear", description: "Clear conversation history", filePath: "" },
-  { command: "new", description: "Start a new session", filePath: "" },
-  { command: "clean", description: "Start a new session", filePath: "" },
+  {
+    command: "reset",
+    description: "Wipes out all user data and resets the LLM session",
+    filePath: "",
+  },
+  { command: "clean", description: "Resets the LLM session", filePath: "" },
 ];
 
 // ─── Public API ──────────────────────────────────────────────────────────────

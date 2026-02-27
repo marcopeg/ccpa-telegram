@@ -1,9 +1,9 @@
 import { Bot } from "grammy";
-import { createClearHandler } from "./bot/commands/clear.js";
-import { helpHandler } from "./bot/commands/help.js";
+import { createHelpHandler } from "./bot/commands/help.js";
 import { loadCommands } from "./bot/commands/loader.js";
-import { createSessionHandler } from "./bot/commands/session.js";
-import { startHandler } from "./bot/commands/start.js";
+import { createResetHandler } from "./bot/commands/reset.js";
+import { createCleanHandler } from "./bot/commands/session.js";
+import { createStartHandler } from "./bot/commands/start.js";
 import { startCommandWatcher } from "./bot/commands/watcher.js";
 import {
   createDocumentHandler,
@@ -49,12 +49,10 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   bot.use(rateLimitMw);
 
   // Wire commands
-  bot.command("start", startHandler);
-  bot.command("help", helpHandler);
-  bot.command("clear", createClearHandler(projectCtx));
-  const sessionHandler = createSessionHandler(projectCtx);
-  bot.command("new", sessionHandler);
-  bot.command("clean", sessionHandler);
+  bot.command("start", createStartHandler(projectCtx));
+  bot.command("help", createHelpHandler(projectCtx));
+  bot.command("reset", createResetHandler(projectCtx));
+  bot.command("clean", createCleanHandler(projectCtx));
 
   // Wire handlers
   bot.on("message:text", createTextHandler(projectCtx));

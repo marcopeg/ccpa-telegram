@@ -1,14 +1,29 @@
 import type { Context } from "grammy";
+import type { ProjectContext } from "../../types.js";
+import { resolveCommandMessage } from "./message.js";
+import { resetSession } from "./session.js";
 
-export async function startHandler(ctx: Context): Promise<void> {
-  const username = ctx.from?.first_name || "there";
+// biome-ignore lint/suspicious/noTemplateCurlyInString: HAL placeholder syntax, not JS template
+const DEFAULT_TEMPLATE = "Welcome to ${project.name}!\n\n${HAL_COMMANDS}";
 
-  await ctx.reply(
-    `Hello ${username}! I'm a Claude Code assistant bot.\n\n` +
-      `You can:\n` +
-      `- Send any message to chat with me\n` +
-      `- Send images or documents for analysis\n` +
-      `- Use /clear to start a new conversation\n\n` +
-      `Type /help for more information.`,
-  );
+export function createStartHandler(ctx: ProjectContext) {
+  return async (gramCtx: Context): Promise<void> => {
+    const { config, logger } = ctx;
+    const startCfg = config.commands.start;
+
+    const template = startCfg?.message ?? DEFAULT_TEMPLATE;
+    const message = await resolveCommandMessage(template, ctx, gramCtx);
+    await gramCtx.reply(message, { parse_mode: "Markdown" });
+
+    if (startCfg?.sessionReset) {
+      try {
+        await resetSession(ctx, gramCtx, { silent: true });
+      } catch (err) {
+        logger.error(
+          { error: err instanceof Error ? err.message : String(err) },
+          "/start session reset failed",
+        );
+      }
+    }
+  };
 }

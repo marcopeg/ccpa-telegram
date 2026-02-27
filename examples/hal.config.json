@@ -38,6 +38,16 @@
       },
       "context": {
         "secondCustom": "This is a second custom context that will only be included in messages sent to the obsidian project."
+      },
+      "commands": {
+        "start": {
+          "session": {
+            "reset": true
+          },
+          "message": {
+            "from": ".hal/WELCOME.md"
+          }
+        }
       }
     },
     {

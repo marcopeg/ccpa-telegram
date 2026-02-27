@@ -2,11 +2,12 @@ import { join } from "node:path";
 import type { Context } from "grammy";
 import type { ProjectContext } from "../../types.js";
 import { clearUserData } from "../../user/setup.js";
+import { resolveCommandMessage } from "./message.js";
 
-/**
- * Returns a handler for the /clear command.
- */
-export function createClearHandler(ctx: ProjectContext) {
+const DEFAULT_TEMPLATE =
+  "All user data wiped and session reset. Your next message starts fresh.";
+
+export function createResetHandler(ctx: ProjectContext) {
   return async (gramCtx: Context): Promise<void> => {
     const userId = gramCtx.from?.id;
 
@@ -19,13 +20,12 @@ export function createClearHandler(ctx: ProjectContext) {
 
     try {
       await clearUserData(userDir);
-      await gramCtx.reply(
-        "Conversation history cleared. Your next message will start a fresh conversation.",
-      );
+
+      const template = ctx.config.commands.reset?.message ?? DEFAULT_TEMPLATE;
+      const message = await resolveCommandMessage(template, ctx, gramCtx);
+      await gramCtx.reply(message, { parse_mode: "Markdown" });
     } catch (_error) {
-      await gramCtx.reply(
-        "Failed to clear conversation history. Please try again.",
-      );
+      await gramCtx.reply("Failed to reset. Please try again.");
     }
   };
 }

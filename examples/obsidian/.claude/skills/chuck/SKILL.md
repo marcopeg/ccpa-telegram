@@ -1,6 +1,7 @@
 ---
 name: chuck
 description: Tells a joke about Chuck Norris.
+public: true
 ---
 
 Tell a joke about Chuck Norris.

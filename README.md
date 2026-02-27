@@ -265,7 +265,7 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.engine.command` | Override the CLI command path | _(engine name)_ |
 | `globals.engine.model` | Override the AI model | _(engine default)_ |
 | `globals.engine.session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
-| `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/new`, `/clean`) | `"hi!"` |
+| `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
 | `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
 | `globals.logging.flow` | Write logs to terminal | `true` |
 | `globals.logging.persist` | Write logs to file | `false` |
@@ -275,6 +275,7 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.dataDir` | Default user data directory | _(see below)_ |
 | `globals.transcription.model` | Whisper model for voice | `"base.en"` |
 | `globals.transcription.showTranscription` | Show transcribed text | `true` |
+| `globals.commands` | Default `/start`, `/help`, `/reset`, `/clean` messages for all projects | _(see [`commands`](#commands))_ |
 
 ### `projects[]`
 
@@ -295,6 +296,94 @@ Each project entry creates one Telegram bot connected to one directory.
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context Injection](#context-injection)) |
+| `commands` | No | Customize `/start`, `/help`, `/reset`, `/clean` messages (see [`commands`](#commands)) |
+
+### `commands`
+
+Customize the built-in `/start`, `/help`, `/reset`, and `/clean` command messages. Can be set under `globals` (shared default for all projects) or per project (overrides globals). Project-level settings take precedence.
+
+```json
+{
+  "globals": {
+    "commands": {
+      "start": {
+        "session": { "reset": true },
+        "message": { "text": "Welcome, ${bot.firstName}!" }
+      },
+      "help": {
+        "message": { "from": "./HELP.md" }
+      },
+      "reset": {
+        "message": { "text": "All user data wiped. Starting fresh." }
+      },
+      "clean": {
+        "message": { "text": "Session reset. Ready for a new conversation." }
+      }
+    }
+  }
+}
+```
+
+Each command supports a `message` object with exactly one of:
+
+| Field | Description |
+|-------|-------------|
+| `message.text` | Inline message string |
+| `message.from` | Path to a file (relative to project `cwd`) whose content is used as the message |
+
+Setting both `text` and `from`, or neither, is a configuration error.
+
+The `/start` command additionally supports `session.reset` (boolean, default `false`). When `true`, the session is reset after sending the welcome message (same effect as `/clean`).
+
+The `/reset` command always wipes all user data (uploads, downloads, session) regardless of configuration — the custom message only changes what the user sees afterward.
+
+The `/clean` command always resets the LLM session regardless of configuration — user files (uploads, downloads) are preserved. The custom message only changes what the user sees afterward.
+
+**Defaults** (when no `commands` config is set):
+
+| Command | Default message |
+|---------|-----------------|
+| `/start` | `Welcome to ${project.name}!` followed by the command list |
+| `/help` | The command list |
+| `/reset` | `All user data wiped and session reset. Your next message starts fresh.` |
+| `/clean` | `Session reset. Your next message starts a new conversation.` |
+
+Messages are sent with Telegram's legacy Markdown formatting. Supported syntax: `*bold*`, `_italic_`, `` `inline code` ``, ` ```code blocks``` `, `[link text](url)`.
+
+#### Variable substitution in command messages
+
+All `message.text` values and file contents from `message.from` support the same placeholder patterns used elsewhere:
+
+| Pattern | Description |
+|---------|-------------|
+| `${varName}` | Implicit context (`bot.firstName`, `sys.date`, `project.name`, etc.) and env vars |
+| `@{cmd}` | Message-time shell command |
+
+Additionally, the special `${HAL_COMMANDS}` placeholder expands to a formatted list of all available commands, divided into three sections:
+
+- **Commands** — built-in commands (`/start`, `/help`, `/reset`, `/clean`)
+- **Custom Commands** — programmatic `.mjs` commands from global and project directories
+- **Skills** — engine skills marked with `public: true` in their `SKILL.md` frontmatter
+
+Example `WELCOME.md`:
+
+```markdown
+Welcome to ${project.name}, ${bot.firstName}!
+
+${HAL_COMMANDS}
+```
+
+#### Making skills visible in the command list
+
+By default, skills are not listed in `${HAL_COMMANDS}`. Add `public: true` to a skill's frontmatter to include it:
+
+```yaml
+---
+name: crm
+description: Manage your contacts
+public: true
+---
+```
 
 ### Project Slug
 
@@ -362,28 +451,28 @@ The `engine` object supports five fields:
 | `command` | Custom path to the CLI binary | _(engine name)_ |
 | `model` | AI model override (omit to use the engine's default) | _(engine default)_ |
 | `session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
-| `sessionMsg` | Message sent when renewing session (e.g. `/new`, `/clean`) | `"hi!"` |
+| `sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
 
 #### Claude Code
 
 - **CLI:** `claude` — install and authenticate via [Claude Code CLI](https://github.com/anthropics/claude-code) (see [Prerequisites](#prerequisites)).
 - **Project files:** `CLAUDE.md`, `.claude/settings.json` (see [How It Works](#how-it-works)).
 - **Config:** `engine.name: "claude"`. Optional: `engine.command`, `engine.model` (passed as `--model`), `engine.session`, `engine.sessionMsg`.
-- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--resume <sessionId>`. `/new` and `/clean` clear the stored session and reply with a static message (no engine call).
+- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--resume <sessionId>`. `/clean` clears the stored session and replies with a static message (no engine call).
 
 #### GitHub Copilot
 
 - **CLI:** `copilot` — install and authenticate via [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/copilot-cli) (see [Prerequisites](#prerequisites)).
 - **Project file:** `AGENTS.md`.
 - **Config:** `engine.name: "copilot"`. Optional: `engine.command`, `engine.model` (see table below), `engine.session`, `engine.sessionMsg`.
-- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--continue`. `/new` and `/clean` send `engine.sessionMsg` to the engine without `--continue` to start a fresh session; the engine’s reply is sent to the user.
+- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--continue`. `/clean` sends `engine.sessionMsg` to the engine without `--continue` to start a fresh session; the engine’s reply is sent to the user.
 
 #### Codex
 
 - **CLI:** `codex` — install and authenticate via [Codex CLI](https://github.com/openai/codex-cli) (see [Prerequisites](#prerequisites)).
 - **Project file:** `AGENTS.md`.
 - **Config:** `engine.name: "codex"`. Optional: `engine.command`, `engine.model` (e.g. `gpt-5.1-codex-mini`), `engine.session`, `engine.sessionMsg`.
-- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `codex exec resume --last` to continue the most recent session; otherwise `codex exec` starts a fresh run. `/new` and `/clean` send `engine.sessionMsg` without resuming, so the engine starts a new session; the engine's reply is sent to the user (same behaviour as Copilot).
+- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `codex exec resume --last` to continue the most recent session; otherwise `codex exec` starts a fresh run. `/clean` sends `engine.sessionMsg` without resuming, so the engine starts a new session; the engine's reply is sent to the user (same behaviour as Copilot).
 
 #### GitHub Copilot Models
 
@@ -471,13 +560,12 @@ npx @marcopeg/hal --cwd ./workspace
 
 ## Bot Commands
 
-| Command  | Description                |
-|----------|----------------------------|
-| `/start` | Welcome message            |
-| `/help`  | Show help information      |
-| `/clear` | Clear conversation history |
-| `/new`   | Start a new session        |
-| `/clean` | Start a new session       |
+| Command  | Description                                           |
+|----------|-------------------------------------------------------|
+| `/start` | Welcome message                                       |
+| `/help`  | Show help information                                 |
+| `/reset` | Wipes out all user data and resets the LLM session    |
+| `/clean` | Resets the LLM session                                |
 
 ## Custom Commands
 

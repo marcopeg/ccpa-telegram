@@ -36,7 +36,7 @@ export async function ensureUserSetup(userDir: string): Promise<void> {
 }
 
 /**
- * Clear a user's directory (for /clear command)
+ * Clear a user's directory (for /reset command)
  */
 export async function clearUserData(userDir: string): Promise<void> {
   if (await directoryExists(userDir)) {
@@ -45,7 +45,7 @@ export async function clearUserData(userDir: string): Promise<void> {
 }
 
 /**
- * Clear only the session data (for /new and /clean commands).
+ * Clear only the session data (for /clean command).
  * Deletes session.json without touching uploads/downloads.
  */
 export async function clearSessionData(userDir: string): Promise<void> {

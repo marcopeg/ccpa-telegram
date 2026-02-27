@@ -244,6 +244,23 @@ export async function resolveContext(
   return merged;
 }
 
+// ─── Single-string substitution helper ───────────────────────────────────────
+
+/**
+ * Substitute ${} app vars and @{} message-time shell commands in an arbitrary
+ * string, using a pre-built context vars map. Useful for rendering templates
+ * (e.g. custom /start messages) outside of the full resolveContext pipeline.
+ */
+export function substituteMessage(
+  template: string,
+  vars: Record<string, string>,
+  logger: pino.Logger,
+): string {
+  let result = resolveAppVars(template, vars);
+  result = evaluateMessageTimeShells(result, logger);
+  return result;
+}
+
 // ─── Prompt formatting ──────────────────────────────────────────────────────
 
 export function formatContextPrompt(
