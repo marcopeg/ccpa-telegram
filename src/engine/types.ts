@@ -23,6 +23,9 @@ export interface EngineExecuteOptions {
   onProgress?: (message: string) => void;
   /** When false, do not continue previous session (e.g. for /new, /clean renewal). */
   continueSession?: boolean;
+  // When true, instruct the adapter to avoid any session-resume behaviour
+  // for this single call (e.g. Copilot: do not pass --continue).
+  forceNoSession?: boolean;
 }
 
 export interface EngineResult {
