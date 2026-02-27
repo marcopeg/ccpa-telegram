@@ -1,4 +1,8 @@
-# HAL
+<p align="center">
+  <img src="https://raw.githubusercontent.com/marcopeg/ccpa-telegram/main/images/hal.jpg" alt="HAL 9000" width="120" />
+</p>
+
+<h1 align="center">HAL</h1>
 
 A Telegram bot that provides access to AI coding agents as a personal assistant. Run multiple engines (Claude Code, GitHub Copilot, and more) across multiple projects simultaneously, each with its own dedicated Telegram bot.
 
@@ -132,10 +136,10 @@ Every field is optional. Project entries are matched to base projects by `name` 
 
 Any string value in `hal.config.json` or `hal.config.local.json` (except inside `context` blocks — see [Context Injection](#context-injection)) can reference an environment variable with `${VAR_NAME}` syntax. Variables are resolved at boot time from the following sources in priority order (first match wins):
 
-1. `<config-dir>/.env.local` _(gitignored)_
-2. `<config-dir>/.env`
-3. `<project-cwd>/.env.local` _(gitignored)_
-4. `<project-cwd>/.env`
+1. `{config-dir}/.env.local` _(gitignored)_
+2. `{config-dir}/.env`
+3. `{project-cwd}/.env.local` _(gitignored)_
+4. `{project-cwd}/.env`
 5. Shell environment (`process.env`)
 
 ```bash
@@ -237,8 +241,8 @@ export default async (context) => ({
 })
 ```
 
-- **Input**: fully-resolved `Record<string, string>` context
-- **Output**: a `Record<string, string>` — the final context passed to the engine
+- **Input**: fully-resolved `Record\<string, string\>` context
+- **Output**: a `Record\<string, string\>` — the final context passed to the engine
 - If a hook throws, the bot logs the error and falls back to the pre-hook context
 
 #### Prompt format
@@ -395,16 +399,16 @@ The slug is used as a folder name for log and data paths. It is derived from:
 
 | Value | Resolved Path |
 |-------|---------------|
-| _(empty)_ | `<project-cwd>/.hal/users` |
-| `~` | `<config-dir>/.hal/<slug>/data` |
-| Relative path (e.g. `.mydata`) | `<project-cwd>/<value>` |
+| _(empty)_ | `{project-cwd}/.hal/users` |
+| `~` | `{config-dir}/.hal/{slug}/data` |
+| Relative path (e.g. `.mydata`) | `{project-cwd}/{value}` |
 | Absolute path | Used as-is |
 
 ### Log Files
 
 When `logging.persist: true`, logs are written to:
 ```
-<config-dir>/.hal/logs/<project-slug>/YYYY-MM-DD.txt
+{config-dir}/.hal/logs/{project-slug}/YYYY-MM-DD.txt
 ```
 
 ### Engine Configuration
@@ -458,7 +462,7 @@ The `engine` object supports five fields:
 - **CLI:** `claude` — install and authenticate via [Claude Code CLI](https://github.com/anthropics/claude-code) (see [Prerequisites](#prerequisites)).
 - **Project files:** `CLAUDE.md`, `.claude/settings.json` (see [How It Works](#how-it-works)).
 - **Config:** `engine.name: "claude"`. Optional: `engine.command`, `engine.model` (passed as `--model`), `engine.session`, `engine.sessionMsg`.
-- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--resume <sessionId>`. `/clean` clears the stored session and replies with a static message (no engine call).
+- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--resume {sessionId}`. `/clean` clears the stored session and replies with a static message (no engine call).
 
 #### GitHub Copilot
 
@@ -575,8 +579,8 @@ You can add your own slash commands as `.mjs` files. When a user sends `/mycomma
 
 | Location | Scope |
 |----------|-------|
-| `{project.cwd}/.hal/commands/<name>.mjs` | Project-specific |
-| `{configDir}/.hal/commands/<name>.mjs` | Global — available to all projects |
+| `{project.cwd}/.hal/commands/{name}.mjs` | Project-specific |
+| `{configDir}/.hal/commands/{name}.mjs` | Global — available to all projects |
 
 Project-specific commands take precedence over global ones on name collision.
 
@@ -605,7 +609,7 @@ Tokens following the command name, split on whitespace.
 /status                  →  args = []
 ```
 
-#### `ctx: Record<string, string>`
+#### `ctx: Record\<string, string\>`
 
 The fully-resolved context that would be sent to the AI for this message — identical to what the engine sees in its `# Context` header. Includes all implicit keys plus any config vars and hook results:
 
@@ -658,7 +662,7 @@ interface Agent {
   call(
     prompt: string,
     options?: { onProgress?: (message: string) => void }
-  ): Promise<string>;
+  ): Promise\<string\>;
 }
 ```
 
@@ -668,7 +672,7 @@ Unlike regular user messages, agent calls have no session history and no context
 |--------|------|-------------|
 | `onProgress` | `(message: string) => void` | Called during execution with activity updates (e.g. `"Reading: /path/to/file"`). Use it to keep the user informed while the agent is working. |
 
-Returns the agent's final text output as a string. Throws on failure — the bot's command error handler will catch it and reply with `Command failed: <message>`.
+Returns the agent's final text output as a string. Throws on failure — the bot's command error handler will catch it and reply with `Command failed: {message}`.
 
 ```js
 export default async function({ args, gram, agent }) {
@@ -700,7 +704,7 @@ The project-level context object. Useful fields:
 | `projectCtx.config.cwd` | `string` | Absolute path to the project directory |
 | `projectCtx.config.configDir` | `string` | Absolute path to the directory containing `hal.config.json` |
 | `projectCtx.config.dataDir` | `string` | Absolute path to user data storage root |
-| `projectCtx.config.context` | `Record<string, string> \| undefined` | Raw config-level context values (pre-hook) |
+| `projectCtx.config.context` | `Record\<string, string\> \| undefined` | Raw config-level context values (pre-hook) |
 | `projectCtx.logger` | Pino logger | Structured logger — use for debug output that ends up in log files |
 
 ### Examples
@@ -714,7 +718,7 @@ The project-level context object. Useful fields:
 [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) live in `.claude/skills/` inside the project directory (shared across all engines). Each skill is a folder containing a `SKILL.md` file with a YAML frontmatter block and a prompt body:
 
 ```
-<project-cwd>/
+{project-cwd}/
 └── .claude/
     └── skills/
         └── chuck/
@@ -734,16 +738,16 @@ At boot time (and whenever `SKILL.md` files change) the bot reads every skill fo
 
 When a user invokes a skill command (e.g. `/chuck`) the bot:
 1. Reads the `SKILL.md` prompt body
-2. Appends any user arguments as `User input: <args>` if present
+2. Appends any user arguments as `User input: {args}` if present
 3. Calls the AI engine with that prompt via the engine-agnostic `agent.call()` interface
 4. Sends the response back to the user
 
-Skills can be **overridden per-project**: create a `.hal/commands/<name>.mjs` file with the same name as the skill and the `.mjs` handler takes full precedence.
+Skills can be **overridden per-project**: create a `.hal/commands/{name}.mjs` file with the same name as the skill and the `.mjs` handler takes full precedence.
 
 **Command precedence** (highest wins):
 
 ```
-project .hal/commands/<name>.mjs  >  global .hal/commands/<name>.mjs  >  .claude/skills/<name>/
+project .hal/commands/{name}.mjs  >  global .hal/commands/{name}.mjs  >  .claude/skills/{name}/
 ```
 
 See [`examples/obsidian/.claude/skills/chuck/`](examples/obsidian/.claude/skills/chuck/SKILL.md) and [`examples/obsidian/.claude/skills/weather/`](examples/obsidian/.claude/skills/weather/SKILL.md) for example skills.
