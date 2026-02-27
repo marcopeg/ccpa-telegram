@@ -60,7 +60,7 @@ export function createCodexAdapter(
       if (model) {
         args.push("-m", model);
       }
-      args.push("--full-auto");
+      args.push("--full-auto", "--skip-git-repo-check");
       args.push(fullPrompt);
 
       logger.info(
