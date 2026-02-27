@@ -142,7 +142,9 @@ export function createVoiceHandler(ctx: ProjectContext) {
         // Ignore cleanup errors
       }
 
-      const sessionId = await getSessionId(userDir);
+      const sessionId = config.engineSession
+        ? await getSessionId(userDir)
+        : null;
       let lastProgressUpdate = Date.now();
       let lastProgressText = "Processing...";
 
@@ -190,7 +192,7 @@ export function createVoiceHandler(ctx: ProjectContext) {
 
       const parsed = ctx.engine.parse(result);
 
-      if (parsed.sessionId) {
+      if (config.engineSession && parsed.sessionId) {
         await saveSessionId(userDir, parsed.sessionId);
       }
 

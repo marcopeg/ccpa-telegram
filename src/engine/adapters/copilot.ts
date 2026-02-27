@@ -36,7 +36,7 @@ export function createCopilotAdapter(
       options: EngineExecuteOptions,
       ctx: ProjectContext,
     ): Promise<EngineResult> {
-      const { sessionId, onProgress } = options;
+      const { onProgress, continueSession } = options;
       const { config, logger } = ctx;
 
       const fullPrompt = await buildContextualPrompt(options, ctx);
@@ -46,7 +46,7 @@ export function createCopilotAdapter(
       //   -s / --silent   Clean output for scripting (no stats banner)
       //   --allow-all     Enable all permissions (tools + paths + urls)
       //   --model <model> Override the AI model
-      //   --resume [id]   Resume a previous session
+      //   --continue      Continue the most recent session
       const args: string[] = ["-p", fullPrompt, "--allow-all"];
 
       // Set model if specified
@@ -54,9 +54,9 @@ export function createCopilotAdapter(
         args.push("--model", model);
       }
 
-      // Resume session if available
-      if (sessionId) {
-        args.push("--resume", sessionId);
+      // Continue session only when persistence is enabled and not explicitly disabled (e.g. /new, /clean)
+      if (config.engineSession && continueSession !== false) {
+        args.push("--continue");
       }
 
       const cwd = config.cwd;

@@ -45,6 +45,19 @@ export async function clearUserData(userDir: string): Promise<void> {
 }
 
 /**
+ * Clear only the session data (for /new and /clean commands).
+ * Deletes session.json without touching uploads/downloads.
+ */
+export async function clearSessionData(userDir: string): Promise<void> {
+  const sessionFile = join(userDir, "session.json");
+  try {
+    await rm(sessionFile, { force: true });
+  } catch {
+    // Ignore — file may not exist
+  }
+}
+
+/**
  * Get the path to user's uploads directory
  */
 export function getUploadsPath(userDir: string): string {

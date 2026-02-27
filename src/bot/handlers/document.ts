@@ -105,7 +105,9 @@ export function createDocumentHandler(ctx: ProjectContext) {
       logger.debug({ path: docPath }, "Document saved");
 
       const prompt = `Please read the file "./uploads/${safeName}" and ${caption}`;
-      const sessionId = await getSessionId(userDir);
+      const sessionId = config.engineSession
+        ? await getSessionId(userDir)
+        : null;
 
       const statusMsg = await gramCtx.reply("_Processing..._", {
         parse_mode: "Markdown",
@@ -147,7 +149,7 @@ export function createDocumentHandler(ctx: ProjectContext) {
 
       const parsed = ctx.engine.parse(result);
 
-      if (parsed.sessionId) {
+      if (config.engineSession && parsed.sessionId) {
         await saveSessionId(userDir, parsed.sessionId);
       }
 

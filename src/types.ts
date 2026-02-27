@@ -10,7 +10,11 @@ import type { EngineAdapter } from "./engine/types.js";
 export interface Agent {
   call(
     prompt: string,
-    options?: { onProgress?: (message: string) => void },
+    options?: {
+      onProgress?: (message: string) => void;
+      /** When false, do not continue previous session (e.g. session renewal). */
+      continueSession?: boolean;
+    },
   ): Promise<string>;
 }
 

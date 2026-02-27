@@ -227,6 +227,20 @@ async function scanSkillsDir(
   return skills;
 }
 
+// ─── Built-in commands ───────────────────────────────────────────────────────
+
+/**
+ * Commands that are always registered with Telegram, regardless of
+ * whether custom .mjs files or skills exist.
+ */
+export const BUILTIN_COMMANDS: CommandEntry[] = [
+  { command: "start", description: "Welcome message", filePath: "" },
+  { command: "help", description: "Show help", filePath: "" },
+  { command: "clear", description: "Clear conversation history", filePath: "" },
+  { command: "new", description: "Start a new session", filePath: "" },
+  { command: "clean", description: "Start a new session", filePath: "" },
+];
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
@@ -250,6 +264,11 @@ export async function loadCommands(
   const projectEntries = await scanCommandDir(projectDir, logger);
 
   const map = new Map<string, CommandEntry>();
+
+  // Seed built-in commands first (lowest precedence)
+  for (const entry of BUILTIN_COMMANDS) {
+    map.set(entry.command, entry);
+  }
 
   for (const entry of skillEntries) {
     map.set(entry.command, entry);

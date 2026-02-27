@@ -30,6 +30,8 @@ const EngineConfigSchema = z
     name: EngineNameSchema,
     command: z.string(),
     model: z.string(),
+    session: z.boolean(),
+    sessionMsg: z.string(),
   })
   .partial()
   .optional();
@@ -147,6 +149,8 @@ export interface ResolvedProjectConfig {
   engine: EngineName;
   engineCommand: string;
   engineModel: string | undefined;
+  engineSession: boolean;
+  engineSessionMsg: string;
   logging: { level: string; flow: boolean; persist: boolean };
   rateLimit: { max: number; windowMs: number };
   transcription: { model: string; showTranscription: boolean } | undefined;
@@ -242,6 +246,9 @@ export function resolveProjectConfig(
       globals.engine?.name ??
       "claude",
     engineModel: project.engine?.model ?? globals.engine?.model,
+    engineSession: project.engine?.session ?? globals.engine?.session ?? true,
+    engineSessionMsg:
+      project.engine?.sessionMsg ?? globals.engine?.sessionMsg ?? "hi!",
     logging: {
       level: project.logging?.level ?? globals.logging?.level ?? "info",
       flow: project.logging?.flow ?? globals.logging?.flow ?? true,

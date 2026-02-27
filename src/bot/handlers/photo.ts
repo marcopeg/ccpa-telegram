@@ -56,7 +56,9 @@ export function createPhotoHandler(ctx: ProjectContext) {
       logger.debug({ path: imagePath }, "Image saved");
 
       const prompt = `Please look at the image file "./uploads/${imageName}" and ${caption}`;
-      const sessionId = await getSessionId(userDir);
+      const sessionId = config.engineSession
+        ? await getSessionId(userDir)
+        : null;
 
       const statusMsg = await gramCtx.reply("_Processing..._", {
         parse_mode: "Markdown",
@@ -98,7 +100,7 @@ export function createPhotoHandler(ctx: ProjectContext) {
 
       const parsed = ctx.engine.parse(result);
 
-      if (parsed.sessionId) {
+      if (config.engineSession && parsed.sessionId) {
         await saveSessionId(userDir, parsed.sessionId);
       }
 

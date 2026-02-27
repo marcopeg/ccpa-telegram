@@ -21,6 +21,8 @@ export interface EngineExecuteOptions {
   downloadsPath?: string;
   sessionId?: string | null;
   onProgress?: (message: string) => void;
+  /** When false, do not continue previous session (e.g. for /new, /clean renewal). */
+  continueSession?: boolean;
 }
 
 export interface EngineResult {

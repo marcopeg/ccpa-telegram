@@ -2,6 +2,7 @@ import { Bot } from "grammy";
 import { createClearHandler } from "./bot/commands/clear.js";
 import { helpHandler } from "./bot/commands/help.js";
 import { loadCommands } from "./bot/commands/loader.js";
+import { createSessionHandler } from "./bot/commands/session.js";
 import { startHandler } from "./bot/commands/start.js";
 import { startCommandWatcher } from "./bot/commands/watcher.js";
 import {
@@ -51,6 +52,9 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   bot.command("start", startHandler);
   bot.command("help", helpHandler);
   bot.command("clear", createClearHandler(projectCtx));
+  const sessionHandler = createSessionHandler(projectCtx);
+  bot.command("new", sessionHandler);
+  bot.command("clean", sessionHandler);
 
   // Wire handlers
   bot.on("message:text", createTextHandler(projectCtx));

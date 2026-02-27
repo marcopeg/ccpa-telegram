@@ -24,7 +24,12 @@ export function createAgent(projectCtx: ProjectContext): Agent {
   return {
     async call(prompt, options) {
       const result = await engine.execute(
-        { prompt, userDir: "", onProgress: options?.onProgress },
+        {
+          prompt,
+          userDir: "",
+          onProgress: options?.onProgress,
+          continueSession: options?.continueSession,
+        },
         projectCtx,
       );
       if (!result.success) {

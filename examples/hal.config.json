@@ -4,7 +4,8 @@
       "allowedUserIds": []
     },
     "engine": {
-      "name": "claude"
+      "name": "claude",
+      "session": true
     },
     "logging": {
       "level": "info",
@@ -30,7 +31,7 @@
       "active": true,
       "engine": {
         "name": "copilot",
-        "model": "claude-haiku-4.5"
+        "model": "gpt-5-mini"
       },
       "telegram": {
         "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"
