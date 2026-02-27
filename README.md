@@ -36,12 +36,12 @@ You get the full power of your chosen AI coding agent — file access, code exec
 |--------|-------------|--------|-------------------|
 | **Claude Code** | `claude` | Full support | `CLAUDE.md` |
 | **GitHub Copilot** | `copilot` | Full support | `AGENTS.md` |
-| **Codex** | `codex` | Stub (basic prompt/response) | `AGENTS.md` |
+| **Codex** | `codex` | Full support | `AGENTS.md` |
 | **OpenCode** | `opencode` | Stub (basic prompt/response) | `AGENTS.md` |
 
 See [Engine Configuration](#engine-configuration) for setup details.
 
-See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) and [GitHub Copilot CLI documentation](https://docs.github.com/en/copilot/concepts/agents/copilot-cli) for engine-specific configuration.
+See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code), [GitHub Copilot CLI documentation](https://docs.github.com/en/copilot/concepts/agents/copilot-cli), and the Codex CLI (`codex --help`) for engine-specific configuration.
 
 ## Prerequisites
 
@@ -49,6 +49,7 @@ See [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) 
 - At least one supported AI coding CLI installed and authenticated:
   - [Claude Code CLI](https://github.com/anthropics/claude-code) — `claude`
   - [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/copilot-cli) — `copilot`
+  - [Codex CLI](https://github.com/openai/codex-cli) — `codex`
 - A Telegram bot token per project (from [@BotFather](https://t.me/BotFather)) — see [Creating a Telegram Bot](#creating-a-telegram-bot)
 - **ffmpeg** (required for voice messages) — `brew install ffmpeg` on macOS
 
@@ -263,6 +264,8 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.engine.name` | Engine: `claude`, `copilot`, `codex`, `opencode` | `"claude"` |
 | `globals.engine.command` | Override the CLI command path | _(engine name)_ |
 | `globals.engine.model` | Override the AI model | _(engine default)_ |
+| `globals.engine.session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
+| `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/new`, `/clean`) | `"hi!"` |
 | `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
 | `globals.logging.flow` | Write logs to terminal | `true` |
 | `globals.logging.persist` | Write logs to file | `false` |
@@ -287,6 +290,8 @@ Each project entry creates one Telegram bot connected to one directory.
 | `engine.name` | No | Override the engine for this project |
 | `engine.command` | No | Override the CLI command path |
 | `engine.model` | No | Override the AI model |
+| `engine.session` | No | Use persistent sessions for this project |
+| `engine.sessionMsg` | No | Message used when renewing session |
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context Injection](#context-injection)) |
@@ -349,13 +354,36 @@ In this example:
 - **frontend** uses GitHub Copilot with the `gpt-5-mini` model
 - **legacy** is inactive and will be skipped at boot
 
-The `engine` object supports three fields:
+The `engine` object supports five fields:
 
 | Field | Description | Default |
 |-------|-------------|---------|
 | `name` | Engine identifier: `claude`, `copilot`, `codex`, `opencode` | `"claude"` |
 | `command` | Custom path to the CLI binary | _(engine name)_ |
 | `model` | AI model override (omit to use the engine's default) | _(engine default)_ |
+| `session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
+| `sessionMsg` | Message sent when renewing session (e.g. `/new`, `/clean`) | `"hi!"` |
+
+#### Claude Code
+
+- **CLI:** `claude` — install and authenticate via [Claude Code CLI](https://github.com/anthropics/claude-code) (see [Prerequisites](#prerequisites)).
+- **Project files:** `CLAUDE.md`, `.claude/settings.json` (see [How It Works](#how-it-works)).
+- **Config:** `engine.name: "claude"`. Optional: `engine.command`, `engine.model` (passed as `--model`), `engine.session`, `engine.sessionMsg`.
+- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--resume <sessionId>`. `/new` and `/clean` clear the stored session and reply with a static message (no engine call).
+
+#### GitHub Copilot
+
+- **CLI:** `copilot` — install and authenticate via [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/copilot-cli) (see [Prerequisites](#prerequisites)).
+- **Project file:** `AGENTS.md`.
+- **Config:** `engine.name: "copilot"`. Optional: `engine.command`, `engine.model` (see table below), `engine.session`, `engine.sessionMsg`.
+- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--continue`. `/new` and `/clean` send `engine.sessionMsg` to the engine without `--continue` to start a fresh session; the engine’s reply is sent to the user.
+
+#### Codex
+
+- **CLI:** `codex` — install and authenticate via [Codex CLI](https://github.com/openai/codex-cli) (see [Prerequisites](#prerequisites)).
+- **Project file:** `AGENTS.md`.
+- **Config:** `engine.name: "codex"`. Optional: `engine.command`, `engine.model` (e.g. `gpt-5.1-codex-mini`), `engine.session`, `engine.sessionMsg`.
+- **Sessions:** When `engine.session` is `true`, the CLI is invoked with `codex exec resume --last` to continue the most recent session; otherwise `codex exec` starts a fresh run. `/new` and `/clean` send `engine.sessionMsg` without resuming, so the engine starts a new session; the engine's reply is sent to the user (same behaviour as Copilot).
 
 #### GitHub Copilot Models
 
@@ -448,6 +476,8 @@ npx @marcopeg/hal --cwd ./workspace
 | `/start` | Welcome message            |
 | `/help`  | Show help information      |
 | `/clear` | Clear conversation history |
+| `/new`   | Start a new session        |
+| `/clean` | Start a new session       |
 
 ## Custom Commands
 

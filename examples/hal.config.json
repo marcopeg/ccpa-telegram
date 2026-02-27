@@ -30,8 +30,8 @@
       "cwd": "./obsidian",
       "active": true,
       "engine": {
-        "name": "copilot",
-        "model": "gpt-5-mini"
+        "name": "codex",
+        "model": "gpt-5.1-codex-mini"
       },
       "telegram": {
         "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"

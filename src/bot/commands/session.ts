@@ -10,7 +10,7 @@ import { clearSessionData } from "../../user/setup.js";
  * Resets the session without wiping uploads/downloads.
  *
  * - Claude (and other engines): passive reset — delete session.json, static reply.
- * - Copilot: active reset — send sessionMsg without --continue, reply with engine output.
+ * - Copilot, Codex: active reset — send sessionMsg without continue flag, reply with engine output.
  */
 export function createSessionHandler(ctx: ProjectContext) {
   return async (gramCtx: Context): Promise<void> => {
@@ -29,7 +29,7 @@ export function createSessionHandler(ctx: ProjectContext) {
       await clearSessionData(userDir);
       logger.info({ userId }, "Session data cleared");
 
-      if (config.engine === "copilot") {
+      if (config.engine === "copilot" || config.engine === "codex") {
         // Active reset: send sessionMsg without --continue to force a new session
         const statusMsg = await gramCtx.reply("_Starting new session..._", {
           parse_mode: "Markdown",

@@ -12,8 +12,10 @@ import type {
 const DEFAULT_COMMAND = "codex";
 
 /**
- * Stub adapter for OpenAI Codex CLI.
- * TODO: Confirm exact CLI flags, streaming support, and output format.
+ * Adapter for OpenAI Codex CLI.
+ * Fresh:    `codex exec -C <cwd> [-m model] [PROMPT]`
+ * Continue: `codex exec resume --last [-m model] [PROMPT]`
+ * Buffered stdout only (no streaming).
  */
 export function createCodexAdapter(
   command?: string,
@@ -40,21 +42,36 @@ export function createCodexAdapter(
       options: EngineExecuteOptions,
       ctx: ProjectContext,
     ): Promise<EngineResult> {
+      const { continueSession } = options;
       const { config, logger } = ctx;
-
       const fullPrompt = await buildContextualPrompt(options, ctx);
-
-      // TODO: Confirm exact codex CLI flags — using best-guess values.
-      const args: string[] = ["-p", fullPrompt];
-
-      // Set model if specified
-      if (model) {
-        args.push("--model", model);
-      }
-
       const cwd = config.cwd;
-      logger.info({ command: cmd, cwd }, "Executing Codex CLI");
-      logger.warn("Codex adapter is a stub — CLI flags may need adjustment");
+
+      const continueSessionRequested =
+        config.engineSession && continueSession !== false;
+
+      // Non-interactive: `codex exec` for fresh; `codex exec resume --last` for continue
+      const args: string[] = ["exec"];
+      if (continueSessionRequested) {
+        args.push("resume", "--last");
+      } else {
+        args.push("-C", cwd);
+      }
+      if (model) {
+        args.push("-m", model);
+      }
+      args.push("--full-auto");
+      args.push(fullPrompt);
+
+      logger.info(
+        {
+          command: cmd,
+          args: args.slice(0, -1),
+          cwd,
+          continue: continueSessionRequested,
+        },
+        "Executing Codex CLI",
+      );
 
       return new Promise((resolve) => {
         const proc = spawn(cmd, args, {
