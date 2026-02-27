@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/marcopeg/ccpa-telegram/main/images/hal.jpg" alt="HAL 9000" width="120" />
+  <img src="https://raw.githubusercontent.com/marcopeg/hal/main/images/hal.jpg" alt="HAL 9000" width="120" />
 </p>
 
 <h1 align="center">HAL</h1>
