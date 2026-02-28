@@ -76,7 +76,7 @@ Commands:
 
 Options:
   --cwd <path>      Directory containing hal.config.json (default: current directory)
-  --engine <name>   Engine to use: claude, copilot, codex, opencode (default: claude)
+  --engine <name>   Engine to use: claude, copilot, codex, opencode, cursor (default: claude)
   --help, -h        Show this help message
 
 Examples:
@@ -110,6 +110,7 @@ const VALID_ENGINES: readonly EngineName[] = [
   "copilot",
   "codex",
   "opencode",
+  "cursor",
 ];
 
 function parseArgs(): ParsedArgs {

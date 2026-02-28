@@ -3,13 +3,14 @@ import type { ProjectContext } from "../types.js";
 
 // ─── Engine name ────────────────────────────────────────────────────────────
 
-export type EngineName = "claude" | "copilot" | "codex" | "opencode";
+export type EngineName = "claude" | "copilot" | "codex" | "opencode" | "cursor";
 
 export const ENGINE_NAMES: readonly EngineName[] = [
   "claude",
   "copilot",
   "codex",
   "opencode",
+  "cursor",
 ] as const;
 
 // ─── Shared execute / result types ──────────────────────────────────────────

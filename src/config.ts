@@ -23,7 +23,13 @@ const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
 
 // ─── Globals schema (all fields optional) ─────────────────────────────────────
 
-const EngineNameSchema = z.enum(["claude", "copilot", "codex", "opencode"]);
+const EngineNameSchema = z.enum([
+  "claude",
+  "copilot",
+  "codex",
+  "opencode",
+  "cursor",
+]);
 
 const EngineConfigSchema = z
   .object({

@@ -1,6 +1,7 @@
 import { createClaudeAdapter } from "./adapters/claude.js";
 import { createCodexAdapter } from "./adapters/codex.js";
 import { createCopilotAdapter } from "./adapters/copilot.js";
+import { createCursorAdapter } from "./adapters/cursor.js";
 import { createOpencodeAdapter } from "./adapters/opencode.js";
 import type { EngineAdapter, EngineName } from "./types.js";
 
@@ -11,6 +12,7 @@ const factories: Record<EngineName, AdapterFactory> = {
   copilot: createCopilotAdapter,
   codex: createCodexAdapter,
   opencode: createOpencodeAdapter,
+  cursor: createCursorAdapter,
 };
 
 /**

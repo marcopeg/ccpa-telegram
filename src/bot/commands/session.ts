@@ -37,7 +37,11 @@ export async function resetSession(
   await clearSessionData(userDir);
   logger.info({ userId }, "Session data cleared");
 
-  if (config.engine === "copilot" || config.engine === "codex") {
+  if (
+    config.engine === "copilot" ||
+    config.engine === "codex" ||
+    config.engine === "cursor"
+  ) {
     const statusMsg = await gramCtx.reply("_Starting new session..._", {
       parse_mode: "Markdown",
     });
