@@ -1,0 +1,6 @@
+---
+description: "Maps /skill-name commands to .agents/skills/"
+alwaysApply: true
+---
+
+When the user types a message starting with `/<skill-name>`, read the file `.agents/skills/<skill-name>/SKILL.md` and follow its instructions. The rest of the user's message is the input to pass to that skill.

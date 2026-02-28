@@ -18,6 +18,7 @@
     "lint": "biome check src",
     "lint:fix": "biome check --write src",
     "prepublishOnly": "pnpm run build",
+    "sync-skills": "node .agents/scripts/sync-skills.mjs",
     "prepare": "husky",
     "deploy": "npm version patch && npm publish --access public"
   },
