@@ -186,7 +186,7 @@ export interface ResolvedProjectConfig {
   telegram: { botToken: string };
   access: { allowedUserIds: number[] };
   engine: EngineName;
-  engineCommand: string;
+  engineCommand: string | undefined;
   engineModel: string | undefined;
   engineSession: boolean;
   engineSessionMsg: string;
@@ -335,12 +335,7 @@ export function resolveProjectConfig(
     engine: (project.engine?.name ??
       globals.engine?.name ??
       "claude") as EngineName,
-    engineCommand:
-      project.engine?.command ??
-      globals.engine?.command ??
-      project.engine?.name ??
-      globals.engine?.name ??
-      "claude",
+    engineCommand: project.engine?.command ?? globals.engine?.command,
     engineModel: project.engine?.model ?? globals.engine?.model,
     engineSession: project.engine?.session ?? globals.engine?.session ?? true,
     engineSessionMsg:
