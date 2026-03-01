@@ -130,8 +130,11 @@ export function createCursorAdapter(
       };
     },
 
-    skillsDir(projectCwd: string): string {
-      return join(projectCwd, ".cursor", "rules");
+    skillsDirs(projectCwd: string): string[] {
+      return [
+        join(projectCwd, ".agents", "skills"),
+        join(projectCwd, ".cursor", "skills"),
+      ];
     },
 
     instructionsFile(): string {

@@ -2,15 +2,18 @@ import { join } from "node:path";
 import type { Agent, ProjectContext } from "../types.js";
 
 /**
- * Return the engine-specific skills directory for the given project.
+ * Return the engine-specific skill directories for the given project.
  * Delegates to the engine adapter attached to the project context.
- * Falls back to .claude/skills/ when no engine is available (e.g. during init).
+ * Falls back to [.claude/skills/] when no engine is available (e.g. during init).
  */
-export function getSkillsDir(projectCwd: string, ctx?: ProjectContext): string {
+export function getSkillsDirs(
+  projectCwd: string,
+  ctx?: ProjectContext,
+): string[] {
   if (ctx?.engine) {
-    return ctx.engine.skillsDir(projectCwd);
+    return ctx.engine.skillsDirs(projectCwd);
   }
-  return join(projectCwd, ".claude", "skills");
+  return [join(projectCwd, ".claude", "skills")];
 }
 
 /**

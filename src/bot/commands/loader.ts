@@ -327,13 +327,26 @@ export async function loadCommands(
   projectCwd: string,
   configDir: string,
   logger: pino.Logger,
-  skillsDir?: string,
+  skillsDirs?: string[],
   enabled?: CommandEnabledFlags,
 ): Promise<CommandEntry[]> {
   const globalDir = globalCommandDir(configDir);
   const projectDir = projectCommandDir(projectCwd);
 
-  const skillEntries = skillsDir ? await scanSkillsDir(skillsDir, logger) : [];
+  // Scan all skill directories in priority order, dedup by name (first-found wins)
+  const skillEntries: CommandEntry[] = [];
+  const seenSkills = new Set<string>();
+  if (skillsDirs) {
+    for (const dir of skillsDirs) {
+      const dirSkills = await scanSkillsDir(dir, logger);
+      for (const skill of dirSkills) {
+        if (!seenSkills.has(skill.command)) {
+          seenSkills.add(skill.command);
+          skillEntries.push(skill);
+        }
+      }
+    }
+  }
   const globalEntries = await scanCommandDir(globalDir, logger, "system");
   const projectEntries = await scanCommandDir(projectDir, logger, "project");
 
@@ -376,37 +389,41 @@ export async function loadCommands(
  */
 export async function resolveSkillEntry(
   commandName: string,
-  skillsDir: string,
+  skillsDirs: string[],
   logger: pino.Logger,
 ): Promise<CommandEntry | null> {
   if (!isValidTelegramCommandName(commandName)) {
     return null;
   }
 
-  const skillMdPath = join(skillsDir, commandName, "SKILL.md");
-  if (!existsSync(skillMdPath)) {
-    return null;
+  for (const dir of skillsDirs) {
+    const skillMdPath = join(dir, commandName, "SKILL.md");
+    if (!existsSync(skillMdPath)) {
+      continue;
+    }
+
+    const parsed = await parseSkillMd(skillMdPath, logger);
+    if (!parsed) {
+      continue;
+    }
+
+    if (parsed.name !== commandName) {
+      logger.warn(
+        { commandName, frontmatterName: parsed.name },
+        "Skill frontmatter `name` differs from folder name — using folder name as command",
+      );
+    }
+
+    return {
+      command: commandName,
+      description: parsed.description,
+      filePath: "",
+      skillPrompt: parsed.prompt,
+      source: "skill",
+    };
   }
 
-  const parsed = await parseSkillMd(skillMdPath, logger);
-  if (!parsed) {
-    return null;
-  }
-
-  if (parsed.name !== commandName) {
-    logger.warn(
-      { commandName, frontmatterName: parsed.name },
-      "Skill frontmatter `name` differs from folder name — using folder name as command",
-    );
-  }
-
-  return {
-    command: commandName,
-    description: parsed.description,
-    filePath: "",
-    skillPrompt: parsed.prompt,
-    source: "skill",
-  };
+  return null;
 }
 
 /**

@@ -158,9 +158,8 @@ export function createCodexAdapter(
       return { text: result.output || "No response received" };
     },
 
-    skillsDir(projectCwd: string): string {
-      // All engines share .claude/skills/ for now
-      return join(projectCwd, ".claude", "skills");
+    skillsDirs(projectCwd: string): string[] {
+      return [join(projectCwd, ".agents", "skills")];
     },
 
     instructionsFile(): string {

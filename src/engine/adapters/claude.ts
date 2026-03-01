@@ -274,8 +274,8 @@ export function createClaudeAdapter(
       }
     },
 
-    skillsDir(projectCwd: string): string {
-      return join(projectCwd, ".claude", "skills");
+    skillsDirs(projectCwd: string): string[] {
+      return [join(projectCwd, ".claude", "skills")];
     },
 
     instructionsFile(): string {

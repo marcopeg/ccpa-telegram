@@ -134,9 +134,12 @@ export function createCopilotAdapter(
       };
     },
 
-    skillsDir(projectCwd: string): string {
-      // All engines share .claude/skills/ for now (portable; revisit later)
-      return join(projectCwd, ".claude", "skills");
+    skillsDirs(projectCwd: string): string[] {
+      return [
+        join(projectCwd, ".agents", "skills"),
+        join(projectCwd, ".github", "skills"),
+        join(projectCwd, ".claude", "skills"),
+      ];
     },
 
     instructionsFile(): string {

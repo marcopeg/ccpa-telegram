@@ -134,8 +134,12 @@ export function createOpencodeAdapter(
       return { text: result.output || "No response received" };
     },
 
-    skillsDir(projectCwd: string): string {
-      return join(projectCwd, ".claude", "skills");
+    skillsDirs(projectCwd: string): string[] {
+      return [
+        join(projectCwd, ".agents", "skills"),
+        join(projectCwd, ".opencode", "skills"),
+        join(projectCwd, ".claude", "skills"),
+      ];
     },
 
     instructionsFile(): string {

@@ -23,7 +23,7 @@ function formatCommandList(entries: CommandEntry[]): string {
  */
 async function buildHalCommands(ctx: ProjectContext): Promise<string> {
   const { config, logger, engine } = ctx;
-  const skillsDir = engine.skillsDir(config.cwd);
+  const skillsDirs = engine.skillsDirs(config.cwd);
 
   const enabled = {
     start: config.commands.start.enabled,
@@ -37,7 +37,7 @@ async function buildHalCommands(ctx: ProjectContext): Promise<string> {
     config.cwd,
     config.configDir,
     logger,
-    skillsDir,
+    skillsDirs,
     enabled,
   );
 

@@ -20,7 +20,7 @@ export function startCommandWatcher(
   projectCwd: string,
   configDir: string,
   logger: pino.Logger,
-  skillsDir?: string,
+  skillsDirs?: string[],
   enabled?: CommandEnabledFlags,
 ): CommandWatcher {
   const projectCommandDir = join(projectCwd, ".hal", "commands");
@@ -34,7 +34,7 @@ export function startCommandWatcher(
         projectCwd,
         configDir,
         logger,
-        skillsDir,
+        skillsDirs,
         enabled,
       );
       await bot.api.setMyCommands(
@@ -77,8 +77,8 @@ export function startCommandWatcher(
       const chokidar = await import("chokidar");
 
       const watchPaths = [projectCommandDir, globalCommandDir];
-      if (skillsDir) {
-        watchPaths.push(skillsDir);
+      if (skillsDirs) {
+        watchPaths.push(...skillsDirs);
       }
 
       const watcher = chokidar.watch(watchPaths, {
@@ -129,7 +129,7 @@ export function startCommandWatcher(
 
       watcherInstance = watcher;
       logger.debug(
-        { projectCommandDir, globalCommandDir, skillsDir },
+        { projectCommandDir, globalCommandDir, skillsDirs },
         "Command watcher started",
       );
     } catch (err) {

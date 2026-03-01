@@ -754,14 +754,23 @@ The project-level context object. Useful fields:
 
 ### Skills
 
-[Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) live in `.claude/skills/` inside the project directory (shared across all engines). Each skill is a folder containing a `SKILL.md` file with a YAML frontmatter block and a prompt body:
+Skills follow the [Agent Skills standard](https://agentskills.io/). Each engine looks for skills in engine-specific directories (highest priority first):
+
+| Engine    | Skill directories (priority order)                     |
+|-----------|--------------------------------------------------------|
+| Claude    | `.claude/skills`                                       |
+| Codex     | `.agents/skills`                                       |
+| Copilot   | `.agents/skills`, `.github/skills`, `.claude/skills`   |
+| OpenCode  | `.agents/skills`, `.opencode/skills`, `.claude/skills` |
+| Cursor    | `.agents/skills`, `.cursor/skills`                     |
+
+When the same skill name exists in multiple directories, the highest-priority directory wins (first-found). Each skill is a folder containing a `SKILL.md` file with a YAML frontmatter block and a prompt body:
 
 ```
 {project-cwd}/
-└── .claude/
-    └── skills/
-        └── chuck/
-            └── SKILL.md
+└── .agents/skills/       # or .claude/skills/, .github/skills/, etc.
+    └── chuck/
+        └── SKILL.md
 ```
 
 ```markdown
@@ -786,7 +795,7 @@ Skills can be **overridden per-project**: create a `.hal/commands/{name}.mjs` fi
 **Command precedence** (highest wins):
 
 ```
-project .hal/commands/{name}.mjs  >  global .hal/commands/{name}.mjs  >  .claude/skills/{name}/
+project .hal/commands/{name}.mjs  >  global .hal/commands/{name}.mjs  >  engine skills (see table above)
 ```
 
 See [`examples/obsidian/.claude/skills/chuck/`](examples/obsidian/.claude/skills/chuck/SKILL.md) and [`examples/obsidian/.claude/skills/weather/`](examples/obsidian/.claude/skills/weather/SKILL.md) for example skills.

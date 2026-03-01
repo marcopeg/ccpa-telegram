@@ -60,8 +60,8 @@ export interface EngineAdapter {
   ): Promise<EngineResult>;
   /** Parse raw result into user-facing response */
   parse(result: EngineResult): ParsedResponse;
-  /** Return the skills directory path for a project */
-  skillsDir(projectCwd: string): string;
+  /** Return an ordered list of skill directories for a project (highest priority first) */
+  skillsDirs(projectCwd: string): string[];
   /** Return the instructions filename for init scaffolding */
   instructionsFile(): string;
 }

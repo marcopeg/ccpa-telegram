@@ -1,6 +1,6 @@
 import { join, resolve } from "node:path";
 import type { Context } from "grammy";
-import { createAgent, getSkillsDir } from "../../agent/index.js";
+import { createAgent, getSkillsDirs } from "../../agent/index.js";
 import { resolveContext } from "../../context/resolver.js";
 import { getDefaultEngineModel } from "../../default-models.js";
 import { sendChunkedResponse } from "../../telegram/chunker.js";
@@ -103,7 +103,7 @@ export function createTextHandler(ctx: ProjectContext) {
         // No .mjs handler — check if this is a registered skill
         const skillEntry = await resolveSkillEntry(
           commandName,
-          getSkillsDir(config.cwd, ctx),
+          getSkillsDirs(config.cwd, ctx),
           logger,
         );
 

@@ -127,12 +127,12 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   };
 
   // Register project-specific commands and skills with Telegram on startup
-  const skillsDir = engine.skillsDir(config.cwd);
+  const skillsDirs = engine.skillsDirs(config.cwd);
   const commands = await loadCommands(
     config.cwd,
     config.configDir,
     logger,
-    skillsDir,
+    skillsDirs,
     enabledFlags,
   );
   if (commands.length > 0) {
@@ -151,7 +151,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     config.cwd,
     config.configDir,
     logger,
-    skillsDir,
+    skillsDirs,
     enabledFlags,
   );
 
