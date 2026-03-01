@@ -50,17 +50,45 @@ export function createCodexAdapter(
       const continueSessionRequested =
         config.engineSession && continueSession !== false;
 
-      // Non-interactive: `codex exec` for fresh; `codex exec resume --last` for continue
+      // Non-interactive: `codex exec` for fresh; `codex exec resume --last` for continue.
+      // Permission flags must come right after "exec" (before "resume"/"-C") or Codex rejects them.
       const args: string[] = ["exec"];
+
+      const codex = config.codex;
+      let tier: string;
+      if (codex.dangerouslyEnableYolo) {
+        args.push(
+          "--dangerously-bypass-approvals-and-sandbox",
+          "--skip-git-repo-check",
+        );
+        tier = "yolo";
+        logger.warn(
+          "Codex running with --yolo: all sandboxing and approvals disabled",
+        );
+      } else if (codex.fullDiskAccess) {
+        args.push("--sandbox", "danger-full-access", "--skip-git-repo-check");
+        tier = "full-disk-access";
+      } else if (codex.networkAccess) {
+        args.push(
+          "--full-auto",
+          "-c",
+          "sandbox_workspace_write.network_access=true",
+          "--skip-git-repo-check",
+        );
+        tier = "network-access";
+      } else {
+        args.push("--full-auto", "--skip-git-repo-check");
+        tier = "default";
+      }
+
+      if (model) {
+        args.push("-m", model);
+      }
       if (continueSessionRequested) {
         args.push("resume", "--last");
       } else {
         args.push("-C", cwd);
       }
-      if (model) {
-        args.push("-m", model);
-      }
-      args.push("--full-auto", "--skip-git-repo-check");
       args.push(fullPrompt);
 
       logger.info(
@@ -69,6 +97,7 @@ export function createCodexAdapter(
           args: args.slice(0, -1),
           cwd,
           continue: continueSessionRequested,
+          tier,
         },
         "Executing Codex CLI",
       );

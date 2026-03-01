@@ -9,8 +9,8 @@ The commands in the menu should be sorted:
 
 ## In Progress
 
+
 ## Ready Tasks
-- [018 — Codex engine permission flags](./ready/018.codex-flags.md) | [plan](./ready/018.codex-flags.plan.md)
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
 - [024 — Expose skills across engines](./ready/024.expose-skills.md) | [plan](./ready/024.expose-skills.plan.md)
 - [025 — Confirm /reset before deleting user data](./ready/025.reset-confirm.md) | [plan](./ready/025.reset-confirm.plan.md)
@@ -38,3 +38,4 @@ The commands in the menu should be sorted:
 - [015 — Config hot-reload](./completed/015.config-hot-reload.md) | [plan](./completed/015.config-hot-reload.plan.md)
 - [016 — Git support (global commands)](./completed/016.git-support.md) | [plan](./completed/016.git-support.plan.md)
 - [020 — Default models per engine](./completed/020.default-models.md) | [plan](./completed/020.default-models.plan.md)
+- [018 — Codex engine permission flags](./completed/018.codex-flags.md) | [plan](./completed/018.codex-flags.plan.md)

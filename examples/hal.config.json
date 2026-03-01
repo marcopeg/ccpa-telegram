@@ -30,7 +30,12 @@
       "cwd": "./obsidian",
       "active": true,
       "engine": {
-        "name": "codex"
+        "name": "codex",
+        "codex": {
+          "networkAccess": true,
+          "fullDiskAccess": true,
+          "__dangerouslyEnableYolo": true
+        }
       },
       "telegram": {
         "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"

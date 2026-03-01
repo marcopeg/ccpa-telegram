@@ -274,6 +274,7 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.engine.model` | Override the AI model (see [Model defaults](#model-defaults)) | _(per engine)_ |
 | `globals.engine.session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
 | `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
+| `globals.engine.codex.*` | Codex permission flags (see [Engine Configuration](#engine-configuration)) | all `false` |
 | `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
 | `globals.logging.flow` | Write logs to terminal | `true` |
 | `globals.logging.persist` | Write logs to file | `false` |
@@ -301,6 +302,7 @@ Each project entry creates one Telegram bot connected to one directory.
 | `engine.model` | No | Override the AI model (see [Model defaults](#model-defaults)) |
 | `engine.session` | No | Use persistent sessions for this project |
 | `engine.sessionMsg` | No | Message used when renewing session |
+| `engine.codex.*` | No | Codex permission flags (see [Engine Configuration](#engine-configuration)) |
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context Injection](#context-injection)) |
@@ -451,7 +453,7 @@ In this example:
 - **frontend** uses GitHub Copilot with the `gpt-5-mini` model
 - **legacy** is inactive and will be skipped at boot
 
-The `engine` object supports five fields:
+The `engine` object supports five fields. Engine-specific sub-objects (e.g. `codex`) can be used to control permissions and behavior per engine.
 
 | Field | Description | Default |
 |-------|-------------|---------|
@@ -460,6 +462,14 @@ The `engine` object supports five fields:
 | `model` | AI model override (omit for engine or HAL default; see [Model defaults](#model-defaults)) | _(per engine)_ |
 | `session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
 | `sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
+
+When using the Codex engine, the `engine` object also accepts a `codex` block:
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `codex.networkAccess` | Allow outbound network in shell commands | `false` |
+| `codex.fullDiskAccess` | Unrestricted filesystem access (implies network) | `false` |
+| `codex.dangerouslyEnableYolo` | Disable all sandboxing and approvals | `false` |
 
 #### Claude Code
 
@@ -479,8 +489,9 @@ The `engine` object supports five fields:
 
 - **CLI:** `codex` — install and authenticate via [Codex CLI](https://github.com/openai/codex-cli) (see [Prerequisites](#prerequisites)).
 - **Project file:** `AGENTS.md`.
-- **Config:** `engine.name: "codex"`. Optional: `engine.command`, `engine.model` (e.g. `gpt-5.1-codex-mini`), `engine.session`, `engine.sessionMsg`.
+- **Config:** `engine.name: "codex"`. Optional: `engine.command`, `engine.model` (e.g. `gpt-5.1-codex-mini`), `engine.session`, `engine.sessionMsg`, and the permission flags under `engine.codex` (see table above).
 - **Sessions:** When `engine.session` is `true`, the CLI is invoked with `codex exec resume --last` to continue the most recent session; otherwise `codex exec` starts a fresh run. `/clean` sends `engine.sessionMsg` without resuming, so the engine starts a new session; the engine's reply is sent to the user (same behaviour as Copilot).
+- **Permission flags:** HAL always passes `--skip-git-repo-check` so Codex runs without the trusted-directory check. You can escalate via `engine.codex`: `networkAccess` (allow outbound HTTP etc.), `fullDiskAccess` (unrestricted filesystem; implies network), or `dangerouslyEnableYolo` (disable all sandboxing and approvals). Higher tiers supersede lower ones. **Warning:** Use `dangerouslyEnableYolo` only in hardened environments (e.g. Docker, VMs). The example config in `examples/hal.config.json` enables all three codex flags for the Obsidian project so you can try full permissions locally.
 
 #### GitHub Copilot Models
 

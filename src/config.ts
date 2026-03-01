@@ -31,6 +31,15 @@ const EngineNameSchema = z.enum([
   "cursor",
 ]);
 
+const CodexEngineConfigSchema = z
+  .object({
+    networkAccess: z.boolean(),
+    fullDiskAccess: z.boolean(),
+    dangerouslyEnableYolo: z.boolean(),
+  })
+  .partial()
+  .optional();
+
 const EngineConfigSchema = z
   .object({
     name: EngineNameSchema,
@@ -38,6 +47,7 @@ const EngineConfigSchema = z
     model: z.string(),
     session: z.boolean(),
     sessionMsg: z.string(),
+    codex: CodexEngineConfigSchema,
   })
   .partial()
   .optional();
@@ -199,6 +209,11 @@ export interface ResolvedProjectConfig {
   engineModel: string | undefined;
   engineSession: boolean;
   engineSessionMsg: string;
+  codex: {
+    networkAccess: boolean;
+    fullDiskAccess: boolean;
+    dangerouslyEnableYolo: boolean;
+  };
   logging: { level: string; flow: boolean; persist: boolean };
   rateLimit: { max: number; windowMs: number };
   transcription: { model: string; showTranscription: boolean } | undefined;
@@ -380,6 +395,20 @@ export function resolveProjectConfig(
     engineSession: project.engine?.session ?? globals.engine?.session ?? true,
     engineSessionMsg:
       project.engine?.sessionMsg ?? globals.engine?.sessionMsg ?? "hi!",
+    codex: {
+      networkAccess:
+        project.engine?.codex?.networkAccess ??
+        globals.engine?.codex?.networkAccess ??
+        false,
+      fullDiskAccess:
+        project.engine?.codex?.fullDiskAccess ??
+        globals.engine?.codex?.fullDiskAccess ??
+        false,
+      dangerouslyEnableYolo:
+        project.engine?.codex?.dangerouslyEnableYolo ??
+        globals.engine?.codex?.dangerouslyEnableYolo ??
+        false,
+    },
     logging: {
       level: project.logging?.level ?? globals.logging?.level ?? "info",
       flow: project.logging?.flow ?? globals.logging?.flow ?? true,
