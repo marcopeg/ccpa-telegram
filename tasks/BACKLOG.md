@@ -8,7 +8,6 @@ The commands in the menu should be sorted:
 - Hal commands
 
 ## In Progress
-- [020 — Default models per engine](./020.default-models.md) | [plan](./020.default-models.plan.md)
 
 ## Ready Tasks
 - [016 — Git support (global commands)](./ready/016.git-support.md) | [plan](./ready/016.git-support.plan.md)
@@ -39,3 +38,4 @@ The commands in the menu should be sorted:
 - [010 — Add OpenCode Engine](./completed/010.opencode.md) | [plan](./completed/010.opencode.plan.md)
 - [011 — Add Cursor Engine](./completed/011.cursor.md)
 - [015 — Config hot-reload](./completed/015.config-hot-reload.md) | [plan](./completed/015.config-hot-reload.plan.md)
+- [020 — Default models per engine](./completed/020.default-models.md) | [plan](./completed/020.default-models.plan.md)

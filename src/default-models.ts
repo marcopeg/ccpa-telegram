@@ -10,7 +10,7 @@ import type { EngineName } from "./engine/types.js";
 const DEFAULT_ENGINE_MODEL: Partial<Record<EngineName, string>> = {
   claude: "default",
   opencode: "opencode/gpt-5-nano",
-  // TODO: Antigravity — add entry here once the engine adapter is implemented.
+  // TODO: Antigravity — add enty here once the engine adapter is implemented.
 };
 
 export function getDefaultEngineModel(engine: EngineName): string | undefined {
