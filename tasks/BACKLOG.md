@@ -21,6 +21,7 @@ The commands in the menu should be sorted:
 - [014 — Multi-thread project isolation](./drafts/014.multi-thread.md)
 - [021 — Switch model command](./drafts/021.switch-model.md)
 - [023 — Sort commands in /help and Telegram UI](./drafts/023.sort-commands.md)
+- [026 — Add Google Antigravity Engine](./drafts/026.antigravity-engine.md)
 
 ## Completed
 
