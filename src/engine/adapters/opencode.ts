@@ -12,8 +12,8 @@ import type {
 const DEFAULT_COMMAND = "opencode";
 
 /**
- * Stub adapter for OpenCode CLI.
- * TODO: Confirm exact CLI flags, streaming support, and output format.
+ * Adapter for OpenCode CLI. Non-interactive: opencode run [-m model] [-c] "<prompt>".
+ * Sessions and config are scoped by process CWD — always spawn with cwd: config.cwd.
  */
 export function createOpencodeAdapter(
   command?: string,
@@ -40,26 +40,44 @@ export function createOpencodeAdapter(
       options: EngineExecuteOptions,
       ctx: ProjectContext,
     ): Promise<EngineResult> {
+      const { onProgress, continueSession } = options;
       const { config, logger } = ctx;
 
       const fullPrompt = await buildContextualPrompt(options, ctx);
 
-      // TODO: Confirm exact opencode CLI flags — using best-guess values.
-      const args: string[] = ["-p", fullPrompt];
+      const continueSessionRequested =
+        config.engineSession && continueSession !== false;
 
-      // Set model if specified
+      const args: string[] = ["run"];
       if (model) {
-        args.push("--model", model);
+        args.push("-m", model);
       }
+      if (continueSessionRequested) {
+        args.push("-c");
+      }
+      args.push(fullPrompt);
 
       const cwd = config.cwd;
-      logger.info({ command: cmd, cwd }, "Executing OpenCode CLI");
-      logger.warn("OpenCode adapter is a stub — CLI flags may need adjustment");
+      logger.info(
+        {
+          command: cmd,
+          args: args.slice(0, -1),
+          cwd,
+          continue: continueSessionRequested,
+        },
+        "Executing OpenCode CLI",
+      );
+
+      // Don't load ~/.claude/CLAUDE.md so the model doesn't say "I'm Claude"
+      const env = {
+        ...process.env,
+        OPENCODE_DISABLE_CLAUDE_CODE_PROMPT: "true",
+      };
 
       return new Promise((resolve) => {
         const proc = spawn(cmd, args, {
           cwd,
-          env: process.env,
+          env,
           stdio: ["ignore", "pipe", "pipe"],
         });
 
@@ -67,7 +85,11 @@ export function createOpencodeAdapter(
         let stderrOutput = "";
 
         proc.stdout.on("data", (data: Buffer) => {
-          stdout += data.toString();
+          const chunk = data.toString();
+          stdout += chunk;
+          if (onProgress && chunk.trim()) {
+            onProgress("OpenCode is responding...");
+          }
         });
 
         proc.stderr.on("data", (data: Buffer) => {
@@ -113,7 +135,6 @@ export function createOpencodeAdapter(
     },
 
     skillsDir(projectCwd: string): string {
-      // All engines share .claude/skills/ for now
       return join(projectCwd, ".claude", "skills");
     },
 

@@ -13,8 +13,8 @@ const DEFAULT_CLEAN_TEMPLATE =
  * Shared session-reset logic used by /clean and /start (when configured).
  *
  * - Always clears local session state (session.json).
- * - For active-reset engines (copilot, codex): sends sessionMsg without
- *   continueSession to force a new engine session, replies with engine output.
+ * - For active-reset engines (copilot, codex, opencode, cursor): sends sessionMsg
+ *   without continueSession to force a new engine session, replies with engine output.
  * - For passive engines (claude, etc.): static confirmation reply.
  *
  * When `silent` is true, no reply is sent to the user (caller handles messaging).
@@ -40,6 +40,7 @@ export async function resetSession(
   if (
     config.engine === "copilot" ||
     config.engine === "codex" ||
+    config.engine === "opencode" ||
     config.engine === "cursor"
   ) {
     const statusMsg = await gramCtx.reply("_Starting new session..._", {

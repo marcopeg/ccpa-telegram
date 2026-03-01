@@ -30,7 +30,7 @@
       "cwd": "./obsidian",
       "active": true,
       "engine": {
-        "name": "cursor"
+        "name": "opencode"
       },
       "telegram": {
         "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"
