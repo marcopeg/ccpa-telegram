@@ -8,7 +8,6 @@ The commands in the menu should be sorted:
 - Hal commands
 
 ## In Progress
-- [024 — Expose skills across engines](./024.expose-skills.md) | [plan](./024.expose-skills.plan.md)
 
 ## Ready Tasks
 - [021 — Switch model command](./ready/021.switch-model.md) | [plan](./ready/021.switch-model.plan.md)
@@ -39,3 +38,4 @@ The commands in the menu should be sorted:
 - [020 — Default models per engine](./completed/020.default-models.md) | [plan](./completed/020.default-models.plan.md)
 - [018 — Codex engine permission flags](./completed/018.codex-flags.md) | [plan](./completed/018.codex-flags.plan.md)
 - [025 — Confirm /reset before deleting user data](./completed/025.reset-confirm.md) | [plan](./completed/025.reset-confirm.plan.md)
+- [024 — Expose skills across engines](./completed/024.expose-skills.md) | [plan](./completed/024.expose-skills.plan.md)
