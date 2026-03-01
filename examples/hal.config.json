@@ -30,7 +30,7 @@
       "cwd": "./obsidian",
       "active": true,
       "engine": {
-        "name": "cursor",
+        "name": "opencode",
         "_codex": {
           "networkAccess": true,
           "fullDiskAccess": true,
