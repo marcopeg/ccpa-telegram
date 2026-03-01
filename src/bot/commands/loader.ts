@@ -24,6 +24,19 @@ export interface CommandEnabledFlags {
   git: boolean;
 }
 
+// Canonical display/menu order for command sources
+const SOURCE_ORDER: Record<CommandSource, number> = {
+  project: 0,
+  skill: 1,
+  system: 2,
+  builtin: 3,
+  git: 4,
+};
+
+function sortBySource(a: CommandEntry, b: CommandEntry): number {
+  return SOURCE_ORDER[a.source] - SOURCE_ORDER[b.source];
+}
+
 const TELEGRAM_COMMAND_RE = /^[a-z0-9_]{1,32}$/;
 
 function isValidTelegramCommandName(name: string): boolean {
@@ -380,7 +393,7 @@ export async function loadCommands(
     }
   }
 
-  return Array.from(map.values());
+  return Array.from(map.values()).sort(sortBySource);
 }
 
 /**

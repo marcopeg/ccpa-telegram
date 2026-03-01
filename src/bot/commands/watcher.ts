@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Bot } from "grammy";
 import type pino from "pino";
@@ -79,6 +80,12 @@ export function startCommandWatcher(
       const watchPaths = [projectCommandDir, globalCommandDir];
       if (skillsDirs) {
         watchPaths.push(...skillsDirs);
+      }
+
+      // Ensure all watched directories exist so chokidar can establish
+      // real fs watches from the start (it won't detect dirs created later)
+      for (const dir of watchPaths) {
+        mkdirSync(dir, { recursive: true });
       }
 
       const watcher = chokidar.watch(watchPaths, {

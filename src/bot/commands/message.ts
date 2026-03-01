@@ -19,7 +19,7 @@ function formatCommandList(entries: CommandEntry[]): string {
 
 /**
  * Build the HAL_COMMANDS formatted string divided into 5 sections by source:
- * Project Commands, Project Skills, System Commands, Hal Commands, Git Commands.
+ * Project Commands, Project Skills, System Commands, Hal Commands, Versioning.
  */
 async function buildHalCommands(ctx: ProjectContext): Promise<string> {
   const { config, logger, engine } = ctx;
@@ -78,7 +78,7 @@ async function buildHalCommands(ctx: ProjectContext): Promise<string> {
   if (halCommands.length > 0)
     sections.push(`*Hal Commands:*\n${formatCommandList(halCommands)}`);
   if (gitCommands.length > 0)
-    sections.push(`*Git Commands:*\n${formatCommandList(gitCommands)}`);
+    sections.push(`*Versioning:*\n${formatCommandList(gitCommands)}`);
 
   return sections.join("\n\n");
 }

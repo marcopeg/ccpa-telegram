@@ -12,7 +12,6 @@ The commands in the menu should be sorted:
 ## Ready Tasks
 - [021 — Switch model command](./ready/021.switch-model.md) | [plan](./ready/021.switch-model.plan.md)
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
-- [023 — Sort commands in /help and Telegram UI](./ready/023.sort-commands.md) | [plan](./ready/023.sort-commands.plan.md)
 
 ## Drafts
 
@@ -39,3 +38,4 @@ The commands in the menu should be sorted:
 - [025 — Confirm /reset before deleting user data](./completed/025.reset-confirm.md) | [plan](./completed/025.reset-confirm.plan.md)
 - [024 — Expose skills across engines](./completed/024.expose-skills.md) | [plan](./completed/024.expose-skills.plan.md)
 - [026 — Add Google Antigravity Engine](./completed/026.antigravity-engine.md) | [plan](./completed/026.antigravity-engine.plan.md)
+- [023 — Sort commands in /help and Telegram UI](./completed/023.sort-commands.md) | [plan](./completed/023.sort-commands.plan.md)
