@@ -1,3 +1,4 @@
+import { createAntigravityAdapter } from "./adapters/antigravity.js";
 import { createClaudeAdapter } from "./adapters/claude.js";
 import { createCodexAdapter } from "./adapters/codex.js";
 import { createCopilotAdapter } from "./adapters/copilot.js";
@@ -13,6 +14,7 @@ const factories: Record<EngineName, AdapterFactory> = {
   codex: createCodexAdapter,
   opencode: createOpencodeAdapter,
   cursor: createCursorAdapter,
+  antigravity: createAntigravityAdapter,
 };
 
 /**

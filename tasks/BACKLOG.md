@@ -8,12 +8,12 @@ The commands in the menu should be sorted:
 - Hal commands
 
 ## In Progress
+- [026 — Add Google Antigravity Engine](./026.antigravity-engine.md) | [plan](./026.antigravity-engine.plan.md)
 
 ## Ready Tasks
 - [021 — Switch model command](./ready/021.switch-model.md) | [plan](./ready/021.switch-model.plan.md)
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
 - [023 — Sort commands in /help and Telegram UI](./ready/023.sort-commands.md) | [plan](./ready/023.sort-commands.plan.md)
-- [026 — Add Google Antigravity Engine](./ready/026.antigravity-engine.md) | [plan](./ready/026.antigravity-engine.plan.md)
 
 ## Drafts
 

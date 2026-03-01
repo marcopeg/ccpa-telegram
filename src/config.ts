@@ -29,6 +29,7 @@ const EngineNameSchema = z.enum([
   "codex",
   "opencode",
   "cursor",
+  "antigravity",
 ]);
 
 const CodexEngineConfigSchema = z
@@ -36,6 +37,14 @@ const CodexEngineConfigSchema = z
     networkAccess: z.boolean(),
     fullDiskAccess: z.boolean(),
     dangerouslyEnableYolo: z.boolean(),
+  })
+  .partial()
+  .optional();
+
+const AntigravityEngineConfigSchema = z
+  .object({
+    approvalMode: z.enum(["default", "auto_edit", "yolo"]),
+    sandbox: z.boolean(),
   })
   .partial()
   .optional();
@@ -48,6 +57,7 @@ const EngineConfigSchema = z
     session: z.boolean(),
     sessionMsg: z.string(),
     codex: CodexEngineConfigSchema,
+    antigravity: AntigravityEngineConfigSchema,
   })
   .partial()
   .optional();
@@ -227,6 +237,10 @@ export interface ResolvedProjectConfig {
     networkAccess: boolean;
     fullDiskAccess: boolean;
     dangerouslyEnableYolo: boolean;
+  };
+  antigravity: {
+    approvalMode: "default" | "auto_edit" | "yolo";
+    sandbox: boolean;
   };
   logging: { level: string; flow: boolean; persist: boolean };
   rateLimit: { max: number; windowMs: number };
@@ -429,6 +443,16 @@ export function resolveProjectConfig(
       dangerouslyEnableYolo:
         project.engine?.codex?.dangerouslyEnableYolo ??
         globals.engine?.codex?.dangerouslyEnableYolo ??
+        false,
+    },
+    antigravity: {
+      approvalMode:
+        project.engine?.antigravity?.approvalMode ??
+        globals.engine?.antigravity?.approvalMode ??
+        "yolo",
+      sandbox:
+        project.engine?.antigravity?.sandbox ??
+        globals.engine?.antigravity?.sandbox ??
         false,
     },
     logging: {

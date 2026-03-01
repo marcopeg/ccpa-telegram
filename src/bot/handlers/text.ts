@@ -244,10 +244,8 @@ export function createTextHandler(ctx: ProjectContext) {
         logger.debug({ sessionId: result.sessionId }, "Session saved");
       }
 
-      const responseText = result.success
-        ? result.output
-        : result.error || "An error occurred";
-      await sendChunkedResponse(gramCtx, responseText);
+      const parsed = ctx.engine.parse(result);
+      await sendChunkedResponse(gramCtx, parsed.text);
 
       const filesSent = await sendDownloadFiles(gramCtx, userDir, ctx);
       if (filesSent > 0) {

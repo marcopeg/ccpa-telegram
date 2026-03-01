@@ -30,8 +30,8 @@
       "cwd": "./obsidian",
       "active": true,
       "engine": {
-        "name": "codex",
-        "codex": {
+        "name": "cursor",
+        "_codex": {
           "networkAccess": true,
           "fullDiskAccess": true,
           "__dangerouslyEnableYolo": true
