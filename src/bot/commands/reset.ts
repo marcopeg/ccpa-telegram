@@ -21,7 +21,7 @@ export function createResetHandler(ctx: ProjectContext) {
     try {
       await clearUserData(userDir);
 
-      const template = ctx.config.commands.reset?.message ?? DEFAULT_TEMPLATE;
+      const template = ctx.config.commands.reset.message ?? DEFAULT_TEMPLATE;
       const message = await resolveCommandMessage(template, ctx, gramCtx);
       await gramCtx.reply(message, { parse_mode: "Markdown" });
     } catch (_error) {

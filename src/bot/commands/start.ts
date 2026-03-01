@@ -11,11 +11,11 @@ export function createStartHandler(ctx: ProjectContext) {
     const { config, logger } = ctx;
     const startCfg = config.commands.start;
 
-    const template = startCfg?.message ?? DEFAULT_TEMPLATE;
+    const template = startCfg.message ?? DEFAULT_TEMPLATE;
     const message = await resolveCommandMessage(template, ctx, gramCtx);
     await gramCtx.reply(message, { parse_mode: "Markdown" });
 
-    if (startCfg?.sessionReset) {
+    if (startCfg.sessionReset) {
       try {
         await resetSession(ctx, gramCtx, { silent: true });
       } catch (err) {

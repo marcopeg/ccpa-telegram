@@ -1,6 +1,16 @@
 import { Bot } from "grammy";
+import {
+  createGitCallbackHandler,
+  createGitCleanHandler,
+  createGitCommitHandler,
+  createGitInitHandler,
+  createGitStatusHandler,
+} from "./bot/commands/git/index.js";
 import { createHelpHandler } from "./bot/commands/help.js";
-import { loadCommands } from "./bot/commands/loader.js";
+import {
+  type CommandEnabledFlags,
+  loadCommands,
+} from "./bot/commands/loader.js";
 import { createResetHandler } from "./bot/commands/reset.js";
 import { createCleanHandler } from "./bot/commands/session.js";
 import { createStartHandler } from "./bot/commands/start.js";
@@ -48,11 +58,20 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   bot.use(createAuthMiddleware(projectCtx));
   bot.use(rateLimitMw);
 
-  // Wire commands
-  bot.command("start", createStartHandler(projectCtx));
-  bot.command("help", createHelpHandler(projectCtx));
-  bot.command("reset", createResetHandler(projectCtx));
-  bot.command("clean", createCleanHandler(projectCtx));
+  // Wire commands (only when enabled)
+  const cmd = config.commands;
+  if (cmd.start.enabled) bot.command("start", createStartHandler(projectCtx));
+  if (cmd.help.enabled) bot.command("help", createHelpHandler(projectCtx));
+  if (cmd.reset.enabled) bot.command("reset", createResetHandler(projectCtx));
+  if (cmd.clean.enabled) bot.command("clean", createCleanHandler(projectCtx));
+
+  if (cmd.git.enabled) {
+    bot.command("git_init", createGitInitHandler(projectCtx));
+    bot.command("git_status", createGitStatusHandler(projectCtx));
+    bot.command("git_commit", createGitCommitHandler(projectCtx));
+    bot.command("git_clean", createGitCleanHandler(projectCtx));
+    bot.on("callback_query:data", createGitCallbackHandler(projectCtx));
+  }
 
   // Wire handlers
   bot.on("message:text", createTextHandler(projectCtx));
@@ -91,6 +110,15 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   // Wait until the bot reports it's running (or fails)
   await startedPromise;
 
+  // Derive enabled flags from resolved config
+  const enabledFlags: CommandEnabledFlags = {
+    start: cmd.start.enabled,
+    help: cmd.help.enabled,
+    reset: cmd.reset.enabled,
+    clean: cmd.clean.enabled,
+    git: cmd.git.enabled,
+  };
+
   // Register project-specific commands and skills with Telegram on startup
   const skillsDir = engine.skillsDir(config.cwd);
   const commands = await loadCommands(
@@ -98,6 +126,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     config.configDir,
     logger,
     skillsDir,
+    enabledFlags,
   );
   if (commands.length > 0) {
     await bot.api.setMyCommands(
@@ -116,6 +145,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     config.configDir,
     logger,
     skillsDir,
+    enabledFlags,
   );
 
   return {

@@ -14,3 +14,9 @@ BACKLOG link convention (mandatory):
 State consistency rule:
 - remove the task entry from "In Progress" when adding it to "Completed"
 - ensure the task appears only in "Completed" after this skill finishes
+
+Completed ordering rule (mandatory):
+- treat the "Completed" section as a historical log ordered by completion time
+- when completing a task, append its entry to the end of the "Completed" list
+- never sort or reorder completed entries by numeric task id
+- never suggest sorting completed tasks numerically

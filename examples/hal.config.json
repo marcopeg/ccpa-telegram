@@ -47,6 +47,9 @@
           "message": {
             "from": ".hal/WELCOME.md"
           }
+        },
+        "git": {
+          "enabled": true
         }
       }
     },

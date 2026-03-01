@@ -53,14 +53,22 @@ const CommandMessageSchema = z
 
 const StartConfigSchema = z
   .object({
+    enabled: z.boolean().optional(),
     session: z.object({ reset: z.boolean() }).partial().optional(),
-    message: CommandMessageSchema,
+    message: CommandMessageSchema.optional(),
   })
   .optional();
 
 const SimpleCommandConfigSchema = z
   .object({
-    message: CommandMessageSchema,
+    enabled: z.boolean().optional(),
+    message: CommandMessageSchema.optional(),
+  })
+  .optional();
+
+const GitConfigSchema = z
+  .object({
+    enabled: z.boolean().optional(),
   })
   .optional();
 
@@ -70,6 +78,7 @@ const CommandsConfigSchema = z
     help: SimpleCommandConfigSchema,
     reset: SimpleCommandConfigSchema,
     clean: SimpleCommandConfigSchema,
+    git: GitConfigSchema,
   })
   .optional();
 
@@ -195,13 +204,11 @@ export interface ResolvedProjectConfig {
   transcription: { model: string; showTranscription: boolean } | undefined;
   context: Record<string, string> | undefined;
   commands: {
-    start?: {
-      sessionReset: boolean;
-      message: string;
-    };
-    help?: { message: string };
-    reset?: { message: string };
-    clean?: { message: string };
+    start: { enabled: boolean; sessionReset: boolean; message?: string };
+    help: { enabled: boolean; message?: string };
+    reset: { enabled: boolean; message?: string };
+    clean: { enabled: boolean; message?: string };
+    git: { enabled: boolean };
   };
 }
 
@@ -301,29 +308,57 @@ export function resolveProjectConfig(
     return msg.text!;
   }
 
+  // Resolve command enabled flags (project > globals > default)
   const rawStart = project.commands?.start ?? globals.commands?.start;
-  let resolvedStart: ResolvedProjectConfig["commands"]["start"];
-  if (rawStart) {
-    resolvedStart = {
-      sessionReset: rawStart.session?.reset ?? false,
-      message: resolveMessageTemplate(rawStart.message, "commands.start"),
-    };
-  }
-
   const rawHelp = project.commands?.help ?? globals.commands?.help;
-  const resolvedHelp = rawHelp
-    ? { message: resolveMessageTemplate(rawHelp.message, "commands.help") }
-    : undefined;
-
   const rawReset = project.commands?.reset ?? globals.commands?.reset;
-  const resolvedReset = rawReset
-    ? { message: resolveMessageTemplate(rawReset.message, "commands.reset") }
-    : undefined;
-
   const rawClean = project.commands?.clean ?? globals.commands?.clean;
-  const resolvedClean = rawClean
-    ? { message: resolveMessageTemplate(rawClean.message, "commands.clean") }
-    : undefined;
+
+  const resolvedCommands: ResolvedProjectConfig["commands"] = {
+    start: {
+      enabled:
+        project.commands?.start?.enabled ??
+        globals.commands?.start?.enabled ??
+        true,
+      sessionReset: rawStart?.session?.reset ?? false,
+      message: rawStart?.message
+        ? resolveMessageTemplate(rawStart.message, "commands.start")
+        : undefined,
+    },
+    help: {
+      enabled:
+        project.commands?.help?.enabled ??
+        globals.commands?.help?.enabled ??
+        true,
+      message: rawHelp?.message
+        ? resolveMessageTemplate(rawHelp.message, "commands.help")
+        : undefined,
+    },
+    reset: {
+      enabled:
+        project.commands?.reset?.enabled ??
+        globals.commands?.reset?.enabled ??
+        true,
+      message: rawReset?.message
+        ? resolveMessageTemplate(rawReset.message, "commands.reset")
+        : undefined,
+    },
+    clean: {
+      enabled:
+        project.commands?.clean?.enabled ??
+        globals.commands?.clean?.enabled ??
+        true,
+      message: rawClean?.message
+        ? resolveMessageTemplate(rawClean.message, "commands.clean")
+        : undefined,
+    },
+    git: {
+      enabled:
+        project.commands?.git?.enabled ??
+        globals.commands?.git?.enabled ??
+        false,
+    },
+  };
 
   return {
     slug,
@@ -368,12 +403,7 @@ export function resolveProjectConfig(
         }
       : undefined,
     context: hasContext ? { ...rootContext, ...project.context } : undefined,
-    commands: {
-      start: resolvedStart,
-      help: resolvedHelp,
-      reset: resolvedReset,
-      clean: resolvedClean,
-    },
+    commands: resolvedCommands,
   };
 }
 

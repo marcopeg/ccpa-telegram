@@ -89,7 +89,7 @@ export function createCleanHandler(ctx: ProjectContext) {
       await resetSession(ctx, gramCtx, { silent: true });
 
       const template =
-        ctx.config.commands.clean?.message ?? DEFAULT_CLEAN_TEMPLATE;
+        ctx.config.commands.clean.message ?? DEFAULT_CLEAN_TEMPLATE;
       const message = await resolveCommandMessage(template, ctx, gramCtx);
       await gramCtx.reply(message, { parse_mode: "Markdown" });
     } catch (error) {

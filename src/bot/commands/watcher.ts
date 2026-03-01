@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { Bot } from "grammy";
 import type pino from "pino";
-import { loadCommands } from "./loader.js";
+import { type CommandEnabledFlags, loadCommands } from "./loader.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -21,6 +21,7 @@ export function startCommandWatcher(
   configDir: string,
   logger: pino.Logger,
   skillsDir?: string,
+  enabled?: CommandEnabledFlags,
 ): CommandWatcher {
   const projectCommandDir = join(projectCwd, ".hal", "commands");
   const globalCommandDir = join(configDir, ".hal", "commands");
@@ -34,6 +35,7 @@ export function startCommandWatcher(
         configDir,
         logger,
         skillsDir,
+        enabled,
       );
       await bot.api.setMyCommands(
         commands.map((c) => ({

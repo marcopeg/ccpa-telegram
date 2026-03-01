@@ -5,12 +5,23 @@ import type pino from "pino";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
+export type CommandSource = "builtin" | "git" | "project" | "system" | "skill";
+
 export interface CommandEntry {
   command: string; // name without leading slash (e.g. "deploy")
   description: string; // from file's `description` export
-  filePath: string; // absolute path to the .mjs file, or "" for skills
+  filePath: string; // absolute path to the .mjs file, or "" for built-ins/skills
   skillPrompt?: string; // prompt body from SKILL.md (skills only)
   public?: boolean; // from SKILL.md frontmatter `public: true`
+  source: CommandSource; // where the command comes from
+}
+
+export interface CommandEnabledFlags {
+  start: boolean;
+  help: boolean;
+  reset: boolean;
+  clean: boolean;
+  git: boolean;
 }
 
 const TELEGRAM_COMMAND_RE = /^[a-z0-9_]{1,32}$/;
@@ -34,6 +45,7 @@ function globalCommandDir(configDir: string): string {
 async function importCommandFile(
   filePath: string,
   logger: pino.Logger,
+  source: CommandSource,
 ): Promise<CommandEntry | null> {
   try {
     // Cache-bust on every import so hot-reload always gets the latest version
@@ -63,6 +75,7 @@ async function importCommandFile(
       command,
       description: mod.description,
       filePath,
+      source,
     };
   } catch (err) {
     logger.error(
@@ -82,6 +95,7 @@ async function importCommandFile(
 async function scanCommandDir(
   dir: string,
   logger: pino.Logger,
+  source: CommandSource,
 ): Promise<CommandEntry[]> {
   if (!existsSync(dir)) {
     return [];
@@ -103,7 +117,7 @@ async function scanCommandDir(
 
   for (const file of mjsFiles) {
     const filePath = join(dir, file);
-    const entry = await importCommandFile(filePath, logger);
+    const entry = await importCommandFile(filePath, logger, source);
     if (entry !== null) {
       entries.push(entry);
     }
@@ -230,6 +244,7 @@ async function scanSkillsDir(
       filePath: "",
       skillPrompt: parsed.prompt,
       public: parsed.public,
+      source: "skill",
     });
   }
 
@@ -238,25 +253,72 @@ async function scanSkillsDir(
 
 // ─── Built-in commands ───────────────────────────────────────────────────────
 
-/**
- * Commands that are always registered with Telegram, regardless of
- * whether custom .mjs files or skills exist.
- */
 export const BUILTIN_COMMANDS: CommandEntry[] = [
-  { command: "start", description: "Welcome message", filePath: "" },
-  { command: "help", description: "Show help", filePath: "" },
+  {
+    command: "start",
+    description: "Welcome message",
+    filePath: "",
+    source: "builtin",
+  },
+  {
+    command: "help",
+    description: "Show help",
+    filePath: "",
+    source: "builtin",
+  },
   {
     command: "reset",
     description: "Wipes out all user data and resets the LLM session",
     filePath: "",
+    source: "builtin",
   },
-  { command: "clean", description: "Resets the LLM session", filePath: "" },
+  {
+    command: "clean",
+    description: "Resets the LLM session",
+    filePath: "",
+    source: "builtin",
+  },
 ];
+
+export const GIT_COMMANDS: CommandEntry[] = [
+  {
+    command: "git_init",
+    description: "Initialize a git repository",
+    filePath: "",
+    source: "git",
+  },
+  {
+    command: "git_status",
+    description: "Show git status",
+    filePath: "",
+    source: "git",
+  },
+  {
+    command: "git_commit",
+    description: "Commit changes",
+    filePath: "",
+    source: "git",
+  },
+  {
+    command: "git_clean",
+    description: "Revert uncommitted changes",
+    filePath: "",
+    source: "git",
+  },
+];
+
+const BUILTIN_ENABLED_MAP: Record<string, keyof CommandEnabledFlags> = {
+  start: "start",
+  help: "help",
+  reset: "reset",
+  clean: "clean",
+};
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
  * Scan command directories and optionally the skills dir, then return the merged list.
+ * When `enabled` flags are provided, disabled built-in/git commands are excluded.
  *
  * Precedence (lowest → highest):
  *   engine skills  <  global .hal/commands  <  project .hal/commands
@@ -266,20 +328,25 @@ export async function loadCommands(
   configDir: string,
   logger: pino.Logger,
   skillsDir?: string,
+  enabled?: CommandEnabledFlags,
 ): Promise<CommandEntry[]> {
   const globalDir = globalCommandDir(configDir);
   const projectDir = projectCommandDir(projectCwd);
 
-  // Load in ascending precedence order; later entries overwrite earlier ones
   const skillEntries = skillsDir ? await scanSkillsDir(skillsDir, logger) : [];
-  const globalEntries = await scanCommandDir(globalDir, logger);
-  const projectEntries = await scanCommandDir(projectDir, logger);
+  const globalEntries = await scanCommandDir(globalDir, logger, "system");
+  const projectEntries = await scanCommandDir(projectDir, logger, "project");
 
   const map = new Map<string, CommandEntry>();
 
-  // Seed built-in commands first (lowest precedence)
   for (const entry of BUILTIN_COMMANDS) {
     map.set(entry.command, entry);
+  }
+
+  if (enabled?.git) {
+    for (const entry of GIT_COMMANDS) {
+      map.set(entry.command, entry);
+    }
   }
 
   for (const entry of skillEntries) {
@@ -290,6 +357,14 @@ export async function loadCommands(
   }
   for (const entry of projectEntries) {
     map.set(entry.command, entry);
+  }
+
+  if (enabled) {
+    for (const [cmd, flag] of Object.entries(BUILTIN_ENABLED_MAP)) {
+      if (!enabled[flag]) {
+        map.delete(cmd);
+      }
+    }
   }
 
   return Array.from(map.values());
@@ -330,6 +405,7 @@ export async function resolveSkillEntry(
     description: parsed.description,
     filePath: "",
     skillPrompt: parsed.prompt,
+    source: "skill",
   };
 }
 

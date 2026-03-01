@@ -9,7 +9,7 @@ export function createHelpHandler(ctx: ProjectContext) {
   return async (gramCtx: Context): Promise<void> => {
     const helpCfg = ctx.config.commands.help;
 
-    const template = helpCfg?.message ?? DEFAULT_TEMPLATE;
+    const template = helpCfg.message ?? DEFAULT_TEMPLATE;
     const message = await resolveCommandMessage(template, ctx, gramCtx);
     await gramCtx.reply(message, { parse_mode: "Markdown" });
   };

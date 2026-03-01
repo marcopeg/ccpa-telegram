@@ -2,9 +2,7 @@ import type { Context } from "grammy";
 import { resolveContext, substituteMessage } from "../../context/resolver.js";
 import { getDefaultEngineModel } from "../../default-models.js";
 import type { ProjectContext } from "../../types.js";
-import { BUILTIN_COMMANDS, type CommandEntry, loadCommands } from "./loader.js";
-
-const BUILTIN_NAMES = new Set(BUILTIN_COMMANDS.map((c) => c.command));
+import { type CommandEntry, loadCommands } from "./loader.js";
 
 function escapeMarkdown(text: string): string {
   return text.replace(/[_*`[]/g, "\\$&").replace(/@/g, "@\u200B");
@@ -20,44 +18,67 @@ function formatCommandList(entries: CommandEntry[]): string {
 }
 
 /**
- * Build the HAL_COMMANDS formatted string divided into 3 sections:
- * built-in commands, programmatic (.mjs) commands, and public skill commands.
+ * Build the HAL_COMMANDS formatted string divided into 5 sections by source:
+ * Project Commands, Project Skills, System Commands, Hal Commands, Git Commands.
  */
 async function buildHalCommands(ctx: ProjectContext): Promise<string> {
   const { config, logger, engine } = ctx;
   const skillsDir = engine.skillsDir(config.cwd);
+
+  const enabled = {
+    start: config.commands.start.enabled,
+    help: config.commands.help.enabled,
+    reset: config.commands.reset.enabled,
+    clean: config.commands.clean.enabled,
+    git: config.commands.git.enabled,
+  };
+
   const all = await loadCommands(
     config.cwd,
     config.configDir,
     logger,
     skillsDir,
+    enabled,
   );
 
-  const builtins: CommandEntry[] = [];
-  const programmatic: CommandEntry[] = [];
+  const projectCommands: CommandEntry[] = [];
   const skills: CommandEntry[] = [];
+  const systemCommands: CommandEntry[] = [];
+  const halCommands: CommandEntry[] = [];
+  const gitCommands: CommandEntry[] = [];
 
   for (const entry of all) {
-    if (BUILTIN_NAMES.has(entry.command)) {
-      builtins.push(entry);
-    } else if (entry.skillPrompt && entry.public) {
-      skills.push(entry);
-    } else if (!entry.skillPrompt) {
-      programmatic.push(entry);
+    switch (entry.source) {
+      case "project":
+        projectCommands.push(entry);
+        break;
+      case "skill":
+        if (entry.public) skills.push(entry);
+        break;
+      case "system":
+        systemCommands.push(entry);
+        break;
+      case "builtin":
+        halCommands.push(entry);
+        break;
+      case "git":
+        gitCommands.push(entry);
+        break;
     }
   }
 
   const sections: string[] = [];
 
-  if (builtins.length > 0) {
-    sections.push(`*Commands:*\n${formatCommandList(builtins)}`);
-  }
-  if (programmatic.length > 0) {
-    sections.push(`*Custom Commands:*\n${formatCommandList(programmatic)}`);
-  }
-  if (skills.length > 0) {
-    sections.push(`*Skills:*\n${formatCommandList(skills)}`);
-  }
+  if (projectCommands.length > 0)
+    sections.push(`*Project Commands:*\n${formatCommandList(projectCommands)}`);
+  if (skills.length > 0)
+    sections.push(`*Project Skills:*\n${formatCommandList(skills)}`);
+  if (systemCommands.length > 0)
+    sections.push(`*System Commands:*\n${formatCommandList(systemCommands)}`);
+  if (halCommands.length > 0)
+    sections.push(`*Hal Commands:*\n${formatCommandList(halCommands)}`);
+  if (gitCommands.length > 0)
+    sections.push(`*Git Commands:*\n${formatCommandList(gitCommands)}`);
 
   return sections.join("\n\n");
 }
