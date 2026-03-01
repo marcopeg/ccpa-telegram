@@ -13,7 +13,7 @@ The commands in the menu should be sorted:
 ## Ready Tasks
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
 - [024 — Expose skills across engines](./ready/024.expose-skills.md) | [plan](./ready/024.expose-skills.plan.md)
-- [025 — Confirm /reset before deleting user data](./ready/025.reset-confirm.md) | [plan](./ready/025.reset-confirm.plan.md)
+- [026 — Add Google Antigravity Engine](./ready/026.antigravity-engine.md) | [plan](./ready/026.antigravity-engine.plan.md)
 
 ## Drafts
 
@@ -21,7 +21,6 @@ The commands in the menu should be sorted:
 - [014 — Multi-thread project isolation](./drafts/014.multi-thread.md)
 - [021 — Switch model command](./drafts/021.switch-model.md)
 - [023 — Sort commands in /help and Telegram UI](./drafts/023.sort-commands.md)
-- [026 — Add Google Antigravity Engine](./drafts/026.antigravity-engine.md)
 
 ## Completed
 
@@ -40,3 +39,4 @@ The commands in the menu should be sorted:
 - [016 — Git support (global commands)](./completed/016.git-support.md) | [plan](./completed/016.git-support.plan.md)
 - [020 — Default models per engine](./completed/020.default-models.md) | [plan](./completed/020.default-models.plan.md)
 - [018 — Codex engine permission flags](./completed/018.codex-flags.md) | [plan](./completed/018.codex-flags.plan.md)
+- [025 — Confirm /reset before deleting user data](./completed/025.reset-confirm.md) | [plan](./completed/025.reset-confirm.plan.md)

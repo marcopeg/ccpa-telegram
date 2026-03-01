@@ -11,7 +11,11 @@ import {
   type CommandEnabledFlags,
   loadCommands,
 } from "./bot/commands/loader.js";
-import { createResetHandler } from "./bot/commands/reset.js";
+import {
+  createResetCallbackHandler,
+  createResetHandler,
+} from "./bot/commands/reset.js";
+import { clearAllPrompts } from "./bot/commands/resetPrompt.js";
 import { createCleanHandler } from "./bot/commands/session.js";
 import { createStartHandler } from "./bot/commands/start.js";
 import { startCommandWatcher } from "./bot/commands/watcher.js";
@@ -62,7 +66,10 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   const cmd = config.commands;
   if (cmd.start.enabled) bot.command("start", createStartHandler(projectCtx));
   if (cmd.help.enabled) bot.command("help", createHelpHandler(projectCtx));
-  if (cmd.reset.enabled) bot.command("reset", createResetHandler(projectCtx));
+  if (cmd.reset.enabled) {
+    bot.command("reset", createResetHandler(projectCtx, bot.api));
+    bot.on("callback_query:data", createResetCallbackHandler(projectCtx));
+  }
   if (cmd.clean.enabled) bot.command("clean", createCleanHandler(projectCtx));
 
   if (cmd.git.enabled) {
@@ -151,6 +158,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   return {
     stop: async () => {
       await watcher.stop();
+      clearAllPrompts();
       rateLimitCleanup();
       await bot.stop(); // Stops polling; Grammy waits for in-flight updates to finish
       await runningPromise;

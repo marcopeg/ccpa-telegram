@@ -76,6 +76,20 @@ const SimpleCommandConfigSchema = z
   })
   .optional();
 
+const ResetCommandConfigSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    session: z.object({ reset: z.boolean() }).partial().optional(),
+    message: z
+      .object({
+        confirm: z.string().optional(),
+        done: z.string().optional(),
+      })
+      .optional(),
+    timeout: z.number().positive().optional(),
+  })
+  .optional();
+
 const GitConfigSchema = z
   .object({
     enabled: z.boolean().optional(),
@@ -86,7 +100,7 @@ const CommandsConfigSchema = z
   .object({
     start: StartConfigSchema,
     help: SimpleCommandConfigSchema,
-    reset: SimpleCommandConfigSchema,
+    reset: ResetCommandConfigSchema,
     clean: SimpleCommandConfigSchema,
     git: GitConfigSchema,
   })
@@ -221,7 +235,12 @@ export interface ResolvedProjectConfig {
   commands: {
     start: { enabled: boolean; sessionReset: boolean; message?: string };
     help: { enabled: boolean; message?: string };
-    reset: { enabled: boolean; message?: string };
+    reset: {
+      enabled: boolean;
+      sessionReset: boolean;
+      message: { confirm?: string; done?: string };
+      timeout: number;
+    };
     clean: { enabled: boolean; message?: string };
     git: { enabled: boolean };
   };
@@ -354,9 +373,12 @@ export function resolveProjectConfig(
         project.commands?.reset?.enabled ??
         globals.commands?.reset?.enabled ??
         true,
-      message: rawReset?.message
-        ? resolveMessageTemplate(rawReset.message, "commands.reset")
-        : undefined,
+      sessionReset: rawReset?.session?.reset ?? false,
+      message: {
+        confirm: rawReset?.message?.confirm,
+        done: rawReset?.message?.done,
+      },
+      timeout: rawReset?.timeout ?? 60,
     },
     clean: {
       enabled:

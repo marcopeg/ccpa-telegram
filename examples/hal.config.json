@@ -53,6 +53,15 @@
             "from": ".hal/WELCOME.md"
           }
         },
+        "reset": {
+          "session": {
+            "reset": true
+          },
+          "message": {
+            "confirm": "Reset totally?",
+            "done": "All done!"
+          }
+        },
         "git": {
           "enabled": true
         }

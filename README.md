@@ -324,7 +324,12 @@ Customize the built-in `/start`, `/help`, `/reset`, and `/clean` command message
         "message": { "from": "./HELP.md" }
       },
       "reset": {
-        "message": { "text": "All user data wiped. Starting fresh." }
+        "session": { "reset": true },
+        "timeout": 120,
+        "message": {
+          "confirm": "This will erase everything. Proceed?",
+          "done": "All wiped!"
+        }
       },
       "clean": {
         "message": { "text": "Session reset. Ready for a new conversation." }
@@ -345,7 +350,16 @@ Setting both `text` and `from`, or neither, is a configuration error.
 
 The `/start` command additionally supports `session.reset` (boolean, default `false`). When `true`, the session is reset after sending the welcome message (same effect as `/clean`).
 
-The `/reset` command always wipes all user data (uploads, downloads, session) regardless of configuration — the custom message only changes what the user sees afterward.
+The `/reset` command asks for confirmation before deleting user data. It sends an inline keyboard with **Yes, go ahead!** and **Abort!** buttons. The prompt auto-expires after `timeout` seconds (default `60`), removing the buttons. Sending `/reset` again while a prompt is active invalidates the previous one.
+
+`/reset` supports these options:
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `session.reset` | Also reset the LLM session after wiping data | `false` |
+| `timeout` | Seconds before the confirmation prompt auto-expires | `60` |
+| `message.confirm` | Custom confirmation prompt text | `"This is going to delete the user data folder. Are you sure?"` |
+| `message.done` | Custom message shown after successful reset | `"done!"` |
 
 The `/clean` command always resets the LLM session regardless of configuration — user files (uploads, downloads) are preserved. The custom message only changes what the user sees afterward.
 
@@ -355,7 +369,7 @@ The `/clean` command always resets the LLM session regardless of configuration �
 |---------|-----------------|
 | `/start` | `Welcome to ${project.name}!` followed by the command list |
 | `/help` | The command list |
-| `/reset` | `All user data wiped and session reset. Your next message starts fresh.` |
+| `/reset` | Confirmation prompt: `"This is going to delete the user data folder. Are you sure?"`, then `"done!"` on confirm |
 | `/clean` | `Session reset. Your next message starts a new conversation.` |
 
 Messages are sent with Telegram's legacy Markdown formatting. Supported syntax: `*bold*`, `_italic_`, `` `inline code` ``, ` ```code blocks``` `, `[link text](url)`.
