@@ -19,6 +19,10 @@ export interface ResolveContextOptions {
   projectName: string | undefined;
   projectSlug: string;
   logger: pino.Logger;
+  engineName: string;
+  engineCommand: string;
+  engineModel: string | undefined;
+  engineDefaultModel: string | undefined;
 }
 
 // ─── Boot-time shell evaluation (#{}) ───────────────────────────────────────
@@ -185,16 +189,26 @@ export async function resolveContext(
     projectName,
     projectSlug,
     logger,
+    engineName,
+    engineCommand,
+    engineModel,
+    engineDefaultModel,
   } = options;
 
-  // 1. Implicit context (bot.* + sys.* + project.*)
+  // 1. Implicit context (bot.* + sys.* + project.* + engine.*)
   const slug = deriveProjectSlug(projectCwd);
-  const implicit = {
+  const implicit: Record<string, string> = {
     ...buildImplicitContext(gramCtx),
     ...buildSystemContext(),
     "project.name": projectName ?? projectSlug,
     "project.cwd": projectCwd,
     "project.slug": slug,
+    "engine.name": engineName,
+    "engine.command": engineCommand,
+    ...(engineModel ? { "engine.model": engineModel } : {}),
+    ...(engineDefaultModel
+      ? { "engine.defaultModel": engineDefaultModel }
+      : {}),
   };
 
   // 2. Merge config context on top (config wins for explicit overrides)

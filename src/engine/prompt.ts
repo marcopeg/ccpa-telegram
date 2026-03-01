@@ -1,4 +1,5 @@
 import { formatContextPrompt, resolveContext } from "../context/resolver.js";
+import { getDefaultEngineModel } from "../default-models.js";
 import type { ProjectContext } from "../types.js";
 import type { EngineExecuteOptions } from "./types.js";
 
@@ -16,6 +17,9 @@ export async function buildContextualPrompt(
 
   let contextualPrompt = prompt;
   if (gramCtx) {
+    const defaultModel = config.engineModel
+      ? undefined
+      : (getDefaultEngineModel(config.engine) ?? "engine-defaults");
     const resolvedCtx = await resolveContext({
       gramCtx,
       configContext: config.context,
@@ -25,6 +29,10 @@ export async function buildContextualPrompt(
       projectName: config.name,
       projectSlug: config.slug,
       logger,
+      engineName: config.engine,
+      engineCommand: ctx.engine.command,
+      engineModel: config.engineModel,
+      engineDefaultModel: defaultModel,
     });
     contextualPrompt = formatContextPrompt(resolvedCtx, prompt);
   }

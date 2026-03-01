@@ -1,5 +1,6 @@
 import type { Context } from "grammy";
 import { resolveContext, substituteMessage } from "../../context/resolver.js";
+import { getDefaultEngineModel } from "../../default-models.js";
 import type { ProjectContext } from "../../types.js";
 import { BUILTIN_COMMANDS, type CommandEntry, loadCommands } from "./loader.js";
 
@@ -81,6 +82,12 @@ export async function resolveCommandMessage(
     projectName: config.name,
     projectSlug: config.slug,
     logger,
+    engineName: config.engine,
+    engineCommand: ctx.engine.command,
+    engineModel: config.engineModel,
+    engineDefaultModel: config.engineModel
+      ? undefined
+      : (getDefaultEngineModel(config.engine) ?? "engine-defaults"),
   });
 
   vars.HAL_COMMANDS = await buildHalCommands(ctx);

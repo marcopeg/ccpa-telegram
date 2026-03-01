@@ -3,7 +3,7 @@
     "access": {
       "allowedUserIds": []
     },
-    "engine": {
+    "_engine": {
       "name": "claude",
       "session": true
     },
@@ -30,7 +30,7 @@
       "cwd": "./obsidian",
       "active": true,
       "engine": {
-        "name": "opencode"
+        "name": "codex"
       },
       "telegram": {
         "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"

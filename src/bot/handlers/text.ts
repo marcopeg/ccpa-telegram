@@ -2,6 +2,7 @@ import { join, resolve } from "node:path";
 import type { Context } from "grammy";
 import { createAgent, getSkillsDir } from "../../agent/index.js";
 import { resolveContext } from "../../context/resolver.js";
+import { getDefaultEngineModel } from "../../default-models.js";
 import { sendChunkedResponse } from "../../telegram/chunker.js";
 import { sendDownloadFiles } from "../../telegram/fileSender.js";
 import type { ProjectContext } from "../../types.js";
@@ -62,6 +63,12 @@ export function createTextHandler(ctx: ProjectContext) {
               projectName: config.name,
               projectSlug: config.slug,
               logger,
+              engineName: config.engine,
+              engineCommand: ctx.engine.command,
+              engineModel: config.engineModel,
+              engineDefaultModel: config.engineModel
+                ? undefined
+                : (getDefaultEngineModel(config.engine) ?? "engine-defaults"),
             });
             const agent = createAgent(ctx);
             // Cache-bust on every dispatch call

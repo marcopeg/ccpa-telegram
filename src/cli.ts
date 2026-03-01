@@ -14,6 +14,7 @@ import {
 } from "./config.js";
 import { startConfigWatcher } from "./config-watcher.js";
 import { evaluateBootTimeShells } from "./context/resolver.js";
+import { getDefaultEngineModel } from "./default-models.js";
 import { getEngine } from "./engine/index.js";
 import type { EngineName } from "./engine/types.js";
 import { createProjectLogger, createStartupLogger } from "./logger.js";
@@ -179,7 +180,8 @@ async function runInit(cwd: string, engineName: EngineName): Promise<void> {
   console.log(`Created hal.config.json in ${cwd} (engine: ${engineName})`);
 
   // Scaffold engine-specific instructions file
-  const engine = getEngine(engineName);
+  const effectiveModel = getDefaultEngineModel(engineName);
+  const engine = getEngine(engineName, undefined, effectiveModel);
   const instrFile = engine.instructionsFile();
   const instrPath = join(cwd, instrFile);
   if (!existsSync(instrPath)) {
@@ -253,10 +255,12 @@ async function runBotsForConfig(
     const shellCache = config.context
       ? evaluateBootTimeShells(config.context, logger)
       : {};
+    const effectiveModel =
+      config.engineModel ?? getDefaultEngineModel(config.engine);
     const engine = getEngine(
       config.engine,
       config.engineCommand,
-      config.engineModel,
+      effectiveModel,
     );
     return { config, logger, bootContext: { shellCache }, engine };
   });

@@ -182,6 +182,10 @@ These keys are injected for every message, even without any `context` configurat
 | `sys.time` | Current time, `HH:MM:SS` |
 | `sys.ts` | Current Unix timestamp (seconds) |
 | `sys.tz` | Timezone name (e.g. `Europe/Berlin`) |
+| `engine.name` | Engine identifier (e.g. `claude`, `copilot`) |
+| `engine.command` | CLI command used to invoke the engine |
+| `engine.model` | AI model from config (only present when explicitly set) |
+| `engine.defaultModel` | HAL default model applied (only present when `engine.model` is omitted; see [Model defaults](#model-defaults)) |
 
 #### Custom context via config
 
@@ -267,7 +271,7 @@ Default settings applied to all projects. Any setting defined in a project overr
 |-----|-------------|---------|
 | `globals.engine.name` | Engine: `claude`, `copilot`, `codex`, `opencode` | `"claude"` |
 | `globals.engine.command` | Override the CLI command path | _(engine name)_ |
-| `globals.engine.model` | Override the AI model | _(engine default)_ |
+| `globals.engine.model` | Override the AI model (see [Model defaults](#model-defaults)) | _(per engine)_ |
 | `globals.engine.session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
 | `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
 | `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
@@ -294,7 +298,7 @@ Each project entry creates one Telegram bot connected to one directory.
 | `access.allowedUserIds` | No | Override the global user whitelist for this bot |
 | `engine.name` | No | Override the engine for this project |
 | `engine.command` | No | Override the CLI command path |
-| `engine.model` | No | Override the AI model |
+| `engine.model` | No | Override the AI model (see [Model defaults](#model-defaults)) |
 | `engine.session` | No | Use persistent sessions for this project |
 | `engine.sessionMsg` | No | Message used when renewing session |
 | `transcription.showTranscription` | No | Override transcription display |
@@ -453,7 +457,7 @@ The `engine` object supports five fields:
 |-------|-------------|---------|
 | `name` | Engine identifier: `claude`, `copilot`, `codex`, `opencode` | `"claude"` |
 | `command` | Custom path to the CLI binary | _(engine name)_ |
-| `model` | AI model override (omit to use the engine's default) | _(engine default)_ |
+| `model` | AI model override (omit for engine or HAL default; see [Model defaults](#model-defaults)) | _(per engine)_ |
 | `session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
 | `sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
 
@@ -502,7 +506,16 @@ When using the `copilot` engine, the following models are available via `engine.
 | `gpt-5-mini` | OpenAI GPT-5 Mini |
 | `gpt-4.1` | OpenAI GPT-4.1 |
 
-If `engine.model` is omitted, the engine uses its own default model.
+#### Model defaults
+
+When `engine.model` is omitted (neither in globals nor project config), behavior depends on the engine:
+
+- **Engine default** — Codex, Copilot, and Cursor: HAL does not pass a model flag, so the CLI picks its own default (Cursor passes `--model auto`).
+- **HAL default** — Claude Code and OpenCode: HAL passes a built-in default so the engine always receives a model. Defaults are defined in `src/default-models.ts`:
+  - Claude Code: `default` (account-recommended model)
+  - OpenCode: `opencode/gpt-5-nano` (free Zen model)
+
+To change HAL defaults, edit `src/default-models.ts`.
 
 ## Directory Structure
 
@@ -618,6 +631,7 @@ The fully-resolved context that would be sent to the AI for this message — ide
 | `bot.*` | `bot.userId`, `bot.username`, `bot.firstName`, `bot.chatId`, `bot.messageId`, `bot.timestamp`, `bot.datetime`, `bot.messageType` |
 | `sys.*` | `sys.date`, `sys.time`, `sys.datetime`, `sys.ts`, `sys.tz` |
 | `project.*` | `project.name`, `project.cwd`, `project.slug` |
+| `engine.*` | `engine.name`, `engine.command`, `engine.model` (if set), `engine.defaultModel` (if HAL default applied) |
 | custom | Any keys defined in `context` config blocks, after `${}` / `#{}` / `@{}` substitution and context hook transforms |
 
 Use `/context` (the built-in global command) to inspect the exact keys available at runtime.
