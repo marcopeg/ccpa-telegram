@@ -3,12 +3,16 @@
 import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { startBot } from "./bot.js";
+import type pino from "pino";
+import { type BotHandle, startBot } from "./bot.js";
+import type { LoadedConfigResult } from "./config.js";
 import {
   loadMultiConfig,
   resolveProjectConfig,
+  tryLoadMultiConfig,
   validateProjects,
 } from "./config.js";
+import { startConfigWatcher } from "./config-watcher.js";
 import { evaluateBootTimeShells } from "./context/resolver.js";
 import { getEngine } from "./engine/index.js";
 import type { EngineName } from "./engine/types.js";
@@ -199,13 +203,17 @@ async function runInit(cwd: string, engineName: EngineName): Promise<void> {
 
 // ─── start command ────────────────────────────────────────────────────────────
 
-async function runStart(configDir: string): Promise<void> {
-  const startupLogger = createStartupLogger();
-
-  startupLogger.info({ configDir }, "Loading configuration");
-
-  // Load and validate the multi-project config
-  const { config: multiConfig, loadedFiles } = loadMultiConfig(configDir);
+/**
+ * Load config, resolve projects, build contexts, and start all bots.
+ * Rejects if config resolution or any bot startup fails.
+ * Used for both initial run and hot-reload.
+ */
+async function runBotsForConfig(
+  configDir: string,
+  loaded: LoadedConfigResult,
+  startupLogger: pino.Logger,
+): Promise<BotHandle[]> {
+  const { config: multiConfig, loadedFiles } = loaded;
   const globals = multiConfig.globals ?? {};
 
   // Resolve all project configs, skip inactive ones
@@ -225,10 +233,8 @@ async function runStart(configDir: string): Promise<void> {
     return true;
   });
 
-  // Boot-time validation (unique cwds, tokens, names)
   validateProjects(resolvedProjects);
 
-  // Boot-time sourcing log
   const sourceLines = loadedFiles.map((f, i) => {
     const isLocal = f.endsWith("hal.config.local.json");
     const suffix = isLocal ? "  [local override]" : "";
@@ -242,7 +248,6 @@ async function runStart(configDir: string): Promise<void> {
     "Configuration loaded",
   );
 
-  // Build project contexts (evaluate boot-time #{} shell commands per project)
   const contexts: ProjectContext[] = resolvedProjects.map((config) => {
     const logger = createProjectLogger(config);
     const shellCache = config.context
@@ -256,7 +261,6 @@ async function runStart(configDir: string): Promise<void> {
     return { config, logger, bootContext: { shellCache }, engine };
   });
 
-  // Emit startup notices for flow=false projects
   for (const { config } of contexts) {
     if (!config.logging.flow) {
       startupLogger.info(
@@ -265,10 +269,21 @@ async function runStart(configDir: string): Promise<void> {
     }
   }
 
-  // Start all bots concurrently — abort all if any fails
-  let handles: { stop: () => Promise<void> }[];
+  const handles = await Promise.all(contexts.map((ctx) => startBot(ctx)));
+  startupLogger.info({ count: handles.length }, "All bots running");
+  return handles;
+}
+
+async function runStart(configDir: string): Promise<void> {
+  const startupLogger = createStartupLogger();
+
+  startupLogger.info({ configDir }, "Loading configuration");
+
+  const loaded = loadMultiConfig(configDir);
+
+  let handles: BotHandle[];
   try {
-    handles = await Promise.all(contexts.map((ctx) => startBot(ctx)));
+    handles = await runBotsForConfig(configDir, loaded, startupLogger);
   } catch (err) {
     startupLogger.error(
       { error: err instanceof Error ? err.message : String(err) },
@@ -277,18 +292,38 @@ async function runStart(configDir: string): Promise<void> {
     process.exit(1);
   }
 
-  startupLogger.info({ count: handles.length }, "All bots running");
+  let reloading = false;
+  const configWatcher = startConfigWatcher(configDir, async () => {
+    if (reloading) return;
+    reloading = true;
+    try {
+      startupLogger.info("Config change detected");
+      await Promise.all(handles.map((h) => h.stop()));
+      startupLogger.info("All bots stopped");
+      try {
+        const result = tryLoadMultiConfig(configDir);
+        handles = await runBotsForConfig(configDir, result, startupLogger);
+      } catch (err) {
+        startupLogger.error(
+          { error: err instanceof Error ? err.message : String(err) },
+          "Reload failed",
+        );
+      }
+    } finally {
+      reloading = false;
+    }
+  });
 
-  // Graceful shutdown handler
   async function shutdown(signal: string): Promise<void> {
     startupLogger.info({ signal }, "Received shutdown signal");
+    await configWatcher.stop();
     await Promise.all(handles.map((h) => h.stop().catch(() => {})));
     startupLogger.info("All bots stopped");
     process.exit(0);
   }
 
-  process.on("SIGINT", () => shutdown("SIGINT"));
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdown("SIGINT"));
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────

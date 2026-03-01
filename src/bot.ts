@@ -122,7 +122,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     stop: async () => {
       await watcher.stop();
       rateLimitCleanup();
-      await bot.stop();
+      await bot.stop(); // Stops polling; Grammy waits for in-flight updates to finish
       await runningPromise;
     },
   };

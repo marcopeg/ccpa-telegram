@@ -22,7 +22,7 @@
     }
   },
   "context": {
-    "custom": "This is a custom context that will be included in every message sent to the LLM. You can use this to provide additional information or instructions to the LLM."
+    "custom": "-- global custom context --"
   },
   "projects": [
     {
@@ -36,7 +36,8 @@
         "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"
       },
       "context": {
-        "secondCustom": "This is a second custom context that will only be included in messages sent to the obsidian project."
+        "secondCustom": "-- first custom --",
+        "thirdCustom": "-- second custom --"
       },
       "commands": {
         "start": {

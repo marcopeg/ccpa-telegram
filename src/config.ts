@@ -205,7 +205,14 @@ export interface ResolvedProjectConfig {
   };
 }
 
-// ─── Config load result ────────────────────────────────────────────────────────
+// ─── Config load result & errors ───────────────────────────────────────────────
+
+export class ConfigLoadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConfigLoadError";
+  }
+}
 
 export interface LoadedConfigResult {
   config: MultiConfigFile;
@@ -279,18 +286,16 @@ export function resolveProjectConfig(
     if (msg.from) {
       const filePath = resolve(resolvedCwd, msg.from);
       if (!existsSync(filePath)) {
-        console.error(
+        throw new ConfigLoadError(
           `Configuration error: ${label}.message.from file not found: ${filePath}`,
         );
-        process.exit(1);
       }
       try {
         return readFileSync(filePath, "utf-8");
       } catch (err) {
-        console.error(
+        throw new ConfigLoadError(
           `Configuration error: cannot read ${label}.message.from file: ${filePath} — ${err instanceof Error ? err.message : String(err)}`,
         );
-        process.exit(1);
       }
     }
     return msg.text!;
@@ -381,27 +386,24 @@ export function validateProjects(projects: ResolvedProjectConfig[]): void {
 
   for (const project of projects) {
     if (cwds.has(project.cwd)) {
-      console.error(
+      throw new ConfigLoadError(
         `Configuration error: duplicate project cwd "${project.cwd}". Each project must have a unique cwd.`,
       );
-      process.exit(1);
     }
     cwds.add(project.cwd);
 
     if (tokens.has(project.telegram.botToken)) {
-      console.error(
+      throw new ConfigLoadError(
         `Configuration error: duplicate botToken in project "${project.slug}". Each project must use a unique Telegram bot token.`,
       );
-      process.exit(1);
     }
     tokens.add(project.telegram.botToken);
 
     if (project.name) {
       if (names.has(project.name)) {
-        console.error(
+        throw new ConfigLoadError(
           `Configuration error: duplicate project name "${project.name}". Each named project must have a unique name.`,
         );
-        process.exit(1);
       }
       names.add(project.name);
     }
@@ -458,11 +460,10 @@ function substituteEnvVars(
     return obj.replace(/\$\{([^}]+)\}/g, (_match, varName: string) => {
       const value = env[varName] ?? process.env[varName];
       if (value === undefined) {
-        console.error(
+        throw new ConfigLoadError(
           `Configuration error: environment variable "${varName}" is not defined\n` +
             `  (referenced in field: ${path || "<root>"})`,
         );
-        process.exit(1);
       }
       return value;
     });
@@ -534,10 +535,9 @@ function loadLocalConfig(configDir: string): LocalConfigFile | null {
     const content = readFileSync(localPath, "utf-8");
     raw = JSON.parse(content);
   } catch (err) {
-    console.error(
+    throw new ConfigLoadError(
       `Configuration error: failed to read hal.config.local.json — ${err instanceof Error ? err.message : String(err)}`,
     );
-    process.exit(1);
   }
 
   const result = LocalConfigFileSchema.safeParse(raw);
@@ -545,8 +545,9 @@ function loadLocalConfig(configDir: string): LocalConfigFile | null {
     const issues = result.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    console.error(`Configuration error in hal.config.local.json:\n${issues}`);
-    process.exit(1);
+    throw new ConfigLoadError(
+      `Configuration error in hal.config.local.json:\n${issues}`,
+    );
   }
 
   return result.data ?? null;
@@ -586,11 +587,10 @@ function mergeLocalIntoBase(
     });
 
     if (idx === -1) {
-      console.error(
+      throw new ConfigLoadError(
         `Configuration error: local project "${matchKey}" not found in hal.config.json.\n` +
           `  Every entry in hal.config.local.json projects must match a base project by name or cwd.`,
       );
-      process.exit(1);
     }
 
     mergedProjects[idx] = deepMerge(
@@ -606,20 +606,19 @@ function mergeLocalIntoBase(
   };
 }
 
-// ─── Phase 4: Config file loading (public API) ────────────────────────────────
+// ─── Phase 4: Config file loading (internal: throws on error) ──────────────────
 
-export function loadMultiConfig(configDir: string): LoadedConfigResult {
+function loadMultiConfigInternal(configDir: string): LoadedConfigResult {
   const configPath = join(configDir, "hal.config.json");
   const localPath = join(configDir, "hal.config.local.json");
   const loadedFiles: string[] = [];
 
   // 1. Load base config
   if (!existsSync(configPath)) {
-    console.error(
+    throw new ConfigLoadError(
       `Configuration error: hal.config.json not found in ${configDir}\n` +
         `Run "npx @marcopeg/hal init" to create one.`,
     );
-    process.exit(1);
   }
 
   let rawBase: unknown;
@@ -627,10 +626,9 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
     const content = readFileSync(configPath, "utf-8");
     rawBase = JSON.parse(content);
   } catch (err) {
-    console.error(
+    throw new ConfigLoadError(
       `Configuration error: failed to read hal.config.json — ${err instanceof Error ? err.message : String(err)}`,
     );
-    process.exit(1);
   }
 
   loadedFiles.push(configPath);
@@ -641,8 +639,9 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
     const issues = baseResult.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    console.error(`Configuration error in hal.config.json:\n${issues}`);
-    process.exit(1);
+    throw new ConfigLoadError(
+      `Configuration error in hal.config.json:\n${issues}`,
+    );
   }
 
   let merged = baseResult.data;
@@ -672,14 +671,37 @@ export function loadMultiConfig(configDir: string): LoadedConfigResult {
     const issues = finalResult.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    console.error(
+    throw new ConfigLoadError(
       `Configuration error after environment variable substitution:\n${issues}`,
     );
-    process.exit(1);
   }
 
   return {
     config: finalResult.data,
     loadedFiles: [...loadedFiles, ...envSources.loadedFiles],
   };
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Load multi-project config. On any error, logs and exits the process.
+ * Use for initial startup.
+ */
+export function loadMultiConfig(configDir: string): LoadedConfigResult {
+  try {
+    return loadMultiConfigInternal(configDir);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(message);
+    process.exit(1);
+  }
+}
+
+/**
+ * Load multi-project config without exiting. Throws on error.
+ * Use for hot-reload so callers can log and retry on next file change.
+ */
+export function tryLoadMultiConfig(configDir: string): LoadedConfigResult {
+  return loadMultiConfigInternal(configDir);
 }
