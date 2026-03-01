@@ -11,16 +11,14 @@ The commands in the menu should be sorted:
 
 ## Ready Tasks
 - [016 — Git support (global commands)](./ready/016.git-support.md) | [plan](./ready/016.git-support.plan.md)
+- [018 — Codex engine permission flags](./ready/018.codex-flags.md) | [plan](./ready/018.codex-flags.plan.md)
+- [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
 
 ## Drafts
 
 - [007 — Python commands + venv support](./drafts/007.python.md)
-- [012 — Codex: skip-git-repo-check config option](./drafts/012.codex-git-check.md)
 - [014 — Multi-thread project isolation](./drafts/014.multi-thread.md)
-- [018 — Codex engine flags / access permissions](./drafts/018.codex-flags.md)
-- [019 — Expose skills from agents](./drafts/019.expose-skills-from-agents.md)
 - [021 — Switch model command](./drafts/021.switch-model.md)
-- [022 — Default engine auto-detection](./drafts/022.default-engine.md)
 - [023 — Sort commands in /help and Telegram UI](./drafts/023.sort-commands.md)
 - [024 — Expose skills across engines](./drafts/024.expose-skills.md)
 
