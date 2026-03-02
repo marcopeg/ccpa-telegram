@@ -64,4 +64,4 @@ See [Custom instructions with AGENTS.md](https://developers.openai.com/codex/gui
 }
 ```
 
-[← Back to providers index](../README.md)
+[← Back to engines index](../README.md)

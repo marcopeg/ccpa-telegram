@@ -49,4 +49,4 @@ You can pull in extra content from other files via `@path/to/file` imports insid
 { "engine": { "name": "claude", "model": "sonnet", "session": true } }
 ```
 
-[← Back to providers index](../README.md)
+[← Back to engines index](../README.md)

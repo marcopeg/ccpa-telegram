@@ -42,4 +42,4 @@ Cursor supports **AGENTS.md** in the project root as a simple markdown instructi
 { "engine": { "name": "cursor", "model": "auto" } }
 ```
 
-[← Back to providers index](../README.md)
+[← Back to engines index](../README.md)

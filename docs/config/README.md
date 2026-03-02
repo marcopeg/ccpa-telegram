@@ -88,21 +88,21 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.engine.model` | Override the AI model (see [Model defaults](engine/README.md#model-defaults)) | _(per engine)_ |
 | `globals.engine.session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
 | `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
-| `globals.engine.codex.*` | Codex permission flags | See [Codex](../providers/codex/README.md) |
-| `globals.engine.antigravity.*` | Antigravity flags | See [Antigravity](../providers/antigravity/README.md) |
+| `globals.engine.codex.*` | Codex permission flags | See [Codex](../engines/codex/README.md) |
+| `globals.engine.antigravity.*` | Antigravity flags | See [Antigravity](../engines/antigravity/README.md) |
 | `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
 | `globals.logging.flow` | Write logs to terminal | `true` |
 | `globals.logging.persist` | Write logs to file | `false` |
 | `globals.rateLimit.max` | Max messages per window per user | `10` |
 | `globals.rateLimit.windowMs` | Rate limit window in ms | `60000` |
-| `globals.providers` | Per-engine model lists for `/model` (see [Engine and models](engine/README.md#providers-model-list)) | `{}` |
+| `globals.providers` | Per-engine model lists for `/model` (see [Engine and models](engine/README.md#model-list-providers-key)) | `{}` |
 | `globals.access.allowedUserIds` | Telegram user IDs allowed by default | `[]` |
 | `globals.dataDir` | Default user data directory | _(see [dataDir](#datadir-values) below)_ |
 | `globals.transcription.model` | Whisper model for voice | `"base.en"` |
 | `globals.transcription.showTranscription` | Show transcribed text | `true` |
 | `globals.commands` | Toggle and configure built-in commands | See [Commands](commands/README.md) |
 
-Per-engine options (Codex, Antigravity) are documented in [Providers](../providers/README.md).
+Per-engine options (Codex, Antigravity) are documented in [Engines](../engines/README.md).
 
 ## projects[]
 
@@ -120,9 +120,9 @@ Each project entry creates one Telegram bot connected to one directory.
 | `engine.model` | No | Override the AI model (see [Model defaults](engine/README.md#model-defaults)) |
 | `engine.session` | No | Use persistent sessions for this project |
 | `engine.sessionMsg` | No | Message used when renewing session |
-| `engine.codex.*` | No | Codex permission flags (see [Codex](../providers/codex/README.md)) |
-| `engine.antigravity.*` | No | Antigravity flags (see [Antigravity](../providers/antigravity/README.md)) |
-| `providers` | No | Override the global model list (see [Engine and models](engine/README.md#providers-model-list)) |
+| `engine.codex.*` | No | Codex permission flags (see [Codex](../engines/codex/README.md)) |
+| `engine.antigravity.*` | No | Antigravity flags (see [Antigravity](../engines/antigravity/README.md)) |
+| `providers` | No | Override the global model list (see [Engine and models](engine/README.md#model-list-providers-key)) |
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context](context/README.md)) |
@@ -201,5 +201,5 @@ With a config at `~/workspace/hal.config.json`:
 |-------|-------------|
 | [Context](context/README.md) | Context injection — implicit keys, custom context, variable patterns, hooks |
 | [Commands](commands/README.md) | Built-in command config — `/start`, `/help`, `/reset`, `/clean`, `/model`, `/git` |
-| [Engine and models](engine/README.md) | Engine selection, providers model list, model defaults |
-| [Providers](../providers/README.md) | Per-engine setup, install, and options (Claude, Copilot, Codex, etc.) |
+| [Engine and models](engine/README.md) | Engine selection, model list, model defaults |
+| [Engines](../engines/README.md) | Per-engine setup, install, and options (Claude, Copilot, Codex, etc.) |

@@ -67,4 +67,4 @@ project .hal/commands/{name}.mjs  >  global .hal/commands/{name}.mjs  >  engine 
 ## See also
 
 - [Custom commands](../custom-commands/README.md) — `.mjs` slash commands; can override a skill by using the same name.
-- [Agent Skills standard](https://agentskills.io/) — external spec. Per-engine directories are summarized in [Providers](../providers/README.md).
+- [Agent Skills standard](https://agentskills.io/) — external spec. Per-engine directories are summarized in [Engines](../engines/README.md).

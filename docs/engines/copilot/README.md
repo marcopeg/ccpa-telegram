@@ -47,4 +47,4 @@ See [Adding repository custom instructions for GitHub Copilot](https://docs.gith
 { "engine": { "name": "copilot", "model": "claude-sonnet-4.6", "session": true } }
 ```
 
-[← Back to providers index](../README.md)
+[← Back to engines index](../README.md)

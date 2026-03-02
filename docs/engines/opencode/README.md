@@ -49,4 +49,4 @@ OpenCode uses **AGENTS.md** as the main instruction file. It also supports **CLA
 { "engine": { "name": "opencode", "model": "opencode/gpt-5-nano" } }
 ```
 
-[← Back to providers index](../README.md)
+[← Back to engines index](../README.md)

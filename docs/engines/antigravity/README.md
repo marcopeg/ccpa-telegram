@@ -66,4 +66,4 @@ Gemini CLI (Antigravity engine) uses **GEMINI.md** by default as the root instru
 
 See [Provide Context with GEMINI.md Files](https://google-gemini.github.io/gemini-cli/docs/cli/gemini-md.html).
 
-[← Back to providers index](../README.md)
+[← Back to engines index](../README.md)

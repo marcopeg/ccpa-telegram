@@ -34,21 +34,28 @@ The engine reads its standard config files from the project directory:
 
 You get the full power of your chosen AI coding agent — file access, code execution, configured MCP tools — all accessible through Telegram.
 
-## 🤖 AI Providers
+## Prerequisites
 
-This is the list of the currently supported agentic platforms:
+- Node.js 18+
+- At least one supported AI coding CLI installed and authenticated - see [engines](docs/engines/README.md)
+- A Telegram bot token per project (from [@BotFather](https://t.me/BotFather)) — see [Telegram](docs/telegram/README.md#creating-a-telegram-bot)
+- **ffmpeg** (required for voice messages) — `brew install ffmpeg` on macOS
 
-- [OpenCode](docs/providers/opencode/README.md)
-- [Codex](docs/providers/codex/README.md)
-- [Claude Code](docs/providers/claude/README.md)
-- [Copilot](docs/providers/copilot/README.md)
-- [Cursor](docs/providers/cursor/README.md)
-- [Antigravity](docs/providers/antigravity/README.md)
+## Supported Engines 🤖
 
-Each provider has pros/cons and some limitations.  
+This is the list of the currently supported engines (Claude Code, Copilot, Codex, OpenCode, Cursor, Antigravity):
+
+- [OpenCode](docs/engines/opencode/README.md)
+- [Codex](docs/engines/codex/README.md)
+- [Claude Code](docs/engines/claude/README.md)
+- [Copilot](docs/engines/copilot/README.md)
+- [Cursor](docs/engines/cursor/README.md)
+- [Antigravity](docs/engines/antigravity/README.md)
+
+Each engine has pros/cons and some limitations.  
 Here we try to keep updated a feature comparison table:
 
-| Feature | [OpenCode](docs/providers/opencode/README.md) | [Codex](docs/providers/codex/README.md) | [Claude Code](docs/providers/claude/README.md) | [Copilot](docs/providers/copilot/README.md) | [Cursor](docs/providers/cursor/README.md) | [Antigravity](docs/providers/antigravity/README.md) |
+| Feature | [OpenCode](docs/engines/opencode/README.md) | [Codex](docs/engines/codex/README.md) | [Claude Code](docs/engines/claude/README.md) | [Copilot](docs/engines/copilot/README.md) | [Cursor](docs/engines/cursor/README.md) | [Antigravity](docs/engines/antigravity/README.md) |
 |--------|:--------:|:-----:|:------:|:-------:|:------:|:------------:|
 | **Instruction file** | `AGENTS.md` | `AGENTS.md` | `CLAUDE.md` | `AGENTS.md` | `AGENTS.md` | `GEMINI.md` |
 | **Main skills folder** | `.agents/skills/` | `.agents/skills/` | `.claude/skills/` | `.agents/skills/` | `.agents/skills/` | `.agent/skills/` |
@@ -58,14 +65,7 @@ Here we try to keep updated a feature comparison table:
 | **YOLO mode** | — | ✓ | — | — | — | ✓ |
 | **Streaming progress** | ✗ | ✗ | ✓ | ✗ | ✗ | ✓ |
 
-Read more in the [Providers](docs/providers/README.md) docs.
-
-## Prerequisites
-
-- Node.js 18+
-- At least one supported AI coding CLI installed and authenticated
-- A Telegram bot token per project (from [@BotFather](https://t.me/BotFather)) — see [Telegram](docs/telegram/README.md#creating-a-telegram-bot)
-- **ffmpeg** (required for voice messages) — `brew install ffmpeg` on macOS
+Read more in the [engine docs](docs/engines/README.md).
 
 ## Quick Start
 
@@ -92,8 +92,8 @@ HAL is configured via `hal.config.json` (and optional `hal.config.local.json`) i
 - **[Configuration](docs/config/README.md)** — config files, env vars, `globals`, `projects[]`, dataDir, log files, directory structure
 - **[Context](docs/config/context/README.md)** — context injection (implicit keys, custom context, hooks)
 - **[Commands](docs/config/commands/README.md)** — built-in command config (`/start`, `/help`, `/reset`, `/clean`, `/model`, `/git`)
-- **[Engine and models](docs/config/engine/README.md)** — engine selection, providers model list, model defaults
-- **[Providers](docs/providers/README.md)** — per-engine setup and options (Claude, Copilot, Codex, etc.)
+- **[Engine and models](docs/config/engine/README.md)** — engine selection, model list, model defaults
+- **[Engines](docs/engines/README.md)** — per-engine setup and options (Claude, Copilot, Codex, etc.)
 
 <details>
 <summary>Minimal config example</summary>

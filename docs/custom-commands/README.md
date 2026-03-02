@@ -83,7 +83,7 @@ export default async function({ gram }) {
 
 ### `agent: Agent`
 
-An engine-agnostic interface for making one-shot AI calls from within a command. The underlying provider is configured per-project. Command handlers always use this interface and never talk to any engine directly.
+An engine-agnostic interface for making one-shot AI calls from within a command. The underlying engine is configured per-project. Command handlers always use this interface and never talk to any engine directly.
 
 ```ts
 interface Agent {

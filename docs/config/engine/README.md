@@ -1,6 +1,6 @@
 # Engine and model configuration
 
-Set the engine globally or per-project in `hal.config.json`. The engine determines which AI coding CLI is invoked for each message. **Per-engine setup, install, and options** (including permission flags) are in [Providers](../../providers/README.md); this page covers the generic engine fields, the providers model list, and model defaults.
+Set the engine globally or per-project in `hal.config.json`. The engine determines which AI coding CLI is invoked for each message. **Per-engine setup, install, and options** (including permission flags) are in [Engines](../../engines/README.md); this page covers the generic engine fields, the model list, and model defaults.
 
 ## Engine selection
 
@@ -39,7 +39,7 @@ In this example:
 
 ## Generic engine fields
 
-The `engine` object supports the fields below. Engine-specific options (e.g. Codex permissions, Antigravity flags) are in the [provider docs](../../providers/README.md).
+The `engine` object supports the fields below. Engine-specific options (e.g. Codex permissions, Antigravity flags) are in the [engine docs](../../engines/README.md).
 
 | Field | Description | Default |
 |-------|-------------|---------|
@@ -49,11 +49,11 @@ The `engine` object supports the fields below. Engine-specific options (e.g. Cod
 | `session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
 | `sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
 
-**Per-provider setup and options:** [Claude](../../providers/claude/README.md) · [Copilot](../../providers/copilot/README.md) · [Codex](../../providers/codex/README.md) · [OpenCode](../../providers/opencode/README.md) · [Cursor](../../providers/cursor/README.md) · [Antigravity](../../providers/antigravity/README.md).
+**Per-engine setup and options:** [Claude](../../engines/claude/README.md) · [Copilot](../../engines/copilot/README.md) · [Codex](../../engines/codex/README.md) · [OpenCode](../../engines/opencode/README.md) · [Cursor](../../engines/cursor/README.md) · [Antigravity](../../engines/antigravity/README.md).
 
-## Providers (model list)
+## Model list (`providers` key)
 
-The `providers` config lets you define which models are available for each engine in the `/model` Telegram command. This is a top-level key under `globals` (or per-project to override).
+The `providers` config lets you define which models are available for each engine in the `/model` Telegram command. Keys are engine names. Top-level under `globals`, or per-project to override.
 
 ```json
 {
