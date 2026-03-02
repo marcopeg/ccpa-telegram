@@ -10,13 +10,20 @@ The commands in the menu should be sorted:
 ## In Progress
 
 ## Ready Tasks
-- [021 — Switch model command](./ready/021.switch-model.md) | [plan](./ready/021.switch-model.plan.md)
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
 
 ## Drafts
 
 - [007 — Python commands + venv support](./drafts/007.python.md)
 - [014 — Multi-thread project isolation](./drafts/014.multi-thread.md)
+- [027 — YAML config support](./drafts/027.yaml-config-support.md)
+- [028 — JSON++ config: comments and tolerant parsing research](./drafts/028.json-plusplus-config-comments.md)
+- [029 — Default models: providers config and /model validation behavior](./drafts/029.default-models-providers-and-model-validation.md)
+- [030 — Codex provider default model propagation](./drafts/030.codex-provider-default-model-propagation.md)
+- [031 — Reset model with duration and cron scheduling](./drafts/031.reset-model-with-duration-and-cron.md)
+- [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md)
+- [033 — Expose project as MCP server](./drafts/033.expose-project-as-mcp-server.md)
+- [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
 
 ## Completed
 
@@ -39,3 +46,4 @@ The commands in the menu should be sorted:
 - [024 — Expose skills across engines](./completed/024.expose-skills.md) | [plan](./completed/024.expose-skills.plan.md)
 - [026 — Add Google Antigravity Engine](./completed/026.antigravity-engine.md) | [plan](./completed/026.antigravity-engine.plan.md)
 - [023 — Sort commands in /help and Telegram UI](./completed/023.sort-commands.md) | [plan](./completed/023.sort-commands.plan.md)
+- [021 — Switch model command](./completed/021.switch-model.md) | [plan](./completed/021.switch-model.plan.md)

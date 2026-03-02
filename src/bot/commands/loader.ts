@@ -22,6 +22,7 @@ export interface CommandEnabledFlags {
   reset: boolean;
   clean: boolean;
   git: boolean;
+  model: boolean;
 }
 
 // Canonical display/menu order for command sources
@@ -291,6 +292,12 @@ export const BUILTIN_COMMANDS: CommandEntry[] = [
     filePath: "",
     source: "builtin",
   },
+  {
+    command: "model",
+    description: "Switch the AI model",
+    filePath: "",
+    source: "builtin",
+  },
 ];
 
 export const GIT_COMMANDS: CommandEntry[] = [
@@ -325,6 +332,7 @@ const BUILTIN_ENABLED_MAP: Record<string, keyof CommandEnabledFlags> = {
   help: "help",
   reset: "reset",
   clean: "clean",
+  model: "model",
 };
 
 // ─── Public API ──────────────────────────────────────────────────────────────

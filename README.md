@@ -285,11 +285,12 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.logging.persist` | Write logs to file | `false` |
 | `globals.rateLimit.max` | Max messages per window per user | `10` |
 | `globals.rateLimit.windowMs` | Rate limit window in ms | `60000` |
+| `globals.providers` | Per-engine model lists for `/model` command (see [Providers](#providers-model-list)) | `{}` |
 | `globals.access.allowedUserIds` | Telegram user IDs allowed by default | `[]` |
 | `globals.dataDir` | Default user data directory | _(see below)_ |
 | `globals.transcription.model` | Whisper model for voice | `"base.en"` |
 | `globals.transcription.showTranscription` | Show transcribed text | `true` |
-| `globals.commands` | Default `/start`, `/help`, `/reset`, `/clean` messages for all projects | _(see [`commands`](#commands))_ |
+| `globals.commands` | Toggle and configure `/start`, `/help`, `/reset`, `/clean`, `/model`, `/git` for all projects | _(see [`commands`](#commands))_ |
 
 ### `projects[]`
 
@@ -309,14 +310,33 @@ Each project entry creates one Telegram bot connected to one directory.
 | `engine.sessionMsg` | No | Message used when renewing session |
 | `engine.codex.*` | No | Codex permission flags (see [Engine Configuration](#engine-configuration)) |
 | `engine.antigravity.*` | No | Antigravity flags (see [Engine Configuration](#engine-configuration)) |
+| `providers` | No | Override the global model list for this project (see [Providers](#providers-model-list)) |
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context Injection](#context-injection)) |
-| `commands` | No | Customize `/start`, `/help`, `/reset`, `/clean` messages (see [`commands`](#commands)) |
+| `commands` | No | Toggle and configure `/start`, `/help`, `/reset`, `/clean`, `/model`, `/git` (see [`commands`](#commands)) |
 
 ### `commands`
 
-Customize the built-in `/start`, `/help`, `/reset`, and `/clean` command messages. Can be set under `globals` (shared default for all projects) or per project (overrides globals). Project-level settings take precedence.
+Customize built-in command behavior and toggle individual commands on/off. Can be set under `globals` (shared default for all projects) or per project (overrides globals). Project-level settings take precedence.
+
+Each command supports an `enabled` flag (default `true` for most, `false` for `/git`):
+
+```json
+{
+  "commands": {
+    "model": { "enabled": true },
+    "git": { "enabled": true },
+    "start": { "enabled": true },
+    "help": { "enabled": true },
+    "reset": { "enabled": true },
+    "clean": { "enabled": true }
+  }
+}
+```
+
+The `/start`, `/help`, `/reset`, and `/clean` commands additionally support a custom `message`:
+
 
 ```json
 {
@@ -389,11 +409,13 @@ All `message.text` values and file contents from `message.from` support the same
 | `${varName}` | Implicit context (`bot.firstName`, `sys.date`, `project.name`, etc.) and env vars |
 | `@{cmd}` | Message-time shell command |
 
-Additionally, the special `${HAL_COMMANDS}` placeholder expands to a formatted list of all available commands, divided into three sections:
+Additionally, the special `${HAL_COMMANDS}` placeholder expands to a formatted list of all available commands, divided into five sections (empty sections are omitted):
 
-- **Commands** — built-in commands (`/start`, `/help`, `/reset`, `/clean`)
-- **Custom Commands** — programmatic `.mjs` commands from global and project directories
-- **Skills** — engine skills marked with `public: true` in their `SKILL.md` frontmatter
+- **Project Commands** — `.mjs` commands from the project's `.hal/commands/` directory
+- **Project Skills** — engine skills marked with `public: true` in their `SKILL.md` frontmatter
+- **System Commands** — `.mjs` commands from the global `.hal/commands/` directory (shared across projects)
+- **Hal Commands** — built-in commands (`/start`, `/help`, `/reset`, `/clean`, `/model`)
+- **Versioning** — git built-in commands (`/git_init`, `/git_status`, `/git_commit`, `/git_clean`) — only when `commands.git.enabled: true`
 
 Example `WELCOME.md`:
 
@@ -735,29 +757,50 @@ Free-tier access with a personal Google account (Gemini 2.5 Pro, 60 req/min, 100
 }
 ```
 
-#### GitHub Copilot Models
+#### Providers (model list)
 
-When using the `copilot` engine, the following models are available via `engine.model`:
+The `providers` config lets you define which models are available for each engine in the `/model` Telegram command. This is a top-level key under `globals` (or per-project to override).
 
-| Model | Description |
-|-------|-------------|
-| `claude-sonnet-4.6` | Anthropic Claude Sonnet 4.6 |
-| `claude-sonnet-4.5` | Anthropic Claude Sonnet 4.5 |
-| `claude-haiku-4.5` | Anthropic Claude Haiku 4.5 |
-| `claude-opus-4.6` | Anthropic Claude Opus 4.6 |
-| `claude-opus-4.6-fast` | Anthropic Claude Opus 4.6 (fast) |
-| `claude-opus-4.5` | Anthropic Claude Opus 4.5 |
-| `claude-sonnet-4` | Anthropic Claude Sonnet 4 |
-| `gemini-3-pro-preview` | Google Gemini 3 Pro (preview) |
-| `gpt-5.3-codex` | OpenAI GPT-5.3 Codex |
-| `gpt-5.2-codex` | OpenAI GPT-5.2 Codex |
-| `gpt-5.2` | OpenAI GPT-5.2 |
-| `gpt-5.1-codex-max` | OpenAI GPT-5.1 Codex Max |
-| `gpt-5.1-codex` | OpenAI GPT-5.1 Codex |
-| `gpt-5.1` | OpenAI GPT-5.1 |
-| `gpt-5.1-codex-mini` | OpenAI GPT-5.1 Codex Mini |
-| `gpt-5-mini` | OpenAI GPT-5 Mini |
-| `gpt-4.1` | OpenAI GPT-4.1 |
+```json
+{
+  "globals": {
+    "providers": {
+      "codex": [
+        { "name": "gpt-5.3-codex", "description": "Most capable Codex model" },
+        { "name": "gpt-5.2-codex", "description": "Advanced coding model" },
+        { "name": "gpt-5.2", "description": "General agentic model" }
+      ],
+      "claude": [
+        { "name": "claude-sonnet-4-6", "description": "Balanced performance and speed" },
+        { "name": "claude-opus-4-6", "description": "Most capable, complex reasoning" }
+      ]
+    }
+  }
+}
+```
+
+Each entry has:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | **Yes** | The model identifier passed to the engine CLI (e.g. `gpt-5.3-codex`) |
+| `description` | No | Short description shown in the Telegram model picker |
+
+**Behavior of `/model`:**
+
+- **With `providers` configured:** `/model` (no argument) shows a list of inline buttons for the configured models. `/model <name>` validates against the list before accepting.
+- **Without `providers`:** `/model` (no argument) shows a helper message prompting the user to type `/model <name>`. `/model <name>` accepts any value.
+
+**Available models per engine:** Refer to each engine's official documentation:
+
+| Engine | Models reference |
+|--------|----------------|
+| Codex | <https://developers.openai.com/codex/models/> |
+| Claude Code | <https://support.claude.com/en/articles/11940350-claude-code-model-configuration> |
+| Cursor | <https://cursor.com/docs/models> |
+| Copilot | <https://docs.github.com/en/copilot/reference/ai-models/supported-models> |
+| OpenCode | <https://opencode.ai/docs/models/> |
+| Antigravity | <https://antigravity.google/docs/models> |
 
 #### Model defaults
 

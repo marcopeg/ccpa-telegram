@@ -11,6 +11,8 @@ import {
   type CommandEnabledFlags,
   loadCommands,
 } from "./bot/commands/loader.js";
+import { createModelHandler } from "./bot/commands/model.js";
+import { createModelCallbackHandler } from "./bot/commands/model-callback.js";
 import {
   createResetCallbackHandler,
   createResetHandler,
@@ -80,6 +82,11 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     bot.on("callback_query:data", createGitCallbackHandler(projectCtx));
   }
 
+  if (cmd.model.enabled) {
+    bot.command("model", createModelHandler(projectCtx));
+    bot.on("callback_query:data", createModelCallbackHandler(projectCtx));
+  }
+
   // Wire handlers
   bot.on("message:text", createTextHandler(projectCtx));
   bot.on("message:photo", createPhotoHandler(projectCtx));
@@ -124,6 +131,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     reset: cmd.reset.enabled,
     clean: cmd.clean.enabled,
     git: cmd.git.enabled,
+    model: cmd.model.enabled,
   };
 
   // Register project-specific commands and skills with Telegram on startup

@@ -113,6 +113,23 @@ const CommandsConfigSchema = z
     reset: ResetCommandConfigSchema,
     clean: SimpleCommandConfigSchema,
     git: GitConfigSchema,
+    model: GitConfigSchema,
+  })
+  .optional();
+
+const ProviderModelSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+});
+
+const ProvidersConfigSchema = z
+  .object({
+    claude: z.array(ProviderModelSchema).optional(),
+    copilot: z.array(ProviderModelSchema).optional(),
+    codex: z.array(ProviderModelSchema).optional(),
+    opencode: z.array(ProviderModelSchema).optional(),
+    cursor: z.array(ProviderModelSchema).optional(),
+    antigravity: z.array(ProviderModelSchema).optional(),
   })
   .optional();
 
@@ -123,6 +140,7 @@ const GlobalsFileSchema = z
       .partial()
       .optional(),
     engine: EngineConfigSchema,
+    providers: ProvidersConfigSchema,
     logging: z
       .object({
         level: LogLevelSchema,
@@ -161,6 +179,7 @@ const ProjectFileSchema = z.object({
     .partial()
     .optional(),
   engine: EngineConfigSchema,
+  providers: ProvidersConfigSchema,
   logging: z
     .object({
       level: LogLevelSchema,
@@ -219,6 +238,11 @@ type LocalConfigFile = NonNullable<z.infer<typeof LocalConfigFileSchema>>;
 
 export type EngineName = z.infer<typeof EngineNameSchema>;
 
+export interface ProviderModel {
+  name: string;
+  description?: string;
+}
+
 export interface ResolvedProjectConfig {
   slug: string;
   name: string | undefined;
@@ -246,6 +270,7 @@ export interface ResolvedProjectConfig {
   rateLimit: { max: number; windowMs: number };
   transcription: { model: string; showTranscription: boolean } | undefined;
   context: Record<string, string> | undefined;
+  providerModels: ProviderModel[];
   commands: {
     start: { enabled: boolean; sessionReset: boolean; message?: string };
     help: { enabled: boolean; message?: string };
@@ -257,6 +282,7 @@ export interface ResolvedProjectConfig {
     };
     clean: { enabled: boolean; message?: string };
     git: { enabled: boolean };
+    model: { enabled: boolean };
   };
 }
 
@@ -409,7 +435,25 @@ export function resolveProjectConfig(
         globals.commands?.git?.enabled ??
         false,
     },
+    model: {
+      enabled:
+        project.commands?.model?.enabled ??
+        globals.commands?.model?.enabled ??
+        true,
+    },
   };
+
+  const engineName = (project.engine?.name ??
+    globals.engine?.name ??
+    "claude") as EngineName;
+
+  const rawProviderModels =
+    project.providers?.[engineName] ?? globals.providers?.[engineName] ?? [];
+
+  const providerModels: ProviderModel[] = rawProviderModels.map((m) => ({
+    name: m.name,
+    description: m.description,
+  }));
 
   return {
     slug,
@@ -423,9 +467,7 @@ export function resolveProjectConfig(
       allowedUserIds:
         project.access?.allowedUserIds ?? globals.access?.allowedUserIds ?? [],
     },
-    engine: (project.engine?.name ??
-      globals.engine?.name ??
-      "claude") as EngineName,
+    engine: engineName,
     engineCommand: project.engine?.command ?? globals.engine?.command,
     engineModel: project.engine?.model ?? globals.engine?.model,
     engineSession: project.engine?.session ?? globals.engine?.session ?? true,
@@ -477,6 +519,7 @@ export function resolveProjectConfig(
             true,
         }
       : undefined,
+    providerModels,
     context: hasContext ? { ...rootContext, ...project.context } : undefined,
     commands: resolvedCommands,
   };

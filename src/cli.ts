@@ -210,11 +210,15 @@ async function runInit(cwd: string, engineName: EngineName): Promise<void> {
  * Rejects if config resolution or any bot startup fails.
  * Used for both initial run and hot-reload.
  */
+interface RunResult {
+  botHandles: BotHandle[];
+}
+
 async function runBotsForConfig(
   configDir: string,
   loaded: LoadedConfigResult,
   startupLogger: pino.Logger,
-): Promise<BotHandle[]> {
+): Promise<RunResult> {
   const { config: multiConfig, loadedFiles } = loaded;
   const globals = multiConfig.globals ?? {};
 
@@ -273,9 +277,9 @@ async function runBotsForConfig(
     }
   }
 
-  const handles = await Promise.all(contexts.map((ctx) => startBot(ctx)));
-  startupLogger.info({ count: handles.length }, "All bots running");
-  return handles;
+  const botHandles = await Promise.all(contexts.map((ctx) => startBot(ctx)));
+  startupLogger.info({ count: botHandles.length }, "All bots running");
+  return { botHandles };
 }
 
 async function runStart(configDir: string): Promise<void> {
@@ -285,9 +289,9 @@ async function runStart(configDir: string): Promise<void> {
 
   const loaded = loadMultiConfig(configDir);
 
-  let handles: BotHandle[];
+  let runResult: RunResult;
   try {
-    handles = await runBotsForConfig(configDir, loaded, startupLogger);
+    runResult = await runBotsForConfig(configDir, loaded, startupLogger);
   } catch (err) {
     startupLogger.error(
       { error: err instanceof Error ? err.message : String(err) },
@@ -302,11 +306,11 @@ async function runStart(configDir: string): Promise<void> {
     reloading = true;
     try {
       startupLogger.info("Config change detected");
-      await Promise.all(handles.map((h) => h.stop()));
+      await Promise.all(runResult.botHandles.map((h) => h.stop()));
       startupLogger.info("All bots stopped");
       try {
         const result = tryLoadMultiConfig(configDir);
-        handles = await runBotsForConfig(configDir, result, startupLogger);
+        runResult = await runBotsForConfig(configDir, result, startupLogger);
       } catch (err) {
         startupLogger.error(
           { error: err instanceof Error ? err.message : String(err) },
@@ -321,7 +325,9 @@ async function runStart(configDir: string): Promise<void> {
   async function shutdown(signal: string): Promise<void> {
     startupLogger.info({ signal }, "Received shutdown signal");
     await configWatcher.stop();
-    await Promise.all(handles.map((h) => h.stop().catch(() => {})));
+    await Promise.all(
+      runResult.botHandles.map((h) => h.stop().catch(() => {})),
+    );
     startupLogger.info("All bots stopped");
     process.exit(0);
   }
