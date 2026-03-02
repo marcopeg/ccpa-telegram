@@ -91,8 +91,7 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.engine.codex.*` | Codex permission flags | See [Codex](../engines/codex/README.md) |
 | `globals.engine.antigravity.*` | Antigravity flags | See [Antigravity](../engines/antigravity/README.md) |
 | `globals.logging` | Log level, flow, persist | See [Logging](logging/README.md) |
-| `globals.rateLimit.max` | Max messages per window per user | `10` |
-| `globals.rateLimit.windowMs` | Rate limit window in ms | `60000` |
+| `globals.rateLimit` | Max messages per user per time window | See [Rate limit](rate-limit/README.md) |
 | `globals.providers` | Per-engine model lists for `/model` (see [Engines](../engines/README.md#model-list-providers-key)) | `{}` |
 | `globals.access.allowedUserIds` | Telegram user IDs allowed by default | `[]` |
 | `globals.dataDir` | Default user data directory | _(see [dataDir](#datadir-values) below)_ |
@@ -122,6 +121,7 @@ Each project entry creates one Telegram bot connected to one directory.
 | `engine.antigravity.*` | No | Antigravity flags (see [Antigravity](../engines/antigravity/README.md)) |
 | `providers` | No | Override the global model list (see [Engines](../engines/README.md#model-list-providers-key)) |
 | `logging` | No | Override logging (see [Logging](logging/README.md)) |
+| `rateLimit` | No | Override rate limit (see [Rate limit](rate-limit/README.md)) |
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context](context/README.md)) |
@@ -195,4 +195,5 @@ With a config at `~/workspace/hal.config.json`:
 | [Context](context/README.md) | Context injection — implicit keys, custom context, variable patterns, hooks |
 | [Commands](commands/README.md) | Built-in command config — `/start`, `/help`, `/reset`, `/clean`, `/model`, `/git` |
 | [Logging](logging/README.md) | Log level, flow, persist, log file paths |
+| [Rate limit](rate-limit/README.md) | Max messages per user per window (`max`, `windowMs`) |
 | [Engines](../engines/README.md) | Supported engines, engine config, model list, model defaults, per-engine setup |

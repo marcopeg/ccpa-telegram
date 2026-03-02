@@ -94,6 +94,7 @@ HAL is configured via `hal.config.json` (and optional `hal.config.local.json`) i
 - **[Commands](docs/config/commands/README.md)** — built-in command config (`/start`, `/help`, `/reset`, `/clean`, `/model`, `/git`)
 - **[Engines](docs/engines/README.md)** — supported engines, engine config, model list, model defaults, per-engine setup
 - **[Logging](docs/config/logging/README.md)** — log level, flow, persist, log file paths
+- **[Rate limit](docs/config/rate-limit/README.md)** — max messages per user per time window
 
 <details>
 <summary>Minimal config example</summary>

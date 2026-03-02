@@ -20,14 +20,8 @@
         { "name": "claude-haiku-4-5", "description": "Fast and cost-effective" }
       ]
     },
-    "_logging": {
-      "level": "info",
-      "flow": true,
+    "logging": {
       "persist": true
-    },
-    "_rateLimit": {
-      "max": 10,
-      "windowMs": 60000
     },
     "transcription": {
       "model": "medium",
