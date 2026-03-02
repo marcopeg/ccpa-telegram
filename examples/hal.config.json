@@ -3,7 +3,7 @@
     "access": {
       "allowedUserIds": []
     },
-    "_engine": {
+    "engine": {
       "name": "claude",
       "session": true
     },
@@ -41,8 +41,7 @@
         "model": "gpt-5.2",
         "codex": {
           "networkAccess": true,
-          "fullDiskAccess": true,
-          "__dangerouslyEnableYolo": true
+          "fullDiskAccess": true
         }
       },
       "telegram": {

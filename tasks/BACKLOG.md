@@ -24,6 +24,8 @@ The commands in the menu should be sorted:
 - [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md)
 - [033 — Expose project as MCP server](./drafts/033.expose-project-as-mcp-server.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
+- [035 — Access list safe defaults and overrides](./drafts/035.access-list-safe-defaults-and-overrides.md)
+- [036 — Allowed user IDs: env substitution and numeric validation](./drafts/036.allowed-user-ids-env-substitution-and-validation.md)
 
 ## Completed
 
