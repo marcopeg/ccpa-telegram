@@ -11,7 +11,6 @@ The commands in the menu should be sorted:
 
 ## Ready Tasks
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
-- [036 — Allowed user IDs: env substitution and numeric validation](./ready/036.allowed-user-ids-env-substitution-and-validation.md) | [plan](./ready/036.allowed-user-ids-env-substitution-and-validation.plan.md)
 - [027 — YAML config support](./ready/027.yaml-config-support.md) | [plan](./ready/027.yaml-config-support.plan.md) ← before 028
 - [028 — JSONC config support](./ready/028.json-plusplus-config-comments.md) | [plan](./ready/028.json-plusplus-config-comments.plan.md) ← after 027
 
@@ -48,3 +47,4 @@ The commands in the menu should be sorted:
 - [023 — Sort commands in /help and Telegram UI](./completed/023.sort-commands.md) | [plan](./completed/023.sort-commands.plan.md)
 - [021 — Switch model command](./completed/021.switch-model.md) | [plan](./completed/021.switch-model.plan.md)
 - [035 — Access list safe defaults and overrides](./completed/035.access-list-safe-defaults-and-overrides.md) | [plan](./completed/035.access-list-safe-defaults-and-overrides.plan.md)
+- [036 — Allowed user IDs: env substitution and numeric validation](./completed/036.allowed-user-ids-env-substitution-and-validation.md) | [plan](./completed/036.allowed-user-ids-env-substitution-and-validation.plan.md)

@@ -1,7 +1,7 @@
 {
   "globals": {
     "access": {
-      "dangerouslyAllowUnrestrictedAccess": true
+      "allowedUserIds": ["${USER_MARCO_IPHONE_ID}"]
     },
     "engine": {
       "name": "claude",

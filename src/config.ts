@@ -133,9 +133,10 @@ const ProvidersConfigSchema = z
   })
   .optional();
 
+const AllowedUserIdSchema = z.union([z.number(), z.string()]);
 const AccessSchema = z
   .object({
-    allowedUserIds: z.array(z.number()),
+    allowedUserIds: z.array(AllowedUserIdSchema),
     dangerouslyAllowUnrestrictedAccess: z.boolean(),
   })
   .partial()
@@ -305,6 +306,60 @@ export interface LoadedConfigResult {
   loadedFiles: string[];
 }
 
+// Telegram user ID range (Bot API): 1 to 0xFFFFFFFFF inclusive
+const TELEGRAM_USER_ID_MAX = 0xfffffffff;
+
+function parseTelegramUserId(value: string | number, path: string): number {
+  const str = typeof value === "string" ? value : String(value);
+  const num = Number(str);
+  if (!Number.isFinite(num) || !Number.isInteger(num)) {
+    throw new ConfigLoadError(
+      `Configuration error: invalid allowedUserIds entry at ${path}: "${str}" is not a valid integer`,
+    );
+  }
+  if (typeof value === "string" && String(num) !== str) {
+    throw new ConfigLoadError(
+      `Configuration error: invalid allowedUserIds entry at ${path}: "${str}" (expected exact integer form, no spaces/decimals/leading zeros)`,
+    );
+  }
+  if (num < 1 || num > TELEGRAM_USER_ID_MAX) {
+    throw new ConfigLoadError(
+      `Configuration error: invalid allowedUserIds entry at ${path}: ${num} is outside Telegram user ID range (1–${TELEGRAM_USER_ID_MAX})`,
+    );
+  }
+  return num;
+}
+
+function normalizeAllowedUserIdsInConfig(config: MultiConfigFile): void {
+  const globalsAccess = config.globals?.access;
+  if (globalsAccess?.allowedUserIds != null) {
+    const raw = globalsAccess.allowedUserIds;
+    const normalized: number[] = [];
+    for (let i = 0; i < raw.length; i++) {
+      normalized.push(
+        parseTelegramUserId(raw[i], `globals.access.allowedUserIds[${i}]`),
+      );
+    }
+    (globalsAccess as { allowedUserIds: number[] }).allowedUserIds = normalized;
+  }
+  for (let j = 0; j < config.projects.length; j++) {
+    const project = config.projects[j];
+    const access = project.access;
+    if (access?.allowedUserIds == null) continue;
+    const raw = access.allowedUserIds;
+    const normalized: number[] = [];
+    for (let i = 0; i < raw.length; i++) {
+      normalized.push(
+        parseTelegramUserId(
+          raw[i],
+          `projects[${j}].access.allowedUserIds[${i}]`,
+        ),
+      );
+    }
+    (access as { allowedUserIds: number[] }).allowedUserIds = normalized;
+  }
+}
+
 // ─── Slug derivation ──────────────────────────────────────────────────────────
 
 export function deriveSlug(name: string | undefined, cwd: string): string {
@@ -469,10 +524,9 @@ export function resolveProjectConfig(
     logDir,
     telegram: { botToken: project.telegram.botToken },
     access: {
-      allowedUserIds:
-        (project.access !== undefined
-          ? project.access.allowedUserIds
-          : globals.access?.allowedUserIds) ?? [],
+      allowedUserIds: ((project.access !== undefined
+        ? project.access.allowedUserIds
+        : globals.access?.allowedUserIds) ?? []) as number[],
       dangerouslyAllowUnrestrictedAccess:
         (project.access !== undefined
           ? project.access.dangerouslyAllowUnrestrictedAccess
@@ -862,6 +916,9 @@ function loadMultiConfigInternal(configDir: string): LoadedConfigResult {
       `Configuration error after environment variable substitution:\n${issues}`,
     );
   }
+
+  // 7. Normalize allowedUserIds (string | number)[] → number[] with validation
+  normalizeAllowedUserIdsInConfig(finalResult.data);
 
   return {
     config: finalResult.data,

@@ -317,6 +317,7 @@ async function runStart(configDir: string): Promise<void> {
           { error: err instanceof Error ? err.message : String(err) },
           "Reload failed",
         );
+        process.exit(1);
       }
     } finally {
       reloading = false;
