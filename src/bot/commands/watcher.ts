@@ -2,7 +2,11 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Bot } from "grammy";
 import type pino from "pino";
-import { type CommandEnabledFlags, loadCommands } from "./loader.js";
+import {
+  type CommandEnabledFlags,
+  getCommandsWithDescriptionTooLong,
+  loadCommands,
+} from "./loader.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -38,6 +42,20 @@ export function startCommandWatcher(
         skillsDirs,
         enabled,
       );
+      const tooLong = getCommandsWithDescriptionTooLong(commands, configDir);
+      if (tooLong.length > 0) {
+        const details = tooLong
+          .map(
+            (o) =>
+              `  /${o.command}: description length ${o.length} (max 256) — ${o.path}`,
+          )
+          .join("\n");
+        logger.error(
+          { offenders: tooLong },
+          `Command description(s) exceed Telegram's 256-character limit:\n${details}`,
+        );
+        return;
+      }
       await bot.api.setMyCommands(
         commands.map((c) => ({
           command: c.command,

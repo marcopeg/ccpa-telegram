@@ -4,12 +4,72 @@ import { Writable } from "node:stream";
 import pino from "pino";
 import type { ResolvedProjectConfig } from "./config.js";
 
+const LEVEL_NAMES: Record<number, string> = {
+  10: "TRACE",
+  20: "DEBUG",
+  30: "INFO",
+  40: "WARN",
+  50: "ERROR",
+  60: "FATAL",
+};
+
 /**
- * A startup logger for CLI-level messages. Always writes to stdout at info level.
+ * Human-readable stream for terminal logs: parses pino NDJSON and writes
+ * "[HH:mm:ss] LEVEL  message" so boot and runtime output is readable.
+ */
+function createPrettyLogStream(
+  out: NodeJS.WritableStream = process.stdout,
+): Writable {
+  let buffer = "";
+  return new Writable({
+    write(chunk: Buffer | string, _enc, cb) {
+      buffer += chunk.toString();
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const obj = JSON.parse(line) as {
+            level?: number;
+            time?: number;
+            msg?: string;
+            [k: string]: unknown;
+          };
+          const time = obj.time != null ? new Date(obj.time) : new Date();
+          const ts = time.toTimeString().slice(0, 8);
+          const levelName = LEVEL_NAMES[obj.level ?? 30] ?? "INFO";
+          const msg = obj.msg ?? "";
+          const rest: string[] = [];
+          for (const [k, v] of Object.entries(obj)) {
+            if (
+              k === "level" ||
+              k === "time" ||
+              k === "msg" ||
+              k === "pid" ||
+              k === "hostname"
+            )
+              continue;
+            if (v !== undefined && v !== null)
+              rest.push(`${k}=${JSON.stringify(v)}`);
+          }
+          const suffix = rest.length > 0 ? ` ${rest.join(" ")}` : "";
+          out.write(`${ts} ${levelName}  ${msg}${suffix}\n`);
+        } catch {
+          out.write(line + "\n");
+        }
+      }
+      cb();
+    },
+  });
+}
+
+/**
+ * A startup logger for CLI-level messages. Writes human-readable lines to stdout
+ * at info level and flushes synchronously so boot order is stable.
  * Used before per-project loggers are created, and for process-level notices.
  */
 export function createStartupLogger(): pino.Logger {
-  return pino({ level: "info" });
+  return pino({ level: "info" }, createPrettyLogStream());
 }
 
 /**
@@ -28,7 +88,7 @@ export function createProjectLogger(
   const streams: pino.StreamEntry[] = [];
 
   if (flow) {
-    streams.push({ stream: process.stdout });
+    streams.push({ stream: createPrettyLogStream() });
   }
 
   if (persist) {

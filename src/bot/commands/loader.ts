@@ -1,7 +1,10 @@
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import type pino from "pino";
+
+/** Telegram API limit for setMyCommands description length (codepoints). */
+export const TELEGRAM_MAX_DESCRIPTION_LENGTH = 256;
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -10,7 +13,7 @@ export type CommandSource = "builtin" | "git" | "project" | "system" | "skill";
 export interface CommandEntry {
   command: string; // name without leading slash (e.g. "deploy")
   description: string; // from file's `description` export
-  filePath: string; // absolute path to the .mjs file, or "" for built-ins/skills
+  filePath: string; // absolute path to .mjs or SKILL.md, or "" for built-ins
   skillPrompt?: string; // prompt body from SKILL.md (skills only)
   public?: boolean; // from SKILL.md frontmatter `public: true`
   source: CommandSource; // where the command comes from
@@ -42,6 +45,27 @@ const TELEGRAM_COMMAND_RE = /^[a-z0-9_]{1,32}$/;
 
 function isValidTelegramCommandName(name: string): boolean {
   return TELEGRAM_COMMAND_RE.test(name);
+}
+
+/**
+ * Returns commands whose description exceeds Telegram's limit (256 chars).
+ * Path is relative to configDir for clear error reporting; built-ins show "(builtin)".
+ */
+export function getCommandsWithDescriptionTooLong(
+  commands: CommandEntry[],
+  configDir: string,
+  maxLength: number = TELEGRAM_MAX_DESCRIPTION_LENGTH,
+): { command: string; path: string; length: number }[] {
+  const offenders: { command: string; path: string; length: number }[] = [];
+  for (const c of commands) {
+    const len = c.description.length;
+    if (len > maxLength) {
+      const path =
+        c.filePath === "" ? "(builtin)" : relative(configDir, c.filePath);
+      offenders.push({ command: c.command, path, length: len });
+    }
+  }
+  return offenders;
 }
 
 // ─── Directory helpers ───────────────────────────────────────────────────────
@@ -201,7 +225,7 @@ async function parseSkillMd(
  * Scan the engine's skills directory and return a CommandEntry for each skill.
  * The command name is derived from the folder name (how the engine resolves it).
  * A warning is logged when the frontmatter `name` differs from the folder name.
- * Skills have no .mjs filePath — they fall through to the AI engine when invoked.
+ * filePath is set to SKILL.md for error reporting (e.g. description too long).
  */
 async function scanSkillsDir(
   dir: string,
@@ -255,7 +279,7 @@ async function scanSkillsDir(
     skills.push({
       command: folder,
       description: parsed.description,
-      filePath: "",
+      filePath: skillMdPath,
       skillPrompt: parsed.prompt,
       public: parsed.public,
       source: "skill",
@@ -438,7 +462,7 @@ export async function resolveSkillEntry(
     return {
       command: commandName,
       description: parsed.description,
-      filePath: "",
+      filePath: skillMdPath,
       skillPrompt: parsed.prompt,
       source: "skill",
     };

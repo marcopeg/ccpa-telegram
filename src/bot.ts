@@ -9,6 +9,7 @@ import {
 import { createHelpHandler } from "./bot/commands/help.js";
 import {
   type CommandEnabledFlags,
+  getCommandsWithDescriptionTooLong,
   loadCommands,
 } from "./bot/commands/loader.js";
 import { createModelHandler } from "./bot/commands/model.js";
@@ -144,6 +145,21 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     enabledFlags,
   );
   if (commands.length > 0) {
+    const tooLong = getCommandsWithDescriptionTooLong(
+      commands,
+      config.configDir,
+    );
+    if (tooLong.length > 0) {
+      const details = tooLong
+        .map(
+          (o) =>
+            `  /${o.command}: description length ${o.length} (max 256) — ${o.path}`,
+        )
+        .join("\n");
+      throw new Error(
+        `Command description(s) exceed Telegram's 256-character limit:\n${details}`,
+      );
+    }
     await bot.api.setMyCommands(
       commands.map((c) => ({ command: c.command, description: c.description })),
     );
