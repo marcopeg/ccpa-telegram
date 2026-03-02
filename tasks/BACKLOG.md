@@ -19,7 +19,10 @@ The commands in the menu should be sorted:
 - [029 — Default models: providers config and /model validation behavior](./drafts/029.default-models-providers-and-model-validation.md)
 - [030 — Codex provider default model propagation](./drafts/030.codex-provider-default-model-propagation.md)
 - [031 — Reset model with duration and cron scheduling](./drafts/031.reset-model-with-duration-and-cron.md)
-- [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md)
+- [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md) (parent)
+  - [032a — Core scheduler + system-level crons](./drafts/032a.core-scheduler-and-system-crons.md)
+  - [032b — Project-level crons + logging refinement](./drafts/032b.project-crons-and-logging.md)
+  - [032c — User-level crons + slash commands](./drafts/032c.user-crons-and-slash-commands.md)
 - [033 — Expose project as MCP server](./drafts/033.expose-project-as-mcp-server.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
 ## Completed
