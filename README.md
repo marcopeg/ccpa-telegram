@@ -92,8 +92,8 @@ HAL is configured via `hal.config.json` (and optional `hal.config.local.json`) i
 - **[Configuration](docs/config/README.md)** — config files, env vars, `globals`, `projects[]`, dataDir, log files, directory structure
 - **[Context](docs/config/context/README.md)** — context injection (implicit keys, custom context, hooks)
 - **[Commands](docs/config/commands/README.md)** — built-in command config (`/start`, `/help`, `/reset`, `/clean`, `/model`, `/git`)
-- **[Engine and models](docs/config/engine/README.md)** — engine selection, model list, model defaults
-- **[Engines](docs/engines/README.md)** — per-engine setup and options (Claude, Copilot, Codex, etc.)
+- **[Engines](docs/engines/README.md)** — supported engines, engine config, model list, model defaults, per-engine setup
+- **[Logging](docs/config/logging/README.md)** — log level, flow, persist, log file paths
 
 <details>
 <summary>Minimal config example</summary>

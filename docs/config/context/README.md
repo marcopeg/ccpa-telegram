@@ -29,7 +29,7 @@ These keys are injected for every message, even without any `context` configurat
 | `engine.name` | Engine identifier (e.g. `claude`, `copilot`) |
 | `engine.command` | CLI command used to invoke the engine |
 | `engine.model` | AI model from config (only present when explicitly set) |
-| `engine.defaultModel` | HAL default model applied (only present when `engine.model` is omitted; see [Model defaults](../engine/README.md#model-defaults)) |
+| `engine.defaultModel` | HAL default model applied (only present when `engine.model` is omitted; see [Model defaults](../../engines/README.md#model-defaults)) |
 
 ## Custom context via config
 

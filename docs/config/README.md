@@ -85,17 +85,15 @@ Default settings applied to all projects. Any setting defined in a project overr
 |-----|-------------|---------|
 | `globals.engine.name` | Engine: `claude`, `copilot`, `codex`, `opencode`, `cursor`, `antigravity` | `"claude"` |
 | `globals.engine.command` | Override the CLI command path | _(engine name)_ |
-| `globals.engine.model` | Override the AI model (see [Model defaults](engine/README.md#model-defaults)) | _(per engine)_ |
+| `globals.engine.model` | Override the AI model (see [Engines](../engines/README.md#model-defaults)) | _(per engine)_ |
 | `globals.engine.session` | Use persistent sessions (`--resume` / `--continue`) | `true` |
 | `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
 | `globals.engine.codex.*` | Codex permission flags | See [Codex](../engines/codex/README.md) |
 | `globals.engine.antigravity.*` | Antigravity flags | See [Antigravity](../engines/antigravity/README.md) |
-| `globals.logging.level` | Log level: `debug`, `info`, `warn`, `error` | `"info"` |
-| `globals.logging.flow` | Write logs to terminal | `true` |
-| `globals.logging.persist` | Write logs to file | `false` |
+| `globals.logging` | Log level, flow, persist | See [Logging](logging/README.md) |
 | `globals.rateLimit.max` | Max messages per window per user | `10` |
 | `globals.rateLimit.windowMs` | Rate limit window in ms | `60000` |
-| `globals.providers` | Per-engine model lists for `/model` (see [Engine and models](engine/README.md#model-list-providers-key)) | `{}` |
+| `globals.providers` | Per-engine model lists for `/model` (see [Engines](../engines/README.md#model-list-providers-key)) | `{}` |
 | `globals.access.allowedUserIds` | Telegram user IDs allowed by default | `[]` |
 | `globals.dataDir` | Default user data directory | _(see [dataDir](#datadir-values) below)_ |
 | `globals.transcription.model` | Whisper model for voice | `"base.en"` |
@@ -117,12 +115,13 @@ Each project entry creates one Telegram bot connected to one directory.
 | `access.allowedUserIds` | No | Override the global user whitelist for this bot |
 | `engine.name` | No | Override the engine for this project |
 | `engine.command` | No | Override the CLI command path |
-| `engine.model` | No | Override the AI model (see [Model defaults](engine/README.md#model-defaults)) |
+| `engine.model` | No | Override the AI model (see [Engines](../engines/README.md#model-defaults)) |
 | `engine.session` | No | Use persistent sessions for this project |
 | `engine.sessionMsg` | No | Message used when renewing session |
 | `engine.codex.*` | No | Codex permission flags (see [Codex](../engines/codex/README.md)) |
 | `engine.antigravity.*` | No | Antigravity flags (see [Antigravity](../engines/antigravity/README.md)) |
-| `providers` | No | Override the global model list (see [Engine and models](engine/README.md#model-list-providers-key)) |
+| `providers` | No | Override the global model list (see [Engines](../engines/README.md#model-list-providers-key)) |
+| `logging` | No | Override logging (see [Logging](logging/README.md)) |
 | `transcription.showTranscription` | No | Override transcription display |
 | `dataDir` | No | Override user data directory (see below) |
 | `context` | No | Per-project context overrides (see [Context](context/README.md)) |
@@ -144,13 +143,7 @@ The slug is used as a folder name for log and data paths. It is derived from:
 | Relative path (e.g. `.mydata`) | `{project-cwd}/{value}` |
 | Absolute path | Used as-is |
 
-## Log files
-
-When `logging.persist: true`, logs are written to:
-
-```
-{config-dir}/.hal/logs/{project-slug}/YYYY-MM-DD.txt
-```
+Log file paths and options are documented in [Logging](logging/README.md).
 
 ## Directory structure
 
@@ -201,5 +194,5 @@ With a config at `~/workspace/hal.config.json`:
 |-------|-------------|
 | [Context](context/README.md) | Context injection — implicit keys, custom context, variable patterns, hooks |
 | [Commands](commands/README.md) | Built-in command config — `/start`, `/help`, `/reset`, `/clean`, `/model`, `/git` |
-| [Engine and models](engine/README.md) | Engine selection, model list, model defaults |
-| [Engines](../engines/README.md) | Per-engine setup, install, and options (Claude, Copilot, Codex, etc.) |
+| [Logging](logging/README.md) | Log level, flow, persist, log file paths |
+| [Engines](../engines/README.md) | Supported engines, engine config, model list, model defaults, per-engine setup |

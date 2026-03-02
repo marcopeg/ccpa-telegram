@@ -6,8 +6,8 @@ Index of HAL documentation. The repository root [README](../../README.md) is the
 
 | Section | Description |
 |---------|-------------|
-| [Configuration](config/README.md) | Config files, env vars, globals, projects, context, commands, engine and models. |
-| [Engines](engines/README.md) | Supported engines (Claude, Copilot, Codex, OpenCode, Cursor, Antigravity): install, config, and HAL usage per engine. |
+| [Configuration](config/README.md) | Config files, env vars, globals, projects, context, commands, logging. |
+| [Engines](engines/README.md) | Supported engines, engine config, model list, model defaults, per-engine setup and install. |
 | [Custom commands](custom-commands/README.md) | Add `.mjs` slash commands (file locations, handler args, examples, hot-reload). |
 | [Skills](skills/README.md) | Engine skill folders as slash commands (SKILL.md format, precedence, overrides). |
 | [Telegram](telegram/README.md) | Creating a bot with BotFather, finding your user ID. |
