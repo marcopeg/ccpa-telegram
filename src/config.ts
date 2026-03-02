@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, isAbsolute, join, resolve } from "node:path";
 import { parse as parseEnv } from "dotenv";
+import stripJsonComments from "strip-json-comments";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 
@@ -768,7 +769,7 @@ function deepMerge<T extends object>(base: T, override: Partial<T>): T {
 
 // ─── Multi-format config file detection ──────────────────────────────────────
 
-export type ConfigFormat = "json" | "yaml";
+export type ConfigFormat = "json" | "jsonc" | "yaml";
 
 interface ResolvedConfigFile {
   path: string;
@@ -777,6 +778,7 @@ interface ResolvedConfigFile {
 
 const CONFIG_EXTENSIONS: readonly { ext: string; format: ConfigFormat }[] = [
   { ext: ".json", format: "json" },
+  { ext: ".jsonc", format: "jsonc" },
   { ext: ".yaml", format: "yaml" },
   { ext: ".yml", format: "yaml" },
 ];
@@ -821,6 +823,9 @@ export function parseConfigContent(
   try {
     if (format === "yaml") {
       return parseYaml(content);
+    }
+    if (format === "jsonc") {
+      return JSON.parse(stripJsonComments(content, { trailingCommas: true }));
     }
     return JSON.parse(content);
   } catch (err) {

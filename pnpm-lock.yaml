@@ -23,6 +23,9 @@ importers:
       pino:
         specifier: ^10.2.0
         version: 10.2.0
+      strip-json-comments:
+        specifier: ^5.0.3
+        version: 5.0.3
       yaml:
         specifier: ^2.8.2
         version: 2.8.2
@@ -505,6 +508,10 @@ packages:
     resolution: {integrity: sha512-BrpvfNAE3dcvq7ll3xVumzjKjZQ5tI1sEUIKr3Uoks0XUl45St3FlatVqef9prk4jRDzhW6WZg+3bk93y6pLjA==}
     engines: {node: '>=6'}
 
+  strip-json-comments@5.0.3:
+    resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
+    engines: {node: '>=14.16'}
+
   thread-stream@4.0.0:
     resolution: {integrity: sha512-4iMVL6HAINXWf1ZKZjIPcz5wYaOdPhtO8ATvZ+Xqp3BTdaqtAwQkNmKORqcIo5YkQqGXq5cwfswDwMqqQNrpJA==}
     engines: {node: '>=20'}
@@ -905,6 +912,8 @@ snapshots:
   split2@4.2.0: {}
 
   strip-final-newline@2.0.0: {}
+
+  strip-json-comments@5.0.3: {}
 
   thread-stream@4.0.0:
     dependencies:

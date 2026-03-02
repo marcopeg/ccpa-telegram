@@ -1,0 +1,94 @@
+{
+  // Global settings shared across all projects
+  "globals": {
+    "access": {
+      "allowedUserIds": ["${USER_MARCO_IPHONE_ID}"]
+    },
+
+    "engine": {
+      // Supported: claude, copilot, codex, opencode, cursor, antigravity
+      "name": "claude",
+      "session": true
+    },
+
+    "providers": {
+      "codex": [
+        { "name": "gpt-5.3-codex", "description": "Most capable Codex model" },
+        { "name": "gpt-5.2-codex", "description": "Advanced coding model" },
+        { "name": "gpt-5.2", "description": "General agentic model" },
+        { "name": "gpt-5-codex-mini", "description": "Cost-effective Codex model" },
+      ],
+      "claude": [
+        { "name": "claude-sonnet-4-6", "description": "Balanced performance and speed" },
+        { "name": "claude-opus-4-6", "description": "Most capable, best for complex reasoning" },
+        { "name": "claude-haiku-4-5", "description": "Fast and cost-effective" },
+      ],
+    },
+
+    "logging": {
+      "persist": true
+    },
+
+    "transcription": {
+      "model": "base.en",
+      "showTranscription": true
+    },
+
+    /* Rate limiting defaults (per-user)
+    "rateLimit": {
+      "max": 10,
+      "windowMs": 60000
+    },
+    */
+  },
+
+  "context": {
+    "custom": "-- global custom context --"
+  },
+
+  "projects": [
+    {
+      "name": "obsidian",
+      "cwd": "./obsidian",
+      "active": true,
+      "engine": {
+        "name": "codex",
+        "model": "gpt-5.2",
+        "codex": {
+          "networkAccess": true,
+          "fullDiskAccess": true
+        }
+      },
+      "telegram": {
+        "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"
+      },
+      "context": {
+        "secondCustom": "-- first custom --",
+        "thirdCustom": "-- second custom --"
+      },
+      "commands": {
+        "start": {
+          "session": { "reset": true },
+          "message": { "from": ".hal/WELCOME.md" }
+        },
+        "reset": {
+          "session": { "reset": true },
+          "message": {
+            "confirm": "Reset totally?",
+            "done": "All done!"
+          }
+        },
+        "git": { "enabled": true },
+        "model": { "enabled": true },
+      },
+    },
+
+    {
+      "name": "timetracker",
+      "cwd": "./timetracker",
+      "telegram": {
+        "botToken": "${TIMETRACKER_TELEGRAM_TOKEN}"
+      },
+    },
+  ],
+}

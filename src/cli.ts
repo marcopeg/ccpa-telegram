@@ -78,7 +78,7 @@ Commands:
   start           Start the bots (default)
 
 Options:
-  --cwd <path>      Directory containing hal.config.{json,yaml} (default: current directory)
+  --cwd <path>      Directory containing hal.config.{json,jsonc,yaml} (default: current directory)
   --engine <name>   Engine to use: claude, copilot, codex, opencode, cursor (default: claude)
   --help, -h        Show this help message
 

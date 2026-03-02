@@ -93,7 +93,7 @@ Before running HAL you need a Telegram bot token and your own Telegram user ID. 
 
 ## Configuration
 
-HAL is configured via `hal.config.json` (and optional `hal.config.local.json`) in the directory where you run the CLI. YAML is also supported (`hal.config.yaml` / `hal.config.local.yaml`). Full reference:
+HAL is configured via a config file in the directory where you run the CLI. Three formats are supported — JSON, [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments) (JSON with comments and trailing commas), and YAML. Only one format per file is allowed. Full reference:
 
 - **[Configuration](docs/config/README.md)** — config files, env vars, `globals`, `projects[]`, dataDir, log files, directory structure
 - **[Context](docs/config/context/README.md)** — context injection (implicit keys, custom context, hooks)
@@ -103,7 +103,7 @@ HAL is configured via `hal.config.json` (and optional `hal.config.local.json`) i
 - **[Rate limit](docs/config/rate-limit/README.md)** — max messages per user per time window
 
 <details>
-<summary>Minimal config example</summary>
+<summary>Minimal config example (JSON)</summary>
 
 Create a `hal.config.json` in your workspace. Use `${VAR_NAME}` for secrets and set them in `.env.local`.
 
@@ -129,6 +129,36 @@ Create a `hal.config.json` in your workspace. Use `${VAR_NAME}` for secrets and 
       "telegram": { "botToken": "${FRONTEND_BOT_TOKEN}" }
     }
   ]
+}
+```
+
+</details>
+
+<details>
+<summary>JSONC config example (with comments and trailing commas)</summary>
+
+Use `hal.config.jsonc` to add inline comments and trailing commas. See [`examples/hal.config.jsonc`](examples/hal.config.jsonc) for a full example.
+
+```jsonc
+{
+  // Global settings shared across all projects
+  "globals": {
+    "engine": {
+      "name": "claude",  // claude, copilot, codex, opencode, cursor, antigravity
+      "session": true,
+    },
+    "access": { "allowedUserIds": [123456789] },
+    /* Rate limiting (per-user)
+    "rateLimit": { "max": 10, "windowMs": 60000 },
+    */
+  },
+  "projects": [
+    {
+      "name": "my-project",
+      "cwd": "./my-project",
+      "telegram": { "botToken": "${MY_BOT_TOKEN}" },
+    },
+  ],
 }
 ```
 

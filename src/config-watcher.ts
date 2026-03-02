@@ -3,9 +3,11 @@ import chokidar from "chokidar";
 
 const CONFIG_FILES = [
   "hal.config.json",
+  "hal.config.jsonc",
   "hal.config.yaml",
   "hal.config.yml",
   "hal.config.local.json",
+  "hal.config.local.jsonc",
   "hal.config.local.yaml",
   "hal.config.local.yml",
   ".env",

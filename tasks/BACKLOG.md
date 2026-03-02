@@ -11,7 +11,6 @@ The commands in the menu should be sorted:
 
 ## Ready Tasks
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
-- [028 — JSONC config support](./ready/028.json-plusplus-config-comments.md) | [plan](./ready/028.json-plusplus-config-comments.plan.md) ← after 027
 
 ## Drafts
 
@@ -48,3 +47,4 @@ The commands in the menu should be sorted:
 - [035 — Access list safe defaults and overrides](./completed/035.access-list-safe-defaults-and-overrides.md) | [plan](./completed/035.access-list-safe-defaults-and-overrides.plan.md)
 - [036 — Allowed user IDs: env substitution and numeric validation](./completed/036.allowed-user-ids-env-substitution-and-validation.md) | [plan](./completed/036.allowed-user-ids-env-substitution-and-validation.plan.md)
 - [027 — YAML config support](./completed/027.yaml-config-support.md) | [plan](./completed/027.yaml-config-support.plan.md)
+- [028 — JSONC config support](./completed/028.json-plusplus-config-comments.md) | [plan](./completed/028.json-plusplus-config-comments.plan.md)

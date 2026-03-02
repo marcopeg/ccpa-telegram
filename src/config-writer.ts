@@ -19,6 +19,7 @@ function serializeConfig(
   if (format === "yaml") {
     return stringifyYaml(data, { indent: 2 });
   }
+  // jsonc → plain JSON on write (comments are not preserved)
   return JSON.stringify(data, null, 2);
 }
 
