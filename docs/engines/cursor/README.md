@@ -28,6 +28,58 @@ Requires a Cursor subscription. For headless mode, set `CURSOR_API_KEY` as an en
 - **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--continue` (most recent session). HAL does not pass a session ID; the session is **shared by all users** of the project. `/clean` sends `engine.sessionMsg` without `--continue` to start a fresh session; the engine’s reply is sent to the user.
 - **Project file:** `AGENTS.md`.
 
+## Available models
+
+> **Last updated:** 2026-03-03 — [source](https://cursor.com/docs/models)
+
+GPT variants support reasoning effort suffixes (`-low`, `-high`, `-xhigh`) and speed suffixes (`-fast`).
+
+**Cursor native:**
+
+| Model | Description |
+|-------|-------------|
+| `auto` | Auto-selects best model for the task (default) |
+| `composer-1.5` | Cursor's own agent model |
+| `composer-1` | Cursor's legacy agent model |
+
+**Anthropic:**
+
+| Model | Description |
+|-------|-------------|
+| `sonnet-4.6` | Claude 4.6 Sonnet — balanced performance |
+| `sonnet-4.6-thinking` | Claude 4.6 Sonnet with extended thinking |
+| `opus-4.6` | Claude 4.6 Opus — most capable |
+| `opus-4.6-thinking` | Claude 4.6 Opus with extended thinking |
+| `sonnet-4.5` | Claude 4.5 Sonnet |
+| `sonnet-4.5-thinking` | Claude 4.5 Sonnet with extended thinking |
+| `opus-4.5` | Claude 4.5 Opus |
+| `opus-4.5-thinking` | Claude 4.5 Opus with extended thinking |
+
+**OpenAI:**
+
+| Model | Description |
+|-------|-------------|
+| `gpt-5.3-codex` | Latest Codex (variants: -high, -low, -xhigh, -fast) |
+| `gpt-5.2` | GPT-5.2 general agentic (variant: -high) |
+| `gpt-5.2-codex` | GPT-5.2 Codex (variants: -high, -low, -xhigh, -fast) |
+| `gpt-5.1-codex-max` | GPT-5.1 Codex Max (variant: -high) |
+| `gpt-5.1-codex-mini` | GPT-5.1 Codex Mini — cost-effective |
+
+**Google:**
+
+| Model | Description |
+|-------|-------------|
+| `gemini-3.1-pro` | Gemini 3.1 Pro |
+| `gemini-3-pro` | Gemini 3 Pro |
+| `gemini-3-flash` | Gemini 3 Flash — fast and cheap |
+
+**Other:**
+
+| Model | Description |
+|-------|-------------|
+| `grok` | xAI Grok Code |
+| `kimi-k2.5` | Moonshot Kimi K2.5 |
+
 ### Instruction files and precedence
 
 Cursor supports **AGENTS.md** in the project root as a simple markdown instruction file. It also supports the **.cursor/rules/** system (`.md` or `.mdc` files with optional frontmatter for globs and when to apply). Both are loaded and **merged** into the model context; they are not mutually exclusive.

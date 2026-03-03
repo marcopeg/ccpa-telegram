@@ -40,6 +40,27 @@ Higher tiers supersede lower ones. **Warning:** Use `dangerouslyEnableYolo` only
 
 - **Project file:** `AGENTS.md`.
 
+## Available models
+
+> **Last updated:** 2026-03-03 — [source](https://developers.openai.com/codex/models/)
+
+Codex works with any model supporting the Responses API. These are the recommended models:
+
+| Model | Description |
+|-------|-------------|
+| `gpt-5.3-codex` | Most capable Codex model (recommended) |
+| `gpt-5.3-codex-spark` | Research preview — ChatGPT Pro only |
+| `gpt-5.2-codex` | GPT-5.2 optimized for agentic coding |
+| `gpt-5.2` | GPT-5.2 general agentic model |
+| `gpt-5.1-codex` | GPT-5.1 Codex |
+| `gpt-5.1-codex-max` | GPT-5.1 Codex Max — long-running tasks |
+| `gpt-5.1-codex-mini` | GPT-5.1 Codex Mini — cost-effective |
+| `gpt-5.1` | GPT-5.1 |
+| `gpt-5-codex` | GPT-5 Codex |
+| `gpt-5` | GPT-5 |
+| `gpt-5-mini` | GPT-5 Mini — fast, cost-efficient |
+| `gpt-5-nano` | GPT-5 Nano — fastest, cheapest |
+
 ### Instruction files and precedence
 
 Codex uses **AGENTS.md** (and optionally **AGENTS.override.md**) as the root instruction format. It builds a **chain** of instructions that are **concatenated** (merged), not “one file wins”.

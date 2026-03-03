@@ -4,23 +4,49 @@
     "access": {
       "allowedUserIds": ["${USER_MARCO_IPHONE_ID}"]
     },
-    "engine": {
-      // Supported: claude, copilot, codex, opencode, cursor, antigravity
-      // Required: must be set in globals or per-project (no default)
-      "name": "claude",
-      "session": true
-    },
+    // "engine": {
+    //   // Supported: claude, copilot, codex, opencode, cursor, antigravity
+    //   // Required: must be set in globals or per-project (no default)
+    //   "name": "claude",
+    //   "session": true
+    // },
     "providers": {
+      // Model names from `codex -m` / OpenAI Codex docs
+      // See: https://developers.openai.com/codex/models/
+      // Codex works with any model supporting the Responses API; these are recommended.
       "codex": [
-        { "name": "gpt-5.3-codex", "description": "Most capable Codex model" },
-        { "name": "gpt-5.2-codex", "description": "Advanced coding model" },
-        { "name": "gpt-5.2", "description": "General agentic model" },
-        { "name": "gpt-5-codex-mini", "description": "Cost-effective Codex model", "default": true },
+        { "name": "gpt-5.3-codex", "description": "Most capable Codex model (recommended)" },
+        { "name": "gpt-5.3-codex-spark", "description": "Research preview — ChatGPT Pro only" },
+        { "name": "gpt-5.2-codex", "description": "GPT-5.2 optimized for agentic coding", "default": true },
+        { "name": "gpt-5.2", "description": "GPT-5.2 general agentic model" },
+        { "name": "gpt-5.1-codex", "description": "GPT-5.1 Codex" },
+        { "name": "gpt-5.1-codex-max", "description": "GPT-5.1 Codex Max — long-running tasks" },
+        { "name": "gpt-5.1-codex-mini", "description": "GPT-5.1 Codex Mini — cost-effective" },
+        { "name": "gpt-5.1", "description": "GPT-5.1" },
+        { "name": "gpt-5-codex", "description": "GPT-5 Codex" },
+        { "name": "gpt-5", "description": "GPT-5" },
+        { "name": "gpt-5-mini", "description": "GPT-5 Mini — fast, cost-efficient" },
+        { "name": "gpt-5-nano", "description": "GPT-5 Nano — fastest, cheapest" },
       ],
+      // Model names from `claude --model` / Anthropic docs
+      // See: https://docs.anthropic.com/en/docs/claude-code/model-config
+      // Supports aliases (sonnet, opus, haiku) and full model names.
       "claude": [
-        { "name": "claude-sonnet-4-6", "description": "Balanced performance and speed" },
-        { "name": "claude-opus-4-6", "description": "Most capable, best for complex reasoning" },
-        { "name": "claude-haiku-4-5", "description": "Fast and cost-effective", "default": true },
+        // Aliases (always resolve to latest version)
+        { "name": "default", "description": "Account-recommended model (Sonnet or Opus by tier)" },
+        { "name": "sonnet", "description": "Latest Sonnet (currently 4.6)", "default": true },
+        { "name": "opus", "description": "Latest Opus (currently 4.6)" },
+        { "name": "haiku", "description": "Fast and efficient Haiku" },
+        { "name": "sonnet[1m]", "description": "Sonnet with 1M token context window" },
+        { "name": "opusplan", "description": "Opus for planning, Sonnet for execution" },
+        // Full model names (pinned versions)
+        { "name": "claude-opus-4-6", "description": "Claude Opus 4.6 — most intelligent, agents & coding" },
+        { "name": "claude-sonnet-4-6", "description": "Claude Sonnet 4.6 — best speed/intelligence balance" },
+        { "name": "claude-haiku-4-5", "description": "Claude Haiku 4.5 — fastest, near-frontier" },
+        { "name": "claude-sonnet-4-5", "description": "Claude Sonnet 4.5" },
+        { "name": "claude-opus-4-5", "description": "Claude Opus 4.5" },
+        { "name": "claude-sonnet-4-0", "description": "Claude Sonnet 4" },
+        { "name": "claude-opus-4-1", "description": "Claude Opus 4.1" },
       ],
       // Model names from `cursor agent --list-models` (CLI v2026.02)
       // GPT variants support reasoning effort suffixes: -low, -high, -xhigh
@@ -52,6 +78,86 @@
         // Other
         { "name": "grok", "description": "xAI Grok Code" },
         { "name": "kimi-k2.5", "description": "Moonshot Kimi K2.5" },
+      ],
+      // Model names from `gemini --model` / Gemini CLI docs (geminicli.com)
+      // Antigravity IDE offers extra Vertex Model Garden models (Claude, GPT-OSS)
+      // but HAL uses Gemini CLI, which accepts the identifiers below.
+      "antigravity": [
+        // Auto (recommended)
+        { "name": "auto", "description": "Auto-selects best model for the task", "default": true },
+        // Gemini 3.1
+        { "name": "gemini-3.1-pro-preview", "description": "Gemini 3.1 Pro — latest, highest reasoning" },
+        // Gemini 3
+        { "name": "gemini-3-pro-preview", "description": "Gemini 3 Pro — strong reasoning, 1M context" },
+        { "name": "gemini-3-flash-preview", "description": "Gemini 3 Flash — fast reasoning" },
+        // Gemini 2.5
+        { "name": "gemini-2.5-pro", "description": "Gemini 2.5 Pro — stable production model" },
+        { "name": "gemini-2.5-flash", "description": "Gemini 2.5 Flash — fast and cost-effective" },
+      ],
+      // Model names from `copilot --model` / GitHub Copilot docs
+      // See: https://docs.github.com/en/copilot/reference/ai-models/supported-models
+      // Models marked 0x are free (no premium requests on paid plans).
+      "copilot": [
+        // Anthropic
+        { "name": "claude-sonnet-4.6", "description": "Claude 4.6 Sonnet — balanced performance", "default": true },
+        { "name": "claude-opus-4.6", "description": "Claude 4.6 Opus — most capable (3x)" },
+        { "name": "claude-opus-4-6-fast", "description": "Claude 4.6 Opus fast mode — preview (30x)" },
+        { "name": "claude-sonnet-4.5", "description": "Claude 4.5 Sonnet" },
+        { "name": "claude-sonnet-4", "description": "Claude 4 Sonnet" },
+        { "name": "claude-opus-4.5", "description": "Claude 4.5 Opus (3x)" },
+        { "name": "claude-haiku-4.5", "description": "Claude 4.5 Haiku — fast (0.33x)" },
+        // OpenAI
+        { "name": "gpt-5.3-codex", "description": "Latest Codex model" },
+        { "name": "gpt-5.2-codex", "description": "GPT-5.2 Codex" },
+        { "name": "gpt-5.2", "description": "GPT-5.2 general agentic" },
+        { "name": "gpt-5.1-codex-max", "description": "GPT-5.1 Codex Max" },
+        { "name": "gpt-5.1-codex", "description": "GPT-5.1 Codex" },
+        { "name": "gpt-5.1-codex-mini", "description": "GPT-5.1 Codex Mini — preview (0.33x)" },
+        { "name": "gpt-5.1", "description": "GPT-5.1" },
+        { "name": "gpt-5-mini", "description": "GPT-5 Mini — free (0x)" },
+        { "name": "gpt-4.1", "description": "GPT-4.1 — free (0x)" },
+        // Google
+        { "name": "gemini-3.1-pro", "description": "Gemini 3.1 Pro — preview" },
+        { "name": "gemini-3-pro", "description": "Gemini 3 Pro — preview" },
+        { "name": "gemini-3-flash", "description": "Gemini 3 Flash — preview (0.33x)" },
+        { "name": "gemini-2.5-pro", "description": "Gemini 2.5 Pro" },
+        // Other
+        { "name": "grok-code-fast-1", "description": "xAI Grok Code Fast 1 (0.25x)" },
+        // Fine-tuned (preview)
+        { "name": "raptor-mini", "description": "Fine-tuned GPT-5 Mini — preview" },
+        { "name": "goldeneye", "description": "Fine-tuned GPT-5.1-Codex — preview" },
+      ],
+      // Model names from `opencode run -m` / OpenCode Zen docs
+      // See: https://opencode.ai/docs/zen
+      // Format: "opencode/<model-id>" for Zen provider; or "<provider>/<model-id>" for others.
+      // Also supports direct provider models (anthropic/, openai/, google/, etc.).
+      "opencode": [
+        // OpenAI (via Zen)
+        { "name": "opencode/gpt-5.3-codex", "description": "GPT-5.3 Codex — most capable" },
+        { "name": "opencode/gpt-5.2-codex", "description": "GPT-5.2 Codex — intelligent agentic coding" },
+        { "name": "opencode/gpt-5.2", "description": "GPT-5.2 — general agentic" },
+        { "name": "opencode/gpt-5.1-codex", "description": "GPT-5.1 Codex" },
+        { "name": "opencode/gpt-5.1-codex-max", "description": "GPT-5.1 Codex Max — long-running tasks" },
+        { "name": "opencode/gpt-5.1-codex-mini", "description": "GPT-5.1 Codex Mini — cost-effective" },
+        { "name": "opencode/gpt-5.1", "description": "GPT-5.1" },
+        { "name": "opencode/gpt-5-codex", "description": "GPT-5 Codex" },
+        { "name": "opencode/gpt-5", "description": "GPT-5" },
+        { "name": "opencode/gpt-5-nano", "description": "GPT-5 Nano — free", "default": true },
+        // Anthropic (via Zen)
+        { "name": "opencode/claude-opus-4-6", "description": "Claude Opus 4.6 — most intelligent" },
+        { "name": "opencode/claude-sonnet-4-6", "description": "Claude Sonnet 4.6 — balanced" },
+        { "name": "opencode/claude-sonnet-4-5", "description": "Claude Sonnet 4.5" },
+        { "name": "opencode/claude-opus-4-5", "description": "Claude Opus 4.5" },
+        { "name": "opencode/claude-haiku-4-5", "description": "Claude Haiku 4.5 — fast" },
+        // Google (via Zen)
+        { "name": "opencode/gemini-3.1-pro", "description": "Gemini 3.1 Pro" },
+        { "name": "opencode/gemini-3-pro", "description": "Gemini 3 Pro" },
+        { "name": "opencode/gemini-3-flash", "description": "Gemini 3 Flash — fast" },
+        // Other (via Zen)
+        { "name": "opencode/minimax-m2.5", "description": "MiniMax M2.5" },
+        { "name": "opencode/kimi-k2.5", "description": "Kimi K2.5" },
+        { "name": "opencode/glm-5", "description": "GLM 5" },
+        { "name": "opencode/big-pickle", "description": "Big Pickle — free (stealth preview)" },
       ],
     },
 

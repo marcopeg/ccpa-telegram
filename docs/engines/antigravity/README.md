@@ -52,6 +52,21 @@ Free-tier access with a personal Google account (Gemini 2.5 Pro, 60 req/min, 100
 }
 ```
 
+## Available models
+
+> **Last updated:** 2026-03-03 — [source](https://geminicli.com/docs/cli/model/)
+
+HAL uses [Gemini CLI](https://github.com/google-gemini/gemini-cli) (`gemini` command). The Antigravity IDE offers additional Vertex Model Garden models (Claude, GPT-OSS) in its UI, but these aren't available via `gemini --model`.
+
+| Model | Description |
+|-------|-------------|
+| `auto` | Auto-selects best model for the task (default) |
+| `gemini-3.1-pro-preview` | Gemini 3.1 Pro — latest, highest reasoning |
+| `gemini-3-pro-preview` | Gemini 3 Pro — strong reasoning, 1M context |
+| `gemini-3-flash-preview` | Gemini 3 Flash — fast reasoning |
+| `gemini-2.5-pro` | Gemini 2.5 Pro — stable production model |
+| `gemini-2.5-flash` | Gemini 2.5 Flash — fast and cost-effective |
+
 ### Instruction files and precedence
 
 Gemini CLI (Antigravity engine) uses **GEMINI.md** by default as the root instruction file. You can configure **AGENTS.md** (and other names) via `context.fileName` in `settings.json`, e.g. `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`, so it can follow the AGENTS.md convention.

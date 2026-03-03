@@ -31,6 +31,55 @@ Requires a Copilot Pro, Pro+, Business, or Enterprise plan. You can also authent
 - **Sessions:** When `engine.session` is `true`, the CLI is invoked with `--continue` (most recent session). HAL does not pass a session ID; the session is **shared by all users** of the project. `/clean` sends `engine.sessionMsg` to the engine without `--continue` to start a fresh session; the engine’s reply is sent to the user.
 - **Project file:** `AGENTS.md`.
 
+## Available models
+
+> **Last updated:** 2026-03-03 — [source](https://docs.github.com/en/copilot/reference/ai-models/supported-models)
+
+Models marked 0x are free (no premium requests on paid plans). Multiplier shown in parentheses.
+
+**Anthropic:**
+
+| Model | Description |
+|-------|-------------|
+| `claude-sonnet-4.6` | Claude 4.6 Sonnet — balanced performance |
+| `claude-opus-4.6` | Claude 4.6 Opus — most capable (3x) |
+| `claude-opus-4-6-fast` | Claude 4.6 Opus fast mode — preview (30x) |
+| `claude-sonnet-4.5` | Claude 4.5 Sonnet |
+| `claude-sonnet-4` | Claude 4 Sonnet |
+| `claude-opus-4.5` | Claude 4.5 Opus (3x) |
+| `claude-haiku-4.5` | Claude 4.5 Haiku — fast (0.33x) |
+
+**OpenAI:**
+
+| Model | Description |
+|-------|-------------|
+| `gpt-5.3-codex` | Latest Codex model |
+| `gpt-5.2-codex` | GPT-5.2 Codex |
+| `gpt-5.2` | GPT-5.2 general agentic |
+| `gpt-5.1-codex-max` | GPT-5.1 Codex Max |
+| `gpt-5.1-codex` | GPT-5.1 Codex |
+| `gpt-5.1-codex-mini` | GPT-5.1 Codex Mini — preview (0.33x) |
+| `gpt-5.1` | GPT-5.1 |
+| `gpt-5-mini` | GPT-5 Mini — free (0x) |
+| `gpt-4.1` | GPT-4.1 — free (0x) |
+
+**Google:**
+
+| Model | Description |
+|-------|-------------|
+| `gemini-3.1-pro` | Gemini 3.1 Pro — preview |
+| `gemini-3-pro` | Gemini 3 Pro — preview |
+| `gemini-3-flash` | Gemini 3 Flash — preview (0.33x) |
+| `gemini-2.5-pro` | Gemini 2.5 Pro |
+
+**Other:**
+
+| Model | Description |
+|-------|-------------|
+| `grok-code-fast-1` | xAI Grok Code Fast 1 (0.25x) |
+| `raptor-mini` | Fine-tuned GPT-5 Mini — preview |
+| `goldeneye` | Fine-tuned GPT-5.1-Codex — preview |
+
 ### Instruction files and precedence
 
 Copilot supports **AGENTS.md** as the primary agent instruction file. It also supports GitHub’s own instruction layers: repository-wide (`.github/copilot-instructions.md`) and path-specific (`.github/instructions/*.instructions.md`).
