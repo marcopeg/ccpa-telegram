@@ -27,6 +27,12 @@ export function createModelCallbackHandler(
     }
     const modelId = parts.slice(2).join(":");
 
+    const models = config.providerModels;
+    if (models.length > 0 && !models.some((m) => m.name === modelId)) {
+      await gramCtx.answerCallbackQuery("Model no longer available");
+      return;
+    }
+
     try {
       updateProjectModel(config.configDir, config.slug, config.engine, modelId);
       logger.info({ engine: config.engine, model: modelId }, "Model switched");

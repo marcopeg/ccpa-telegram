@@ -108,7 +108,6 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.engine.antigravity.*` | Antigravity flags | See [Antigravity](../engines/antigravity/README.md) |
 | `globals.logging` | Log level, flow, persist | See [Logging](logging/README.md) |
 | `globals.rateLimit` | Max messages per user per time window | See [Rate limit](rate-limit/README.md) |
-| `globals.providers` | Per-engine model lists for `/model`; entries may include `default: true` (at most one per list) to set the model when `engine.model` is omitted (see [Engines](../engines/README.md#model-list-providers-key)). Explicit `engine.model` overrides the provider default. | `{}` |
 | `globals.access.allowedUserIds` | Telegram user IDs allowed by default (entries may be numbers or strings for env substitution; after substitution they are validated and normalized to numeric IDs) | `[]` |
 | `globals.access.dangerouslyAllowUnrestrictedAccess` | Allow all users without a whitelist (must be explicitly `true`) | `false` |
 | `globals.dataDir` | Default user data directory | _(see [dataDir](#datadir-values) below)_ |
@@ -117,6 +116,12 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.commands` | Toggle and configure built-in commands | See [Commands](commands/README.md) |
 
 Per-engine options (Codex, Antigravity) are documented in [Engines](../engines/README.md).
+
+## providers
+
+Per-engine model lists for the `/model` command. Top-level sibling of `globals` and `projects`. Entries may include `default: true` (at most one per engine) to set the model when `engine.model` is omitted. Explicit `engine.model` always overrides the provider default. See [Engines — Model list](../engines/README.md#model-list-providers-key) for full details, field reference, and examples.
+
+Per-project `providers` can override the top-level list for a specific project.
 
 ## Access control
 
@@ -156,7 +161,7 @@ This validation runs at both initial boot and after config hot-reload. A reload 
 | `engine.sessionMsg` | No | Message used when renewing session |
 | `engine.codex.*` | No | Codex permission flags (see [Codex](../engines/codex/README.md)) |
 | `engine.antigravity.*` | No | Antigravity flags (see [Antigravity](../engines/antigravity/README.md)) |
-| `providers` | No | Override the global model list; entries may include `default: true` (at most one per list). See [Engines](../engines/README.md#model-list-providers-key). |
+| `providers` | No | Override the top-level model list for this project; entries may include `default: true` (at most one per list). See [Engines](../engines/README.md#model-list-providers-key). |
 | `logging` | No | Override logging (see [Logging](logging/README.md)) |
 | `rateLimit` | No | Override rate limit (see [Rate limit](rate-limit/README.md)) |
 | `transcription.showTranscription` | No | Override transcription display |

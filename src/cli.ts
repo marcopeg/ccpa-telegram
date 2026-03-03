@@ -233,6 +233,7 @@ async function runBotsForConfig(
       globals,
       configDir,
       rootContext,
+      multiConfig.providers,
     ),
   );
 
@@ -316,7 +317,9 @@ async function runStart(configDir: string): Promise<void> {
     reloading = true;
     try {
       startupLogger.info("Config change detected");
-      await Promise.all(runResult.botHandles.map((h) => h.stop()));
+      await Promise.all(
+        runResult.botHandles.map((h) => h.stop().catch(() => {})),
+      );
       startupLogger.info("All bots stopped");
       try {
         const result = tryLoadMultiConfig(configDir);

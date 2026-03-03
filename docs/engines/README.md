@@ -88,23 +88,23 @@ The `engine` object supports the fields below. Engine-specific options (e.g. Cod
 
 ### Model list (`providers` key)
 
-The `providers` config lets you define which models are available for each engine in the `/model` Telegram command. Keys are engine names. Top-level under `globals`, or per-project to override.
+The `providers` config lets you define which models are available for each engine in the `/model` Telegram command. Keys are engine names. Top-level sibling of `globals` and `projects`, or per-project to override.
 
 ```json
 {
-  "globals": {
-    "providers": {
-      "codex": [
-        { "name": "gpt-5.3-codex", "description": "Most capable Codex model" },
-        { "name": "gpt-5.2-codex", "description": "Advanced coding model" },
-        { "name": "gpt-5.2", "description": "General agentic model", "default": true }
-      ],
-      "claude": [
-        { "name": "claude-sonnet-4-6", "description": "Balanced performance and speed" },
-        { "name": "claude-opus-4-6", "description": "Most capable, complex reasoning" }
-      ]
-    }
-  }
+  "providers": {
+    "codex": [
+      { "name": "gpt-5.3-codex", "description": "Most capable Codex model" },
+      { "name": "gpt-5.2-codex", "description": "Advanced coding model" },
+      { "name": "gpt-5.2", "description": "General agentic model", "default": true }
+    ],
+    "claude": [
+      { "name": "claude-sonnet-4-6", "description": "Balanced performance and speed" },
+      { "name": "claude-opus-4-6", "description": "Most capable, complex reasoning" }
+    ]
+  },
+  "globals": { ... },
+  "projects": { ... }
 }
 ```
 
@@ -147,7 +147,7 @@ When `engine.model` is omitted and no provider default is set, behavior depends 
   - Claude Code: `default` (account-recommended model)
   - OpenCode: `opencode/gpt-5-nano` (free Zen model)
 
-**Provider default validation:** At most one model per `providers.<engine>` list (in globals or in any project) may have `default: true`. If two or more entries in the same list have `default: true`, HAL fails at boot with a clear `ConfigLoadError` naming the engine and list (e.g. `globals.providers.codex` or `projects["my-project"].providers.claude`).
+**Provider default validation:** At most one model per `providers.<engine>` list (top-level or in any project) may have `default: true`. If two or more entries in the same list have `default: true`, HAL fails at boot with a clear `ConfigLoadError` naming the engine and list (e.g. `providers.codex` or `projects["my-project"].providers.claude`).
 
 To change HAL defaults, edit `src/default-models.ts`.
 

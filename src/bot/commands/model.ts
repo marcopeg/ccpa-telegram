@@ -65,6 +65,7 @@ export function createModelHandler(
 
     // No argument provided
     const currentModel = config.engineModel;
+    const defaultModel = config.providerDefaultModel;
 
     if (models.length === 0) {
       const lines: string[] = [];
@@ -87,14 +88,21 @@ export function createModelHandler(
     if (currentModel) {
       lines.push(`Current: <b>${escapeHtml(currentModel)}</b>`);
     }
+    if (defaultModel && defaultModel !== currentModel) {
+      lines.push(`Default: ${escapeHtml(defaultModel)}`);
+    }
     lines.push("");
 
     for (const model of models) {
       const isCurrent = model.name === currentModel;
+      const isDefault = model.default === true;
       const marker = isCurrent ? "▸ " : "   ";
       let line = `${marker}<b>${escapeHtml(model.name)}</b>`;
       if (model.description) {
         line += ` — ${escapeHtml(model.description)}`;
+      }
+      if (isDefault) {
+        line += " ★";
       }
       lines.push(line);
     }
@@ -105,7 +113,10 @@ export function createModelHandler(
     const keyboard = new InlineKeyboard();
     for (const model of models) {
       const isCurrent = model.name === currentModel;
-      const label = isCurrent ? `✓ ${model.name}` : model.name;
+      const isDefault = model.default === true;
+      let label = model.name;
+      if (isCurrent) label = `✓ ${label}`;
+      if (isDefault) label = `${label} ★`;
       keyboard.text(label, `md:select:${model.name}`).row();
     }
 

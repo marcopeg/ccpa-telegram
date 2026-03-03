@@ -7,7 +7,7 @@ description: Fetches the latest supported models for every HAL engine from offic
 
 Fetches the current list of supported models for each HAL engine from the official documentation URLs, then updates **two** locations:
 
-1. **Example config** — the `globals.providers` section of the example config file(s) under `examples/`.
+1. **Example config** — the top-level `providers` section of the example config file(s) under `examples/`.
 2. **Engine doc pages** — each engine's `docs/engines/<engine>/README.md` gets an "Available models" section with the models and a "last updated" date.
 
 ---
@@ -72,7 +72,7 @@ For each example config file found in Step 1:
 
 ### JSONC format
 
-Replace the contents of the `globals.providers.<engine>` array. Preserve:
+Replace the contents of the `providers.<engine>` array. Preserve:
 - The comment header above each engine (with the reference URL and notes).
 - Inline comments grouping models by provider/family.
 - The `"default": true` marker on one model per engine (choose the most sensible default — typically the recommended/balanced model).
@@ -86,7 +86,7 @@ Structure per entry:
 
 ### YAML format
 
-Replace the contents of the `globals.providers.<engine>` list. Use the same structure:
+Replace the contents of the `providers.<engine>` list. Use the same structure:
 ```yaml
 - name: <model-id>
   description: <short description>
@@ -140,7 +140,7 @@ After completing updates, output a summary:
 ## Constraints
 
 - **Do not invent model names.** Only use identifiers confirmed from the reference URLs or reliable secondary sources.
-- **Preserve existing config structure.** Don't reformat or reorder sections outside of `globals.providers`.
+- **Preserve existing config structure.** Don't reformat or reorder sections outside of `providers`.
 - **One default per engine.** At most one model entry per engine may have `default: true`.
 - **Keep descriptions concise.** Max ~60 chars. Include cost tier (free/0x), preview status, or notable trait.
 - **Keep comments.** In JSONC, preserve the `// See: <url>` header comment for each engine and inline group comments. In YAML, preserve `#` comments.

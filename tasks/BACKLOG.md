@@ -8,6 +8,7 @@ The commands in the menu should be sorted:
 - Hal commands
 
 ## In Progress
+- [029 — Top-level providers config and /model validation](./drafts/029.default-models-providers-and-model-validation.md)
 
 ## Ready Tasks
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
@@ -16,7 +17,6 @@ The commands in the menu should be sorted:
 
 - [007 — Python commands + venv support](./drafts/007.python.md)
 - [014 — Multi-thread project isolation](./drafts/014.multi-thread.md)
-- [029 — Default models: providers config and /model validation behavior](./drafts/029.default-models-providers-and-model-validation.md)
 - [031 — Reset model with duration and cron scheduling](./drafts/031.reset-model-with-duration-and-cron.md)
 - [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md) (parent)
   - [032a — Core scheduler + system-level crons](./drafts/032a.core-scheduler-and-system-crons.md)

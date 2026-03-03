@@ -149,7 +149,6 @@ const GlobalsFileSchema = z
   .object({
     access: AccessSchema,
     engine: EngineConfigSchema,
-    providers: ProvidersConfigSchema,
     logging: z
       .object({
         level: LogLevelSchema,
@@ -232,6 +231,7 @@ const ProjectsMapSchema = z
 
 const MultiConfigFileSchema = z.object({
   globals: GlobalsFileSchema,
+  providers: ProvidersConfigSchema,
   context: z.record(z.string(), z.string()).optional(),
   projects: ProjectsMapSchema,
 });
@@ -246,6 +246,7 @@ const LocalProjectSchema = ProjectFileSchema.partial().extend({
 const LocalConfigFileSchema = z
   .object({
     globals: GlobalsFileSchema,
+    providers: ProvidersConfigSchema,
     context: z.record(z.string(), z.string()).optional(),
     projects: z.record(ProjectKeySchema, LocalProjectSchema).optional(),
   })
@@ -429,6 +430,7 @@ export function resolveProjectConfig(
   globals: GlobalsFile,
   configDir: string,
   rootContext?: Record<string, string>,
+  providers?: z.infer<typeof ProvidersConfigSchema>,
 ): ResolvedProjectConfig {
   const slug = key;
   const name = project.name ?? key;
@@ -541,7 +543,7 @@ export function resolveProjectConfig(
   const engineName = rawEngineName as EngineName;
 
   const rawProviderModels =
-    project.providers?.[engineName] ?? globals.providers?.[engineName] ?? [];
+    project.providers?.[engineName] ?? providers?.[engineName] ?? [];
 
   const providerModels: ProviderModel[] = rawProviderModels.map((m) => ({
     name: m.name,
@@ -715,14 +717,14 @@ function countProviderDefaults(
 export function validateProviderDefaultUniqueness(
   config: MultiConfigFile,
 ): void {
-  const globalsProviders = config.globals?.providers;
-  if (globalsProviders) {
+  const topProviders = config.providers;
+  if (topProviders) {
     for (const engine of PROVIDER_ENGINE_KEYS) {
-      const list = globalsProviders[engine];
+      const list = topProviders[engine];
       const n = countProviderDefaults(list);
       if (n > 1) {
         throw new ConfigLoadError(
-          `Configuration error: at most one model in globals.providers.${engine} may have default: true (found ${n}).`,
+          `Configuration error: at most one model in providers.${engine} may have default: true (found ${n}).`,
         );
       }
     }
@@ -974,6 +976,15 @@ function mergeLocalIntoBase(
       ? deepMerge(base.globals ?? {}, local.globals)
       : base.globals;
 
+  const mergedProviders =
+    local.providers !== undefined
+      ? base.providers
+        ? (deepMerge(base.providers, local.providers) as NonNullable<
+            typeof base.providers
+          >)
+        : local.providers
+      : base.providers;
+
   const mergedContext =
     local.context !== undefined
       ? base.context
@@ -982,7 +993,12 @@ function mergeLocalIntoBase(
       : base.context;
 
   if (!local.projects || Object.keys(local.projects).length === 0) {
-    return { ...base, globals: mergedGlobals, context: mergedContext };
+    return {
+      ...base,
+      globals: mergedGlobals,
+      providers: mergedProviders,
+      context: mergedContext,
+    };
   }
 
   const mergedProjects = { ...base.projects } as Record<
@@ -1007,6 +1023,7 @@ function mergeLocalIntoBase(
 
   return {
     globals: mergedGlobals,
+    providers: mergedProviders,
     context: mergedContext,
     projects: mergedProjects,
   };
