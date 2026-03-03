@@ -1,6 +1,7 @@
 ---
-name: plan-task
+name: plan_task
 description: Analyses a given task and creates a detailed development plan with phases and steps
+public: true
 ---
 
 Focus on the task provided by the user. Read the task description and any related files (code, config, prompts, etc.) to fully understand the context and the requirements.

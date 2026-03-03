@@ -1,6 +1,6 @@
 ---
 name: docs
-description: Use when the task or action involves human-facing documentation: README, docs/, or linking from AGENTS.md to docs. Apply automatically when editing or creating user/contributor documentation, decomposing the README into docs/, or cross-linking documentation. Not a slash command; load this skill when documentation work is in scope. AGENTS.md content itself is managed separately (agent instructions).
+description: Use for human-facing docs (README, docs/, links from AGENTS.md to docs). Auto-apply when creating/editing user or contributor docs, splitting README into docs/, or cross-linking. Not for AGENTS.md content (handled separately).
 ---
 
 # Docs

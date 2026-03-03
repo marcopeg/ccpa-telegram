@@ -25,6 +25,8 @@ The commands in the menu should be sorted:
   - [032c — User-level crons + slash commands](./drafts/032c.user-crons-and-slash-commands.md)
 - [033 — Expose project as MCP server](./drafts/033.expose-project-as-mcp-server.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
+- [037 — Projects map with key-derived defaults](./drafts/037.projects-map-key-derived-defaults.md)
+- [038 — Telegram skill exposure via telegram flag](./drafts/038.telegram-skill-exposure-via-telegram-flag.md)
 
 ## Completed
 

@@ -1,5 +1,5 @@
 ---
-name: complete-task
+name: complete_task
 description: Marks a task a completed and moves it to the "Completed" section of BACKLOG.md.
 ---
 

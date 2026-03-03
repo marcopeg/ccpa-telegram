@@ -1,5 +1,5 @@
 ---
-name: refine-task
+name: refine_task
 description: Initiates a task refinement session on a given task
 ---
 

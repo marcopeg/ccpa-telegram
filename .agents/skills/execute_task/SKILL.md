@@ -1,5 +1,5 @@
 ---
-name: execute-task
+name: execute_task
 description: Executes a given task based on a detailed development plan
 ---
 
