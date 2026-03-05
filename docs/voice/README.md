@@ -4,7 +4,7 @@ Voice messages are transcribed locally using [Whisper](https://github.com/openai
 
 ## Configuration
 
-Transcription is configured under `globals.transcription` and can be overridden per project in the `projects` map (e.g. `projects.my-bot.transcription`). Set these in `hal.config.json` (or `hal.config.local.json`).
+Transcription is configured under `globals.transcription` and can be overridden per project in the `projects` map (e.g. `projects.my-bot.transcription`). Set these in your config file (e.g. `hal.config.yaml` or `hal.config.local.yaml`).
 
 | Key | Description | Default |
 |-----|-------------|---------|
@@ -13,33 +13,24 @@ Transcription is configured under `globals.transcription` and can be overridden 
 
 Example — global defaults:
 
-```json
-{
-  "globals": {
-    "transcription": {
-      "model": "base.en",
-      "showTranscription": true
-    }
-  }
-}
+```yaml
+globals:
+  transcription:
+    model: base.en
+    showTranscription: true
 ```
 
 Example — override for one project (e.g. use a larger model and hide transcription):
 
-```json
-{
-  "projects": [
-    {
-      "name": "backend",
-      "cwd": "./backend",
-      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" },
-      "transcription": {
-        "model": "small",
-        "showTranscription": false
-      }
-    }
-  ]
-}
+```yaml
+projects:
+  backend:
+    cwd: ./backend
+    telegram:
+      botToken: "${BACKEND_BOT_TOKEN}"
+    transcription:
+      model: small
+      showTranscription: false
 ```
 
 For where these keys sit in the full config (globals table, projects table), see [Configuration](../config/README.md).

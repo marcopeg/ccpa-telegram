@@ -44,6 +44,11 @@ This skill covers **human** documentation only. AGENTS.md (and other agent instr
 
 Use **relative links** so the documentation is navigable when browsed on GitHub. GitHub supports standard Markdown relative links; paths are relative to the current file. Examples: `[Engines](engines/README.md)` (sibling folder), `[Configuration](../configuration/README.md)` (parent-level folder), `[Back to index](../README.md)`. Follow this convention so users can click through the docs on the GitHub UI.
 
+**Config examples and reference**
+
+- Config examples in the repo are **YAML-first**. The canonical full key reference is **`docs/config/reference.yaml`** — it lists every supported config key with comments linking to the relevant doc pages. The short copy-paste example is **`examples/hal.config.yaml`**.
+- **When adding or changing a config key:** update `docs/config/reference.yaml` and the relevant doc page (e.g. Context, Commands, Engines, Rate limit, Logging in `docs/config/`) so the reference stays the single source of truth.
+
 ---
 
 ## External links within the documentation

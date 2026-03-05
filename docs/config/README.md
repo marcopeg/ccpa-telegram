@@ -23,33 +23,38 @@ This section is the index for all configuration options; detailed subsections ar
 
 Create a config file in your workspace directory (where you run the CLI from). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead.
 
-All three formats produce identical resolved configs. Use whichever suits your workflow:
+**YAML** is the recommended format for examples and for configs with comments. A full key reference (all options, with links to doc pages) is [reference.yaml](reference.yaml). A short copy-paste example is [examples/hal.config.yaml](../../examples/hal.config.yaml). JSON and JSONC are also supported — see [Configuration alternatives](#configuration-alternatives) below.
 
-- **`.json`** — standard JSON, created by `npx @marcopeg/hal init`
-- **`.jsonc`** — JSON with `//` line comments, `/* */` block comments, and trailing commas. Ideal for self-documenting configs. See [`examples/hal.config.jsonc`](../../examples/hal.config.jsonc).
-- **`.yaml`** — YAML with native comment support. See [`examples/hal.config.yaml`](../../examples/hal.config.yaml).
+Example (YAML):
 
-```json
-{
-  "globals": {
-    "engine": { "name": "claude" },
-    "logging": { "level": "info", "flow": true, "persist": false },
-    "rateLimit": { "max": 10, "windowMs": 60000 },
-    "access": { "allowedUserIds": [123456789] }
-  },
-  "projects": {
-    "backend": {
-      "cwd": "./backend",
-      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" },
-      "logging": { "persist": true }
-    },
-    "frontend": {
-      "cwd": "./frontend",
-      "engine": { "name": "copilot", "model": "gpt-5-mini" },
-      "telegram": { "botToken": "${FRONTEND_BOT_TOKEN}" }
-    }
-  }
-}
+```yaml
+globals:
+  engine:
+    name: claude
+  logging:
+    level: info
+    flow: true
+    persist: false
+  rateLimit:
+    max: 10
+    windowMs: 60000
+  access:
+    allowedUserIds: [123456789]
+
+projects:
+  backend:
+    cwd: ./backend
+    telegram:
+      botToken: "${BACKEND_BOT_TOKEN}"
+    logging:
+      persist: true
+  frontend:
+    cwd: ./frontend
+    engine:
+      name: copilot
+      model: gpt-5-mini
+    telegram:
+      botToken: "${FRONTEND_BOT_TOKEN}"
 ```
 
 ### hal.config.local.{json,jsonc,yaml}
@@ -58,14 +63,58 @@ An optional local config file placed next to the main config is deep-merged on t
 
 Every field is optional. `projects` is a map with the same keys as the base config; each local entry is deep-merged into the base project with the same key. Keys that do not exist in the base config are invalid and cause a load error — you cannot introduce new projects from local config.
 
+```yaml
+projects:
+  backend:
+    telegram:
+      botToken: "7123456789:AAHActual-token-here"
+    logging:
+      persist: true
+```
+
+## Configuration alternatives
+
+`hal.config.json` and `hal.config.jsonc` are supported alongside `hal.config.yaml`. Runtime behavior is identical; the loader accepts any of the three formats (one per file).
+
+For a full config structure use the YAML [reference](reference.yaml) or [example](../../examples/hal.config.yaml); you can convert to JSON/JSONC (e.g. with a tool or AI) if needed.
+
+**JSONC** supports:
+
+- Single-line comments: `//`
+- Block comments: `/* ... */`
+- Trailing commas in objects and arrays
+
+JSONC does **not** support: unquoted keys, single-quoted strings, or other non-standard JSON extensions.
+
+Minimal **JSON** example (globals + one project):
+
 ```json
 {
+  "globals": {
+    "engine": { "name": "claude" },
+    "access": { "allowedUserIds": [123456789] }
+  },
   "projects": {
-    "backend": {
-      "telegram": { "botToken": "7123456789:AAHActual-token-here" },
-      "logging": { "persist": true }
+    "mybot": {
+      "telegram": { "botToken": "${BOT_TOKEN}" }
     }
   }
+}
+```
+
+Minimal **JSONC** example (same structure with `//` comments and trailing commas):
+
+```jsonc
+{
+  "globals": {
+    "engine": { "name": "claude" },
+    "access": { "allowedUserIds": [123456789] },
+  },
+  "projects": {
+    "mybot": {
+      "telegram": { "botToken": "${BOT_TOKEN}" },
+    },
+  },
 }
 ```
 
@@ -186,12 +235,12 @@ Log file paths and options are documented in [Logging](logging/README.md).
 
 ## Directory structure
 
-With a config at `~/workspace/hal.config.json` (or `.jsonc` / `.yaml`):
+With a config at `~/workspace/hal.config.yaml` (or `.json` / `.jsonc`):
 
 ```
 ~/workspace/
-├── hal.config.json          (or .jsonc / .yaml)
-├── hal.config.local.json    (or .jsonc / .yaml — gitignored, local overrides / secrets)
+├── hal.config.yaml          (or .json / .jsonc)
+├── hal.config.local.yaml    (or .json / .jsonc — gitignored, local overrides / secrets)
 ├── .hal/
 │   ├── hooks/
 │   │   └── context.mjs            (global context hook, optional)

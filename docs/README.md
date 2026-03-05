@@ -6,7 +6,7 @@ Index of HAL documentation. The repository root [README](../../README.md) is the
 
 | Section | Description |
 |---------|-------------|
-| [Configuration](config/README.md) | Config files, env vars, globals, projects, context, commands, logging, rate limit. |
+| [Configuration](config/README.md) | Config files, [reference.yaml](config/reference.yaml) (all keys), env vars, globals, projects, context, commands, logging, rate limit. |
 | [Engines](engines/README.md) | Supported engines, engine config, model list, model defaults, per-engine setup and install. |
 | [Custom commands](custom-commands/README.md) | Add `.mjs` slash commands (file locations, handler args, examples, hot-reload). |
 | [Skills](skills/README.md) | Engine skill folders as slash commands (SKILL.md format, precedence, overrides). |

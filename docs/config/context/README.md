@@ -33,28 +33,22 @@ These keys are injected for every message, even without any `context` configurat
 
 ## Custom context via config
 
-Add a `context` object at the root level of `hal.config.json` (applies to all projects) or inside individual projects (overrides root per key):
+Add a `context` object at the root level of your config (applies to all projects) or inside individual projects (overrides root per key):
 
-```json
-{
-  "globals": { ... },
-  "context": {
-    "messageId": "${bot.messageId}",
-    "currentTime": "${sys.datetime}",
-    "buildVersion": "#{git rev-parse --short HEAD}"
-  },
-  "projects": [
-    {
-      "name": "backend",
-      "cwd": "./backend",
-      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" },
-      "context": {
-        "project": "backend",
-        "liveTimestamp": "@{date +\"%Y-%m-%d %H:%M:%S\"}"
-      }
-    }
-  ]
-}
+```yaml
+globals: {}
+context:
+  messageId: "${bot.messageId}"
+  currentTime: "${sys.datetime}"
+  buildVersion: "#{git rev-parse --short HEAD}"
+projects:
+  backend:
+    cwd: ./backend
+    telegram:
+      botToken: "${BACKEND_BOT_TOKEN}"
+    context:
+      project: backend
+      liveTimestamp: "@{date +\"%Y-%m-%d %H:%M:%S\"}"
 ```
 
 Project context is merged on top of root — `backend` inherits `messageId`, `currentTime`, and `buildVersion` from root context, and adds `project` and `liveTimestamp`.

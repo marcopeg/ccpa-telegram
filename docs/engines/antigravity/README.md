@@ -42,14 +42,13 @@ Free-tier access with a personal Google account (Gemini 2.5 Pro, 60 req/min, 100
 
 `approvalMode` defaults to `yolo` because HAL runs non-interactively — `default` and `auto_edit` would cause hangs or policy denials in headless mode.
 
-```json
-{
-  "engine": {
-    "name": "antigravity",
-    "model": "gemini-2.5-pro",
-    "antigravity": { "approvalMode": "yolo", "sandbox": false }
-  }
-}
+```yaml
+engine:
+  name: antigravity
+  model: gemini-2.5-pro
+  antigravity:
+    approvalMode: yolo
+    sandbox: false
 ```
 
 ## Available models

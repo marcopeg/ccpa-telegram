@@ -1,6 +1,6 @@
 # Supported engines
 
-HAL supports multiple AI coding CLIs. Each engine has its own install steps, config options, and project files. Set the engine globally or per-project in `hal.config.json` via `engine.name`.
+HAL supports multiple AI coding CLIs. Each engine has its own install steps, config options, and project files. Set the engine globally or per-project in your config file (e.g. `hal.config.yaml`) via `engine.name`.
 
 **Root instructions and chains:** Each engine’s README has an *Instruction files and precedence* section: whether it uses AGENTS.md or a different root file (e.g. CLAUDE.md, GEMINI.md), whether multiple instruction files are merged or one wins, and what happens if both AGENTS.md and that engine’s native file (e.g. `.github/copilot-instructions.md`) exist. See the table below and the linked READMEs for details.
 
@@ -33,37 +33,33 @@ HAL supports multiple AI coding CLIs. Each engine has its own install steps, con
 
 ---
 
-## Engine configuration (hal.config.json)
+## Engine configuration
 
-Set the engine globally or per-project in `hal.config.json`. The engine determines which AI coding CLI is invoked for each message.
+Set the engine globally or per-project in your config file. The engine determines which AI coding CLI is invoked for each message.
 
 ### Engine selection
 
-```json
-{
-  "globals": {
-    "engine": { "name": "claude" }
-  },
-  "projects": [
-    {
-      "name": "backend",
-      "cwd": "./backend",
-      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" }
-    },
-    {
-      "name": "frontend",
-      "cwd": "./frontend",
-      "engine": { "name": "copilot", "model": "gpt-5-mini" },
-      "telegram": { "botToken": "${FRONTEND_BOT_TOKEN}" }
-    },
-    {
-      "name": "legacy",
-      "active": false,
-      "cwd": "./legacy",
-      "telegram": { "botToken": "${LEGACY_BOT_TOKEN}" }
-    }
-  ]
-}
+```yaml
+globals:
+  engine:
+    name: claude
+projects:
+  backend:
+    cwd: ./backend
+    telegram:
+      botToken: "${BACKEND_BOT_TOKEN}"
+  frontend:
+    cwd: ./frontend
+    engine:
+      name: copilot
+      model: gpt-5-mini
+    telegram:
+      botToken: "${FRONTEND_BOT_TOKEN}"
+  legacy:
+    active: false
+    cwd: ./legacy
+    telegram:
+      botToken: "${LEGACY_BOT_TOKEN}"
 ```
 
 In this example:
@@ -90,22 +86,23 @@ The `engine` object supports the fields below. Engine-specific options (e.g. Cod
 
 The `providers` config lets you define which models are available for each engine in the `/model` Telegram command. Keys are engine names. Top-level sibling of `globals` and `projects`, or per-project to override.
 
-```json
-{
-  "providers": {
-    "codex": [
-      { "name": "gpt-5.3-codex", "description": "Most capable Codex model" },
-      { "name": "gpt-5.2-codex", "description": "Advanced coding model" },
-      { "name": "gpt-5.2", "description": "General agentic model", "default": true }
-    ],
-    "claude": [
-      { "name": "claude-sonnet-4-6", "description": "Balanced performance and speed" },
-      { "name": "claude-opus-4-6", "description": "Most capable, complex reasoning" }
-    ]
-  },
-  "globals": { ... },
-  "projects": { ... }
-}
+```yaml
+providers:
+  codex:
+    - name: gpt-5.3-codex
+      description: Most capable Codex model
+    - name: gpt-5.2-codex
+      description: Advanced coding model
+    - name: gpt-5.2
+      description: General agentic model
+      default: true
+  claude:
+    - name: claude-sonnet-4-6
+      description: Balanced performance and speed
+    - name: claude-opus-4-6
+      description: Most capable, complex reasoning
+globals: {}
+projects: {}
 ```
 
 Each entry has:

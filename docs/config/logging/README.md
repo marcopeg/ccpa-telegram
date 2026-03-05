@@ -12,24 +12,19 @@ Logging can be set globally in `globals.logging` and overridden per project in t
 
 Example:
 
-```json
-{
-  "globals": {
-    "logging": {
-      "level": "info",
-      "flow": true,
-      "persist": false
-    }
-  },
-  "projects": [
-    {
-      "name": "backend",
-      "cwd": "./backend",
-      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" },
-      "logging": { "persist": true }
-    }
-  ]
-}
+```yaml
+globals:
+  logging:
+    level: info
+    flow: true
+    persist: false
+projects:
+  backend:
+    cwd: ./backend
+    telegram:
+      botToken: "${BACKEND_BOT_TOKEN}"
+    logging:
+      persist: true
 ```
 
 Here **backend** overrides the global default and enables log persistence for that project only.

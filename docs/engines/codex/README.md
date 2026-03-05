@@ -75,14 +75,13 @@ Codex uses **AGENTS.md** (and optionally **AGENTS.override.md**) as the root ins
 
 See [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md).
 
-```json
-{
-  "engine": {
-    "name": "codex",
-    "model": "gpt-5.1-codex-mini",
-    "codex": { "networkAccess": true, "fullDiskAccess": true }
-  }
-}
+```yaml
+engine:
+  name: codex
+  model: gpt-5.1-codex-mini
+  codex:
+    networkAccess: true
+    fullDiskAccess: true
 ```
 
 [← Back to engines index](../README.md)

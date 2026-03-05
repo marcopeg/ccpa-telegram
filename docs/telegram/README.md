@@ -33,25 +33,22 @@ You get a bot token from **BotFather**, Telegram’s official bot for creating a
 
 ### Step 4: Add the token to HAL
 
-- **Do not** put the token directly in `hal.config.json` if the file is committed to git.
+- **Do not** put the token directly in your config file if it is committed to git.
 - Put it in a **`.env.local`** file in the same directory as your config (or in the project `cwd`). Example:
 
   ```bash
-  # .env.local  (create this file next to hal.config.json)
+  # .env.local  (create this file next to hal.config.yaml)
   BACKEND_BOT_TOKEN=7123456789:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   ```
 
-- In `hal.config.json`, reference it with a placeholder:
+- In your config, reference it with a placeholder:
 
-  ```json
-  {
-    "projects": {
-      "backend": {
-        "cwd": "./backend",
-        "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" }
-      }
-    }
-  }
+  ```yaml
+  projects:
+    backend:
+      cwd: ./backend
+      telegram:
+        botToken: "${BACKEND_BOT_TOKEN}"
   ```
 
 - HAL resolves `${BACKEND_BOT_TOKEN}` at startup from `.env.local` (or `.env` or the shell environment). See [Configuration — Environment variable substitution](../config/README.md#environment-variable-substitution).
@@ -74,30 +71,26 @@ HAL uses your **Telegram user ID** (a numeric ID) for access control and per-use
 
 ### Step 2: Add it to HAL config
 
-- In `hal.config.json`, set **`allowedUserIds`** so that only you (and any other allowed users) can use the bot. If the list is empty, the bot may accept all users (depending on your config).
+- In your config, set **`allowedUserIds`** so that only you (and any other allowed users) can use the bot. If the list is empty, the bot may accept all users (depending on your config).
 
   **Globally (all projects):**
 
-  ```json
-  {
-    "globals": {
-      "access": { "allowedUserIds": [123456789] }
-    }
-  }
+  ```yaml
+  globals:
+    access:
+      allowedUserIds: [123456789]
   ```
 
   **Per project:**
 
-  ```json
-  {
-    "projects": {
-      "backend": {
-        "cwd": "./backend",
-        "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" },
-        "access": { "allowedUserIds": [123456789] }
-      }
-    }
-  }
+  ```yaml
+  projects:
+    backend:
+      cwd: ./backend
+      telegram:
+        botToken: "${BACKEND_BOT_TOKEN}"
+      access:
+        allowedUserIds: [123456789]
   ```
 
 - Use your **numeric** ID (no quotes). You can add multiple IDs: `[123456789, 987654321]`.

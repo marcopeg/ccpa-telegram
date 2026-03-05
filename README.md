@@ -69,7 +69,7 @@ Read more in the [engine docs](docs/engines/README.md).
 ## Quick Start
 
 ```bash
-# Create hal.config.json in the current directory
+# Create a config file in the current directory (init may create JSON; YAML is recommended)
 npx @marcopeg/hal init
 
 # Or in a specific folder (config and bots will use that directory)
@@ -79,7 +79,7 @@ npx @marcopeg/hal init --cwd ./workspace
 npx @marcopeg/hal init --engine copilot
 npx @marcopeg/hal init --cwd ./workspace --engine copilot
 
-# Edit hal.config.json: add your bot token and project path, then start
+# Edit your config (e.g. hal.config.yaml): add your bot token and project path, then start
 npx @marcopeg/hal
 npx @marcopeg/hal --cwd ./workspace
 ```
@@ -93,9 +93,9 @@ Before running HAL you need a Telegram bot token and your own Telegram user ID. 
 
 ## Configuration
 
-HAL is configured via a config file in the directory where you run the CLI. Three formats are supported — JSON, [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments) (JSON with comments and trailing commas), and YAML. Only one format per file is allowed. Full reference:
+HAL is configured via a config file in the directory where you run the CLI. **YAML** is the recommended format for examples and commented configs; JSON and JSONC are also supported. See [Configuration](docs/config/README.md) and [Configuration alternatives](docs/config/README.md#configuration-alternatives) for details. Full reference:
 
-- **[Configuration](docs/config/README.md)** — config files, env vars, `globals`, `projects` (map keyed by project key), dataDir, log files, directory structure
+- **[Configuration](docs/config/README.md)** — config files, [reference.yaml](docs/config/reference.yaml) (all keys), [examples/hal.config.yaml](examples/hal.config.yaml), env vars, `globals`, `projects` (map), dataDir, log files
 - **[Context](docs/config/context/README.md)** — context injection (implicit keys, custom context, hooks)
 - **[Commands](docs/config/commands/README.md)** — built-in command config (`/start`, `/help`, `/reset`, `/clean`, `/model`, `/engine`, `/git`)
 - **[Engines](docs/engines/README.md)** — supported engines, engine config, model list, model defaults, per-engine setup
@@ -103,61 +103,46 @@ HAL is configured via a config file in the directory where you run the CLI. Thre
 - **[Rate limit](docs/config/rate-limit/README.md)** — max messages per user per time window
 
 <details>
-<summary>Minimal config example (JSON)</summary>
+<summary>Minimal config example (YAML)</summary>
 
-Create a `hal.config.json` in your workspace. Use `${VAR_NAME}` for secrets and set them in `.env.local`.
+Create a `hal.config.yaml` in your workspace (or use [examples/hal.config.yaml](examples/hal.config.yaml)). Use `${VAR_NAME}` for secrets and set them in `.env.local`. Full key reference: [docs/config/reference.yaml](docs/config/reference.yaml).
 
-```json
-{
-  "globals": {
-    "engine": { "name": "claude" },
-    "logging": { "level": "info", "flow": true, "persist": false },
-    "rateLimit": { "max": 10, "windowMs": 60000 },
-    "access": { "allowedUserIds": [123456789] }
-  },
-  "projects": {
-    "backend": {
-      "cwd": "./backend",
-      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" },
-      "logging": { "persist": true }
-    },
-    "frontend": {
-      "cwd": "./frontend",
-      "engine": { "name": "copilot", "model": "gpt-5-mini" },
-      "telegram": { "botToken": "${FRONTEND_BOT_TOKEN}" }
-    }
-  }
-}
+```yaml
+globals:
+  engine:
+    name: claude
+  logging:
+    level: info
+    flow: true
+    persist: false
+  rateLimit:
+    max: 10
+    windowMs: 60000
+  access:
+    allowedUserIds: [123456789]
+
+projects:
+  backend:
+    cwd: ./backend
+    telegram:
+      botToken: "${BACKEND_BOT_TOKEN}"
+    logging:
+      persist: true
+  frontend:
+    cwd: ./frontend
+    engine:
+      name: copilot
+      model: gpt-5-mini
+    telegram:
+      botToken: "${FRONTEND_BOT_TOKEN}"
 ```
 
 </details>
 
 <details>
-<summary>JSONC config example (with comments and trailing commas)</summary>
+<summary>JSON and JSONC</summary>
 
-Use `hal.config.jsonc` to add inline comments and trailing commas. See [`examples/hal.config.jsonc`](examples/hal.config.jsonc) for a full example.
-
-```jsonc
-{
-  // Global settings shared across all projects
-  "globals": {
-    "engine": {
-      "name": "claude",  // claude, copilot, codex, opencode, cursor, antigravity
-      "session": true,
-    },
-    "access": { "allowedUserIds": [123456789] },
-    /* Rate limiting (per-user)
-    "rateLimit": { "max": 10, "windowMs": 60000 },
-    */
-  },
-  "projects": {
-    "my-project": {
-      "cwd": "./my-project",
-      "telegram": { "botToken": "${MY_BOT_TOKEN}" },
-    },
-  },
-}
-```
+JSON and JSONC are also supported alongside YAML. For a minimal JSON/JSONC example and supported JSONC features (comments, trailing commas), see [Configuration alternatives](docs/config/README.md#configuration-alternatives). Use the YAML [reference](docs/config/reference.yaml) or [example](examples/hal.config.yaml) and convert if needed.
 
 </details>
 

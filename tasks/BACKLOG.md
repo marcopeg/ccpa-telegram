@@ -24,7 +24,6 @@ The commands in the menu should be sorted:
   - [032c — User-level crons + slash commands](./drafts/032c.user-crons-and-slash-commands.md)
 - [033 — Expose project as MCP server](./drafts/033.expose-project-as-mcp-server.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
-- [039 — Move docs to YAML](./drafts/039.move-docs-to-yaml.md)
 - [041 — Custom env file](./drafts/041.custom-env-file.md)
 - [042 — Users map](./drafts/042.users-map.md)
 - [043 — Fix OpenCode engine (default free services)](./drafts/043.fix-opencode.md)
@@ -67,3 +66,4 @@ The commands in the menu should be sorted:
 - [030 — Codex provider default model propagation](./completed/030.codex-provider-default-model-propagation.md) | [plan](./completed/030.codex-provider-default-model-propagation.plan.md)
 - [029 — Top-level providers config and /model validation](./completed/029.default-models-providers-and-model-validation.md)
 - [044 — ASCII art HAL 9000 banner on startup](./completed/044.ascii-art.md) | [plan](./completed/044.ascii-art.plan.md)
+- [039 — Move docs to YAML](./completed/039.move-docs-to-yaml.md) | [plan](./completed/039.move-docs-to-yaml.plan.md)

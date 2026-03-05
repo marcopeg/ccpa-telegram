@@ -92,8 +92,11 @@ Copilot supports **AGENTS.md** as the primary agent instruction file. It also su
 
 See [Adding repository custom instructions for GitHub Copilot](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot).
 
-```json
-{ "engine": { "name": "copilot", "model": "claude-sonnet-4.6", "session": true } }
+```yaml
+engine:
+  name: copilot
+  model: claude-sonnet-4.6
+  session: true
 ```
 
 [← Back to engines index](../README.md)

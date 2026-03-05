@@ -93,8 +93,10 @@ OpenCode uses **AGENTS.md** as the main instruction file. It also supports **CLA
 
 **Custom instructions** in `opencode.json` (e.g. `instructions` field) are **combined** with the chosen AGENTS.md/CLAUDE.md file. So you get one “rules file” from the precedence above, plus any files referenced in config. See [Rules - AGENTS.md Project Guidelines](https://open-code.ai/docs/en/rules).
 
-```json
-{ "engine": { "name": "opencode", "model": "opencode/gpt-5-nano" } }
+```yaml
+engine:
+  name: opencode
+  model: opencode/gpt-5-nano
 ```
 
 [← Back to engines index](../README.md)

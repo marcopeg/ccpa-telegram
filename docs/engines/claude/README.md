@@ -74,8 +74,11 @@ Claude Code uses **CLAUDE.md** only; it does **not** read `AGENTS.md` as a root 
 
 You can pull in extra content from other files via `@path/to/file` imports inside CLAUDE.md, and use `.claude/rules/` for file-type–scoped rules. See [How Claude remembers your project](https://docs.anthropic.com/en/docs/claude-code/memory).
 
-```json
-{ "engine": { "name": "claude", "model": "sonnet", "session": true } }
+```yaml
+engine:
+  name: claude
+  model: sonnet
+  session: true
 ```
 
 [← Back to engines index](../README.md)

@@ -90,8 +90,10 @@ Cursor supports **AGENTS.md** in the project root as a simple markdown instructi
 
 **Chain:** You can have a global `~/.codex/AGENTS.md` (or similar) for personal defaults; project-level AGENTS.md and .cursor/rules apply on top. See [Rules](https://cursor.com/docs/context/rules).
 
-```json
-{ "engine": { "name": "cursor", "model": "auto" } }
+```yaml
+engine:
+  name: cursor
+  model: auto
 ```
 
 [← Back to engines index](../README.md)

@@ -1,32 +1,29 @@
-# HAL configuration
-# Full config docs:
-# https://github.com/marcopeg/hal/blob/main/docs/config/README.md
+# Short copy-paste example. Full key reference: docs/config/reference.yaml
 
 globals:
   engine:
-    name: codex
-    model: gpt-5.2-codex
-
-  # Who can use the bot
-  # 
-  # How do I find my Telegram userID?
-  # https://github.com/marcopeg/hal/blob/main/docs/telegram/README.md
+    name: claude
+  logging:
+    level: info
+    flow: true
+    persist: false
+  rateLimit:
+    max: 10
+    windowMs: 60000
   access:
-    allowedUserIds: ["${YOUR_TELEGRAM_USER_ID}"]
+    allowedUserIds: [123456789]
 
 projects:
-  prj1:
-    active: true
-    cwd: "."
-    engine:
-      name: codex
-    
-    # Link this project to a Telegram bot
-    # 
-    # How do I create a Telegram bot?
-    # https://github.com/marcopeg/hal/blob/main/docs/telegram/README.md#creating-a-telegram-bot
-    #
-    # How do I safely set the bot's api key via .env file?
-    # https://github.com/marcopeg/hal/blob/main/docs/telegram/README.md
+  backend:
+    cwd: ./backend
     telegram:
-      botToken: "${TELEGRAM_BOT_TOKEN}"
+      botToken: "${BACKEND_BOT_TOKEN}"
+    logging:
+      persist: true
+  frontend:
+    cwd: ./frontend
+    engine:
+      name: copilot
+      model: gpt-5-mini
+    telegram:
+      botToken: "${FRONTEND_BOT_TOKEN}"

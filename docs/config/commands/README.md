@@ -8,49 +8,49 @@ Configure this in [Configuration](../README.md) via `globals.commands` or per-pr
 
 Each command supports an `enabled` flag (default `true` for most, `false` for `/git`):
 
-```json
-{
-  "commands": {
-    "model": { "enabled": true },
-    "engine": { "enabled": true },
-    "git": { "enabled": true },
-    "start": { "enabled": true },
-    "help": { "enabled": true },
-    "reset": { "enabled": true },
-    "clean": { "enabled": true }
-  }
-}
+```yaml
+commands:
+  model:
+    enabled: true
+  engine:
+    enabled: true
+  git:
+    enabled: true
+  start:
+    enabled: true
+  help:
+    enabled: true
+  reset:
+    enabled: true
+  clean:
+    enabled: true
 ```
 
 ## Custom messages
 
 The `/start`, `/help`, `/reset`, and `/clean` commands additionally support a custom `message`:
 
-```json
-{
-  "globals": {
-    "commands": {
-      "start": {
-        "session": { "reset": true },
-        "message": { "text": "Welcome, ${bot.firstName}!" }
-      },
-      "help": {
-        "message": { "from": "./HELP.md" }
-      },
-      "reset": {
-        "session": { "reset": true },
-        "timeout": 120,
-        "message": {
-          "confirm": "This will erase everything. Proceed?",
-          "done": "All wiped!"
-        }
-      },
-      "clean": {
-        "message": { "text": "Session reset. Ready for a new conversation." }
-      }
-    }
-  }
-}
+```yaml
+globals:
+  commands:
+    start:
+      session:
+        reset: true
+      message:
+        text: "Welcome, ${bot.firstName}!"
+    help:
+      message:
+        from: "./HELP.md"
+    reset:
+      session:
+        reset: true
+      timeout: 120
+      message:
+        confirm: "This will erase everything. Proceed?"
+        done: "All wiped!"
+    clean:
+      message:
+        text: "Session reset. Ready for a new conversation."
 ```
 
 Each command supports a `message` object with **exactly one** of:

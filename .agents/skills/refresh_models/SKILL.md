@@ -38,14 +38,13 @@ Each engine has one or more **reference URLs** to consult. Fetch and read these 
 
 ---
 
-## Step 1 — Identify the example config format
+## Step 1 — Identify the example config
 
-Look in `examples/` for the example config file(s). HAL supports two formats:
+Look in `examples/` for the primary example config. The canonical example is **YAML**:
 
-- **JSONC**: `examples/hal.config.jsonc` (or `.json`)
-- **YAML**: `examples/_hal.config.yaml` (or `.yml`)
+- **YAML**: `examples/hal.config.yaml` (or `.yml`)
 
-Read **both** files if they exist. The skill updates **all** example config files found. Detect format by extension.
+The skill updates this file’s top-level `providers` section. Detect format by extension. If no YAML example exists, the skill may create or skip the example config step as appropriate.
 
 ---
 

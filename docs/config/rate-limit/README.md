@@ -15,28 +15,23 @@ So with the defaults (`max: 10`, `windowMs: 60000`): each user can send **at mos
 
 ## Example
 
-```json
-{
-  "globals": {
-    "rateLimit": {
-      "max": 10,
-      "windowMs": 60000
-    }
-  },
-  "projects": [
-    {
-      "name": "backend",
-      "cwd": "./backend",
-      "telegram": { "botToken": "${BACKEND_BOT_TOKEN}" }
-    },
-    {
-      "name": "support",
-      "cwd": "./support",
-      "telegram": { "botToken": "${SUPPORT_BOT_TOKEN}" },
-      "rateLimit": { "max": 30, "windowMs": 60000 }
-    }
-  ]
-}
+```yaml
+globals:
+  rateLimit:
+    max: 10
+    windowMs: 60000
+projects:
+  backend:
+    cwd: ./backend
+    telegram:
+      botToken: "${BACKEND_BOT_TOKEN}"
+  support:
+    cwd: ./support
+    telegram:
+      botToken: "${SUPPORT_BOT_TOKEN}"
+    rateLimit:
+      max: 30
+      windowMs: 60000
 ```
 
 Here **backend** uses the global limit (10 messages per 60 seconds per user). **support** overrides it to allow 30 messages per 60 seconds per user.

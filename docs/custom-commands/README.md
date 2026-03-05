@@ -130,7 +130,7 @@ The project-level context object. Useful fields:
 | `projectCtx.config.name` | `string \| undefined` | Project name from config |
 | `projectCtx.config.slug` | `string` | Internal slug (used for log/data paths) |
 | `projectCtx.config.cwd` | `string` | Absolute path to the project directory |
-| `projectCtx.config.configDir` | `string` | Absolute path to the directory containing `hal.config.json` |
+| `projectCtx.config.configDir` | `string` | Absolute path to the directory containing the config file (e.g. `hal.config.yaml`) |
 | `projectCtx.config.dataDir` | `string` | Absolute path to user data storage root |
 | `projectCtx.config.context` | `Record<string, string> \| undefined` | Raw config-level context values (pre-hook) |
 | `projectCtx.logger` | Pino logger | Structured logger — use for debug output that ends up in log files |

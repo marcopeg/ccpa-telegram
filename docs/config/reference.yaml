@@ -1,0 +1,105 @@
+# HAL config reference — all supported keys
+# Full key index for docs. See [Configuration](README.md). Short copy-paste example: ../../examples/hal.config.yaml
+
+# ─── Top-level: globals (defaults for all projects) ─────────────────────────────
+# See this README for globals table and Access control section.
+
+globals:
+  # Access: allowedUserIds (numbers or "${VAR}" strings), dangerouslyAllowUnrestrictedAccess
+  access:
+    allowedUserIds: []  # e.g. [123456789] or ["${TELEGRAM_USER_ID}"]
+    dangerouslyAllowUnrestrictedAccess: false
+
+  # See [Engines](../engines/README.md); per-engine: [Codex](../engines/codex/README.md), [Antigravity](../engines/antigravity/README.md)
+  engine:
+    name: claude  # required unless each project sets its own; claude|copilot|codex|opencode|cursor|antigravity
+    command: ""   # override CLI path
+    model: ""     # override model (see engine docs)
+    session: true
+    sessionMsg: "hi!"
+    codex:        # Codex-only flags
+      networkAccess: false
+      fullDiskAccess: false
+      dangerouslyEnableYolo: false
+    antigravity:  # Antigravity-only flags
+      approvalMode: default  # default|auto_edit|yolo
+      sandbox: true
+
+  # See [Logging](logging/README.md)
+  logging:
+    level: info   # debug|info|warn|error
+    flow: true
+    persist: false
+
+  # See [Rate limit](rate-limit/README.md)
+  rateLimit:
+    max: 10
+    windowMs: 60000
+
+  # Voice transcription (Whisper)
+  transcription:
+    model: base.en
+    showTranscription: true
+
+  dataDir: ""     # default: project-cwd/.hal/users; see dataDir values in README
+
+  # See [Commands](commands/README.md)
+  commands:
+    start:
+      enabled: true
+      session:
+        reset: false
+      message:
+        text: ""   # or from: "path/to/file.md"
+    help:
+      enabled: true
+      message: {}
+    reset:
+      enabled: true
+      session: {}
+      message:
+        confirm: ""
+        done: ""
+      timeout: 300000
+    clean:
+      enabled: true
+      message: {}
+    git:
+      enabled: true
+    model:
+      enabled: true
+    engine:
+      enabled: true
+
+# ─── Top-level: providers (model lists for /model) ───────────────────────────
+# See [Engines — Model list](../engines/README.md#model-list-providers-key)
+providers: {}
+# Example shape (per engine): claude: [{ name: "sonnet", description: "...", default: true }, ...]
+
+# ─── Top-level: root context (all projects) ───────────────────────────────────
+# See [Context](context/README.md)
+context: {}
+# Example: { "IMPLICIT_KEY": "value", "CUSTOM": "{{projectCwd}}" }
+
+# ─── Top-level: projects (map keyed by slug) ──────────────────────────────────
+# Each key = project slug; name/cwd default to key. See projects table in README.
+
+projects:
+  my-project:
+    name: my-project    # optional; defaults to key
+    active: true
+    cwd: my-project     # optional; defaults to key
+    telegram:
+      botToken: "${BOT_TOKEN}"  # required
+    access: {}          # optional; replaces globals when set
+    engine: {}           # optional overrides
+    providers: {}        # optional; override top-level list
+    logging: {}
+    rateLimit: {}
+    transcription:
+      showTranscription: true
+    dataDir: ""
+    # See [Context](context/README.md)
+    context: {}
+    # See [Commands](commands/README.md)
+    commands: {}
