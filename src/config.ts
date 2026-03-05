@@ -4,6 +4,7 @@ import { parse as parseEnv } from "dotenv";
 import stripJsonComments from "strip-json-comments";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
+import { isCliAvailable } from "./engine/cli-available.js";
 
 // ─── Zod helpers ──────────────────────────────────────────────────────────────
 
@@ -515,14 +516,26 @@ export function resolveProjectConfig(
   const rawReset = project.commands?.reset ?? globals.commands?.reset;
   const rawClean = project.commands?.clean ?? globals.commands?.clean;
 
-  // Enable /model when we have a config list, or when the engine can discover models via CLI (self-discovery)
+  // Enable /model when we have a config list, or when the engine supports self-discovery and its CLI is available
+  const effectiveEngineCommand =
+    project.engine?.command ?? globals.engine?.command ?? undefined;
+  const defaultCommandForEngine =
+    engineName === "opencode"
+      ? "opencode"
+      : engineName === "cursor"
+        ? "agent"
+        : null;
+  const modelCliCommand = effectiveEngineCommand ?? defaultCommandForEngine;
+  const selfDiscoveryEnabled =
+    rawProviderModels.length === 0 &&
+    (engineName === "opencode" || engineName === "cursor") &&
+    modelCliCommand !== null &&
+    isCliAvailable(modelCliCommand);
   const modelEnabled =
     (project.commands?.model?.enabled ??
       globals.commands?.model?.enabled ??
       true) &&
-    (providerModels.length > 1 ||
-      (rawProviderModels.length === 0 &&
-        (engineName === "opencode" || engineName === "cursor")));
+    (providerModels.length > 1 || selfDiscoveryEnabled);
 
   const engineEnabled =
     (project.commands?.engine?.enabled ??

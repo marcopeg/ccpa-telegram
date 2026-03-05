@@ -13,7 +13,7 @@
   "packageManager": "pnpm@10.13.1",
   "scripts": {
     "start": "tsx watch src/cli.ts start --cwd examples",
-    "build": "tsc && chmod +x dist/cli.js",
+    "build": "tsc && cp src/init-template.yaml dist/ && chmod +x dist/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src",
     "lint:fix": "biome check --write src",

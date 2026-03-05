@@ -1,0 +1,32 @@
+# HAL configuration
+# Full config docs:
+# {{HAL_DOCS_CONFIG}}
+
+globals:
+  engine:
+    name: {{ENGINE_NAME}}
+    model: {{ENGINE_MODEL}}
+
+  # Who can use the bot
+  # 
+  # How do I find my Telegram userID?
+  # {{HAL_DOCS_TELEGRAM}}
+  access:
+    allowedUserIds: ["${YOUR_TELEGRAM_USER_ID}"]
+
+projects:
+  prj1:
+    active: true
+    cwd: {{PROJECT_CWD}}
+    engine:
+      name: {{ENGINE_NAME}}
+    
+    # Link this project to a Telegram bot
+    # 
+    # How do I create a Telegram bot?
+    # {{HAL_DOCS_TELEGRAM_CREATE_BOT}}
+    #
+    # How do I safely set the bot's api key via .env file?
+    # {{HAL_DOCS_TELEGRAM}}
+    telegram:
+      botToken: "${TELEGRAM_BOT_TOKEN}"

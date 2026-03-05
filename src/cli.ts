@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { existsSync } from "node:fs";
+import { execSync, spawn } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type pino from "pino";
 import { type BotHandle, startBot } from "./bot.js";
 import type { LoadedConfigResult } from "./config.js";
 import {
-  loadMultiConfig,
   resolveProjectConfig,
   tryLoadMultiConfig,
   validateAccessPolicies,
@@ -22,41 +22,97 @@ import type { EngineName } from "./engine/types.js";
 import { createProjectLogger, createStartupLogger } from "./logger.js";
 import type { ProjectContext } from "./types.js";
 
-// ─── Config template ──────────────────────────────────────────────────────────
+// ─── Init: doc URLs (GitHub marcopeg/hal + docs path) ──────────────────────────
 
-function buildConfigTemplate(engineName: EngineName): string {
-  return `{
-  "globals": {
-    "engine": {
-      "name": "${engineName}"
-    },
-    "logging": {
-      "level": "info",
-      "flow": true,
-      "persist": false
-    },
-    "rateLimit": {
-      "max": 10,
-      "windowMs": 60000
-    },
-    "access": {
-      "allowedUserIds": [0]
+const HAL_DOCS_BASE = "https://github.com/marcopeg/hal/blob/main/docs";
+const HAL_DOCS_TELEGRAM = `${HAL_DOCS_BASE}/telegram/README.md`;
+const HAL_DOCS_TELEGRAM_CREATE_BOT = `${HAL_DOCS_BASE}/telegram/README.md#creating-a-telegram-bot`;
+const HAL_DOCS_CONFIG = `${HAL_DOCS_BASE}/config/README.md`;
+
+/** One default model per engine for the chosen project engine. */
+const DEFAULT_PROVIDER_MODEL: Record<EngineName, string> = {
+  claude: "sonnet",
+  copilot: "gpt-5-mini",
+  codex: "gpt-5.2-codex",
+  opencode: "opencode/gpt-5-nano",
+  cursor: "auto",
+  antigravity: "gemini-2.0-flash",
+};
+
+function getDefaultProviderModel(
+  engine: EngineName,
+  override?: string,
+): string {
+  return override ?? DEFAULT_PROVIDER_MODEL[engine];
+}
+
+const INIT_TEMPLATE_PATH = new URL("./init-template.yaml", import.meta.url);
+
+/** Build YAML config from the template file with placeholder substitution. */
+function buildYamlInitConfig(
+  engineName: EngineName,
+  projectCwd: string,
+  modelOverride?: string,
+): string {
+  const model = getDefaultProviderModel(engineName, modelOverride);
+  const template = readFileSync(INIT_TEMPLATE_PATH, "utf-8");
+  return template
+    .replace(/\{\{ENGINE_NAME\}\}/g, engineName)
+    .replace(/\{\{ENGINE_MODEL\}\}/g, model)
+    .replace(/\{\{PROJECT_CWD\}\}/g, JSON.stringify(projectCwd))
+    .replace(/\{\{HAL_DOCS_CONFIG\}\}/g, HAL_DOCS_CONFIG)
+    .replace(/\{\{HAL_DOCS_TELEGRAM\}\}/g, HAL_DOCS_TELEGRAM)
+    .replace(
+      /\{\{HAL_DOCS_TELEGRAM_CREATE_BOT\}\}/g,
+      HAL_DOCS_TELEGRAM_CREATE_BOT,
+    );
+}
+
+/** Prompt Y/n; Enter or empty = yes. Reads exactly one line then closes stdin. */
+function promptYesNo(promptText: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    process.stdout.write(promptText);
+    if (!process.stdin.readable || !process.stdin.isTTY) {
+      resolve(true);
+      return;
     }
-  },
-  "projects": {
-    "my-project": {
-      "cwd": ".",
-      "telegram": {
-        "botToken": "YOUR_BOT_TOKEN_HERE"
+    process.stdin.setEncoding("utf-8");
+    process.stdin.resume();
+    let buf = "";
+    const onData = (chunk: string) => {
+      buf += chunk;
+      const nl = buf.indexOf("\n");
+      if (nl !== -1) {
+        process.stdin.removeListener("data", onData);
+        process.stdin.pause();
+        const line = buf.slice(0, nl).trim().toLowerCase();
+        resolve(line !== "n" && line !== "no");
       }
-    }
+    };
+    process.stdin.on("data", onData);
+  });
+}
+
+/** Returns first available editor command, or null. Tries: code, cursor, then system default. */
+function findAvailableEditor(): string | null {
+  const toTry = ["code", "cursor"];
+  for (const cmd of toTry) {
+    try {
+      execSync(`which ${cmd}`, { stdio: "pipe" });
+      return cmd;
+    } catch {}
   }
+  if (process.env.EDITOR) return process.env.EDITOR;
+  if (process.platform === "darwin") return "open -e";
+  if (process.platform === "win32") return "notepad";
+  return "xdg-open";
 }
-`;
+
+function openFileInEditor(filePath: string, editor: string): void {
+  const args = editor === "open -e" ? ["-e", filePath] : [filePath];
+  const cmd = editor === "open -e" ? "open" : editor;
+  spawn(cmd, args, { stdio: "inherit", detached: true }).unref();
 }
-// Note: The "context" key can be added to globals or per-project to inject
-// metadata into every prompt. Implicit context (bot.*, sys.*) is always
-// available. See the task docs or examples/ for details.
 
 // ─── CLI argument parsing ─────────────────────────────────────────────────────
 
@@ -64,6 +120,7 @@ interface ParsedArgs {
   command: "start" | "init";
   cwd: string;
   engine: EngineName;
+  model?: string;
 }
 
 function showHelp(): void {
@@ -74,17 +131,18 @@ Usage:
   npx @marcopeg/hal [command] [options]
 
 Commands:
-  init            Create hal.config.json in the working directory
+  init            Create hal.config.yaml in the working directory (with confirmation)
   start           Start the bots (default)
 
 Options:
-  --cwd <path>      Directory containing hal.config.{json,jsonc,yaml} (default: current directory)
-  --engine <name>   Engine to use: claude, copilot, codex, opencode, cursor (default: claude)
+  --cwd <path>      Directory for config file and project cwd (default: current directory)
+  --engine <name>   Engine: claude, copilot, codex, opencode, cursor, antigravity (default: codex)
+  --model <name>    Default model for the chosen engine (default: engine default)
   --help, -h        Show this help message
 
 Examples:
   npx @marcopeg/hal init
-  npx @marcopeg/hal init --engine copilot
+  npx @marcopeg/hal init --engine opencode --model opencode/gpt-5-nano
   npx @marcopeg/hal init --cwd ./workspace
   npx @marcopeg/hal
   npx @marcopeg/hal --cwd ./workspace
@@ -113,13 +171,15 @@ const VALID_ENGINES: readonly EngineName[] = [
   "codex",
   "opencode",
   "cursor",
+  "antigravity",
 ];
 
 function parseArgs(): ParsedArgs {
   const args = process.argv.slice(2);
   let cwd = process.cwd();
   let command: "start" | "init" = "start";
-  let engine: EngineName = "claude";
+  let engine: EngineName = "codex";
+  let model: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -148,6 +208,11 @@ function parseArgs(): ParsedArgs {
         process.exit(1);
       }
       engine = val;
+    } else if (arg === "--model" && args[i + 1]) {
+      model = args[i + 1];
+      i++;
+    } else if (arg.startsWith("--model=")) {
+      model = arg.slice(8);
     } else if (arg === "--help" || arg === "-h") {
       showHelp();
       process.exit(0);
@@ -158,47 +223,80 @@ function parseArgs(): ParsedArgs {
     }
   }
 
-  return { command, cwd, engine };
+  return { command, cwd, engine, model };
 }
 
 // ─── init command ─────────────────────────────────────────────────────────────
 
-async function runInit(cwd: string, engineName: EngineName): Promise<void> {
-  const configPath = join(cwd, "hal.config.json");
+const INIT_CONFIG_BASENAMES = [
+  "hal.config.json",
+  "hal.config.jsonc",
+  "hal.config.yaml",
+  "hal.config.yml",
+];
 
-  if (existsSync(configPath)) {
-    console.error(`Error: hal.config.json already exists in ${cwd}`);
-    process.exit(1);
+async function runInit(
+  cwd: string,
+  engineName: EngineName,
+  modelOverride?: string,
+): Promise<void> {
+  for (const name of INIT_CONFIG_BASENAMES) {
+    if (existsSync(join(cwd, name))) {
+      console.error(`Error: ${name} already exists in ${cwd}`);
+      process.exit(1);
+    }
   }
 
-  // Write config with the selected engine
-  const template = buildConfigTemplate(engineName);
-  await writeFile(configPath, template, "utf-8");
-  console.log(`Created hal.config.json in ${cwd} (engine: ${engineName})`);
+  const projectCwd = "."; // project runs in same dir as config
+  const yamlContent = buildYamlInitConfig(
+    engineName,
+    projectCwd,
+    modelOverride,
+  );
 
-  // Scaffold engine-specific instructions file
-  const effectiveModel = getDefaultEngineModel(engineName);
-  const engine = getEngine(engineName, undefined, effectiveModel);
+  console.log("\nProposed configuration (hal.config.yaml):\n");
+  console.log("---");
+  console.log(yamlContent);
+  console.log("---\n");
+
+  const ok = await promptYesNo("Write this to file? (Y/n, Enter = yes): ");
+  if (!ok) {
+    console.log("Aborted. No file written.");
+    process.exit(0);
+  }
+
+  const configPath = join(cwd, "hal.config.yaml");
+  await writeFile(configPath, yamlContent, "utf-8");
+  console.log(`\nConfig: ${configPath}`);
+
+  const engine = getEngine(
+    engineName,
+    undefined,
+    getDefaultProviderModel(engineName, modelOverride),
+  );
   const instrFile = engine.instructionsFile();
   const instrPath = join(cwd, instrFile);
   if (!existsSync(instrPath)) {
     await writeFile(
       instrPath,
-      `# Project Instructions\n\nAdd your project-specific instructions here.\n`,
+      "# Project Instructions\n\nAdd your project-specific instructions here.\n",
       "utf-8",
     );
     console.log(`Created ${instrFile}`);
   }
 
-  console.log(`\nNext steps:`);
+  console.log("\nNext steps:");
   console.log(
-    `1. Edit hal.config.json and set your Telegram bot token in projects.my-project.telegram.botToken`,
+    "  1. Set TELEGRAM_BOT_TOKEN in .env or .env.local (see docs: " +
+      HAL_DOCS_TELEGRAM_CREATE_BOT +
+      ")",
   );
-  console.log(`2. Set the project cwd to the folder the engine should work in`);
   console.log(
-    `3. Replace 0 in access.allowedUserIds with your Telegram user ID (required)`,
+    "  2. Add your Telegram user ID to access.allowedUserIds (see: " +
+      HAL_DOCS_TELEGRAM +
+      ")",
   );
-  console.log(`4. Run: npx @marcopeg/hal --cwd ${cwd}`);
+  console.log("  3. Run: npx @marcopeg/hal");
   process.exit(0);
 }
 
@@ -331,6 +429,20 @@ async function runBotsForConfig(
 
 const STARTUP_BANNER_DELAY_MS = 500;
 
+const HAL_DOCS_URL = "https://github.com/marcopeg/hal";
+const HAL_QUICK_START = "npx @marcopeg/hal init";
+
+function printConfigError(err: unknown): never {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error("\n\u001b[1;31mConfiguration error\u001b[0m\n");
+  console.error(message);
+  console.error("\n\u001b[1m— Need help?\u001b[0m");
+  console.error(`  Documentation: ${HAL_DOCS_URL}`);
+  console.error(`  Quick start:   ${HAL_QUICK_START}`);
+  console.error("");
+  process.exit(1);
+}
+
 async function runStart(configDir: string): Promise<void> {
   printStartupBanner();
   await new Promise((resolve) => setTimeout(resolve, STARTUP_BANNER_DELAY_MS));
@@ -338,7 +450,12 @@ async function runStart(configDir: string): Promise<void> {
 
   startupLogger.info({ configDir }, "Loading configuration");
 
-  const loaded = loadMultiConfig(configDir);
+  let loaded: LoadedConfigResult;
+  try {
+    loaded = tryLoadMultiConfig(configDir);
+  } catch (err) {
+    printConfigError(err);
+  }
 
   let runResult: RunResult;
   try {
@@ -393,10 +510,10 @@ async function runStart(configDir: string): Promise<void> {
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const { command, cwd, engine } = parseArgs();
+  const { command, cwd, engine, model } = parseArgs();
 
   if (command === "init") {
-    await runInit(cwd, engine);
+    await runInit(cwd, engine, model);
   } else {
     await runStart(cwd);
   }
