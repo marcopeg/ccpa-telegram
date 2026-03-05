@@ -12,7 +12,10 @@ The commands in the menu should be sorted:
 ## Ready Tasks
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
 - [040 — Opt-in session configuration](./ready/040.opt-in-session-configuration.md) | [plan](./ready/040.opt-in-session-configuration.plan.md)
+- [041 — Custom env file](./ready/041.custom-env-file.md) | [plan](./ready/041.custom-env-file.plan.md)
 - [045 — Interactive setup wizard](./ready/045.setup-wizard.md) | [plan](./ready/045.setup-wizard.plan.md)
+- [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
+- [052 — Remove doc link placeholders from config init template](./ready/052.remove-doc-link-placeholders-from-config-init-template.md) | [plan](./ready/052.remove-doc-link-placeholders-from-config-init-template.plan.md)
 
 ## Drafts
 
@@ -25,15 +28,12 @@ The commands in the menu should be sorted:
   - [032c — User-level crons + slash commands](./drafts/032c.user-crons-and-slash-commands.md)
 - [033 — Expose project as MCP server](./drafts/033.expose-project-as-mcp-server.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
-- [041 — Custom env file](./drafts/041.custom-env-file.md)
 - [042 — Users map](./drafts/042.users-map.md)
 - [046 — Codex log streaming](./drafts/046.codex-log-streaming.md)
 - [047 — OpenCode log streaming](./drafts/047.opencode-log-streaming.md)
 - [048 — Cursor log streaming](./drafts/048.cursor-log-streaming.md)
 - [049 — Antigravity log streaming](./drafts/049.antigravity-log-streaming.md)
 - [050 — Copilot log streaming](./drafts/050.copilot-log-streaming.md)
-- [051 — Telegram skill frontmatter properties](./drafts/051.telegram-skills.md)
-- [052 — Remove doc link placeholders from config init template](./drafts/052.remove-doc-link-placeholders-from-config-init-template.md)
 
 ## Completed
 
