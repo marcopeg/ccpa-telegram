@@ -27,6 +27,7 @@ import { createStartHandler } from "./bot/commands/start.js";
 import { startCommandWatcher } from "./bot/commands/watcher.js";
 import {
   createDocumentHandler,
+  createMjsCallbackDispatcher,
   createPhotoHandler,
   createTextHandler,
   createVoiceHandler,
@@ -95,6 +96,9 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
     bot.command("engine", createEngineHandler(projectCtx));
     bot.on("callback_query:data", createEngineCallbackHandler(projectCtx));
   }
+
+  // Generic callback dispatcher for .mjs commands that export `callbackHandler`
+  bot.on("callback_query:data", createMjsCallbackDispatcher(projectCtx));
 
   // Wire handlers
   bot.on("message:text", createTextHandler(projectCtx));

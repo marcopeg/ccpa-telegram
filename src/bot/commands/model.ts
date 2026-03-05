@@ -1,6 +1,7 @@
 import type { Context } from "grammy";
 import { InlineKeyboard } from "grammy";
 import { updateProjectModel } from "../../config-writer.js";
+import { getEffectiveProviderModels } from "../../engine/opencode-models.js";
 import type { ProjectContext } from "../../types.js";
 
 function escapeHtml(text: string): string {
@@ -15,7 +16,7 @@ export function createModelHandler(
 ): (ctx: Context) => Promise<void> {
   return async (gramCtx: Context) => {
     const { config, logger } = projectCtx;
-    const models = config.providerModels;
+    const models = getEffectiveProviderModels(config);
 
     const messageText = gramCtx.message?.text ?? "";
     const directMatch = messageText.match(/^\/model(?:@\w+)?\s+(.+)$/i);

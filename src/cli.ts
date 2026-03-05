@@ -329,8 +329,11 @@ async function runBotsForConfig(
   return { botHandles };
 }
 
+const STARTUP_BANNER_DELAY_MS = 500;
+
 async function runStart(configDir: string): Promise<void> {
   printStartupBanner();
+  await new Promise((resolve) => setTimeout(resolve, STARTUP_BANNER_DELAY_MS));
   const startupLogger = createStartupLogger();
 
   startupLogger.info({ configDir }, "Loading configuration");

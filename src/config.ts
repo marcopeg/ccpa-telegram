@@ -515,11 +515,14 @@ export function resolveProjectConfig(
   const rawReset = project.commands?.reset ?? globals.commands?.reset;
   const rawClean = project.commands?.clean ?? globals.commands?.clean;
 
+  // Enable /model when we have a config list, or when the engine can discover models via CLI (self-discovery)
   const modelEnabled =
     (project.commands?.model?.enabled ??
       globals.commands?.model?.enabled ??
       true) &&
-    providerModels.length > 1;
+    (providerModels.length > 1 ||
+      (rawProviderModels.length === 0 &&
+        (engineName === "opencode" || engineName === "cursor")));
 
   const engineEnabled =
     (project.commands?.engine?.enabled ??

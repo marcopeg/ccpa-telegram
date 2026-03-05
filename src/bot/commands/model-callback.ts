@@ -1,5 +1,6 @@
 import type { Context, NextFunction } from "grammy";
 import { updateProjectModel } from "../../config-writer.js";
+import { getEffectiveProviderModels } from "../../engine/opencode-models.js";
 import type { ProjectContext } from "../../types.js";
 
 function escapeHtml(text: string): string {
@@ -27,7 +28,7 @@ export function createModelCallbackHandler(
     }
     const modelId = parts.slice(2).join(":");
 
-    const models = config.providerModels;
+    const models = getEffectiveProviderModels(config);
     if (models.length > 0 && !models.some((m) => m.name === modelId)) {
       await gramCtx.answerCallbackQuery("Model no longer available");
       return;

@@ -13,6 +13,7 @@
       "showTranscription": true
     }
   },
+  /*
   "providers": {
     "codex": [
       {
@@ -118,93 +119,6 @@
       {
         "name": "claude-opus-4-1",
         "description": "Claude Opus 4.1"
-      }
-    ],
-    "cursor": [
-      {
-        "name": "auto",
-        "description": "Auto-selects best model for the task",
-        "default": true
-      },
-      {
-        "name": "composer-1.5",
-        "description": "Cursor's own agent model"
-      },
-      {
-        "name": "composer-1",
-        "description": "Cursor's legacy agent model"
-      },
-      {
-        "name": "sonnet-4.6",
-        "description": "Claude 4.6 Sonnet — balanced performance"
-      },
-      {
-        "name": "sonnet-4.6-thinking",
-        "description": "Claude 4.6 Sonnet with extended thinking"
-      },
-      {
-        "name": "opus-4.6",
-        "description": "Claude 4.6 Opus — most capable"
-      },
-      {
-        "name": "opus-4.6-thinking",
-        "description": "Claude 4.6 Opus with extended thinking"
-      },
-      {
-        "name": "sonnet-4.5",
-        "description": "Claude 4.5 Sonnet"
-      },
-      {
-        "name": "sonnet-4.5-thinking",
-        "description": "Claude 4.5 Sonnet with extended thinking"
-      },
-      {
-        "name": "opus-4.5",
-        "description": "Claude 4.5 Opus"
-      },
-      {
-        "name": "opus-4.5-thinking",
-        "description": "Claude 4.5 Opus with extended thinking"
-      },
-      {
-        "name": "gpt-5.3-codex",
-        "description": "Latest Codex model (variants: -high, -low, -xhigh, -fast)"
-      },
-      {
-        "name": "gpt-5.2",
-        "description": "GPT-5.2 general agentic (variant: -high)"
-      },
-      {
-        "name": "gpt-5.2-codex",
-        "description": "GPT-5.2 Codex (variants: -high, -low, -xhigh, -fast)"
-      },
-      {
-        "name": "gpt-5.1-codex-max",
-        "description": "GPT-5.1 Codex Max (variant: -high)"
-      },
-      {
-        "name": "gpt-5.1-codex-mini",
-        "description": "GPT-5.1 Codex Mini — cost-effective"
-      },
-      {
-        "name": "gemini-3.1-pro",
-        "description": "Gemini 3.1 Pro"
-      },
-      {
-        "name": "gemini-3-pro",
-        "description": "Gemini 3 Pro"
-      },
-      {
-        "name": "gemini-3-flash",
-        "description": "Gemini 3 Flash — fast and cheap"
-      },
-      {
-        "name": "grok",
-        "description": "xAI Grok Code"
-      },
-      {
-        "name": "kimi-k2.5",
-        "description": "Moonshot Kimi K2.5"
       }
     ],
     "antigravity": [
@@ -328,99 +242,9 @@
         "name": "goldeneye",
         "description": "Fine-tuned GPT-5.1-Codex — preview"
       }
-    ],
-    "opencode": [
-      {
-        "name": "opencode/gpt-5.3-codex",
-        "description": "GPT-5.3 Codex — most capable"
-      },
-      {
-        "name": "opencode/gpt-5.2-codex",
-        "description": "GPT-5.2 Codex — intelligent agentic coding"
-      },
-      {
-        "name": "opencode/gpt-5.2",
-        "description": "GPT-5.2 — general agentic"
-      },
-      {
-        "name": "opencode/gpt-5.1-codex",
-        "description": "GPT-5.1 Codex"
-      },
-      {
-        "name": "opencode/gpt-5.1-codex-max",
-        "description": "GPT-5.1 Codex Max — long-running tasks"
-      },
-      {
-        "name": "opencode/gpt-5.1-codex-mini",
-        "description": "GPT-5.1 Codex Mini — cost-effective"
-      },
-      {
-        "name": "opencode/gpt-5.1",
-        "description": "GPT-5.1"
-      },
-      {
-        "name": "opencode/gpt-5-codex",
-        "description": "GPT-5 Codex"
-      },
-      {
-        "name": "opencode/gpt-5",
-        "description": "GPT-5"
-      },
-      {
-        "name": "opencode/gpt-5-nano",
-        "description": "GPT-5 Nano — free",
-        "default": true
-      },
-      {
-        "name": "opencode/claude-opus-4-6",
-        "description": "Claude Opus 4.6 — most intelligent"
-      },
-      {
-        "name": "opencode/claude-sonnet-4-6",
-        "description": "Claude Sonnet 4.6 — balanced"
-      },
-      {
-        "name": "opencode/claude-sonnet-4-5",
-        "description": "Claude Sonnet 4.5"
-      },
-      {
-        "name": "opencode/claude-opus-4-5",
-        "description": "Claude Opus 4.5"
-      },
-      {
-        "name": "opencode/claude-haiku-4-5",
-        "description": "Claude Haiku 4.5 — fast"
-      },
-      {
-        "name": "opencode/gemini-3.1-pro",
-        "description": "Gemini 3.1 Pro"
-      },
-      {
-        "name": "opencode/gemini-3-pro",
-        "description": "Gemini 3 Pro"
-      },
-      {
-        "name": "opencode/gemini-3-flash",
-        "description": "Gemini 3 Flash — fast"
-      },
-      {
-        "name": "opencode/minimax-m2.5",
-        "description": "MiniMax M2.5"
-      },
-      {
-        "name": "opencode/kimi-k2.5",
-        "description": "Kimi K2.5"
-      },
-      {
-        "name": "opencode/glm-5",
-        "description": "GLM 5"
-      },
-      {
-        "name": "opencode/big-pickle",
-        "description": "Big Pickle — free (stealth preview)"
-      }
     ]
   },
+  */
   "context": {
     "custom": "-- global custom context --"
   },
@@ -429,11 +253,8 @@
       "cwd": "./obsidian",
       "active": true,
       "engine": {
-        "name": "copilot",
-        "codex": {
-          "networkAccess": true,
-          "fullDiskAccess": true
-        }
+        "name": "opencode",
+        "model": "opencode/big-pickle"
       },
       "telegram": {
         "botToken": "${OBSIDIAN_TELEGRAM_TOKEN}"
