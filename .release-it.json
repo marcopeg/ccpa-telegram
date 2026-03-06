@@ -1,7 +1,8 @@
 {
   "git": {
     "requireCleanWorkingDir": true,
-    "commitMessage": "chore(release): ${version}"
+    "commitMessage": "chore(release): ${version}",
+    "push": false
   },
   "npm": {
     "publish": false

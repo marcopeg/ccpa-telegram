@@ -20,9 +20,11 @@
     "prepublishOnly": "npm run build",
     "sync-skills": "node .agents/scripts/sync-skills.mjs",
     "prepare": "husky",
-    "release": "release-it",
-    "deploy": "release-it patch --ci",
-    "publish": "npm publish --access public",
+    "release": "pnpm run lint && pnpm run build && release-it",
+    "release:patch": "pnpm run lint && pnpm run build && release-it patch --ci",
+    "release:minor": "pnpm run lint && pnpm run build && release-it minor --ci",
+    "release:major": "pnpm run lint && pnpm run build && release-it major --ci",
+    "release:push": "npm publish --access public",
     "docs": "npx mdts"
   },
   "keywords": [
