@@ -8,6 +8,7 @@ export type { SessionMode };
  */
 export interface PartialConfig {
   providers?: unknown;
+  env?: string;
   globals?: {
     access?: { allowedUserIds?: unknown[] };
     engine?: { name?: string; model?: string; session?: unknown };
@@ -25,8 +26,15 @@ export interface PartialConfig {
 }
 
 export interface PrefillFlags {
+  /** Project display name (wizard step 1). */
+  name?: string;
+  /** Project cwd (wizard step 2). */
+  cwd?: string;
   engine?: string;
   model?: string;
+  /** Telegram bot token to use for the project. */
+  apiKey?: string;
+  /** Back-compat alias for apiKey. */
   botKey?: string;
   userId?: string;
   session?: string;

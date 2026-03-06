@@ -12,9 +12,10 @@
   ],
   "packageManager": "pnpm@10.13.1",
   "scripts": {
-    "start": "tsx watch src/cli.ts start --cwd examples",
-    "start:test": "tsx watch src/cli.ts start --cwd manual-tests",
-    "wiz:test": "tsx src/cli.ts wiz --cwd manual-tests",
+    "start": "tsx watch src/cli.ts start --config-dir examples",
+    "start:test": "tsx src/cli.ts start --config-dir manual-tests",
+    "dev:test": "tsx watch src/cli.ts start --config-dir manual-tests",
+    "wiz:test": "tsx src/cli.ts wiz --config-dir manual-tests",
     "build": "tsc && cp src/init-template.yaml dist/ && chmod +x dist/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src",

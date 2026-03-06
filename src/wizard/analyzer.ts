@@ -5,6 +5,7 @@ import {
   type ConfigFormat,
   parseConfigContent,
   resolveConfigFile,
+  resolveCustomEnvPaths,
 } from "../config.js";
 import type { PartialConfig } from "./types.js";
 
@@ -42,7 +43,31 @@ function loadEnvFromConfigDir(configDir: string): Record<string, string> {
   return out;
 }
 
-function hasRealUserId(ids: unknown[] | undefined): boolean {
+function loadEnvForParsedConfig(
+  configDir: string,
+  parsed: PartialConfig,
+): Record<string, string> {
+  if (typeof parsed.env === "string" && parsed.env.trim() !== "") {
+    const { mainPath, localPath } = resolveCustomEnvPaths(
+      configDir,
+      parsed.env,
+    );
+    const out: Record<string, string> = {};
+    for (const file of [mainPath, localPath]) {
+      if (!existsSync(file)) continue;
+      try {
+        const parsedEnv = parseEnv(readFileSync(file, "utf-8"));
+        Object.assign(out, parsedEnv);
+      } catch {
+        // ignore
+      }
+    }
+    return out;
+  }
+  return loadEnvFromConfigDir(configDir);
+}
+
+function _hasRealUserId(ids: unknown[] | undefined): boolean {
   if (!ids || ids.length === 0) return false;
   return ids.some((id) => {
     if (typeof id === "number") return id > 0;
@@ -57,27 +82,40 @@ function hasRealUserId(ids: unknown[] | undefined): boolean {
   });
 }
 
+function hasResolvableUserId(
+  ids: unknown[] | undefined,
+  env: Record<string, string>,
+): boolean {
+  if (!ids || ids.length === 0) return false;
+  return ids.some((id) => {
+    if (typeof id === "number") return id > 0;
+    if (typeof id !== "string") return false;
+    const trimmed = id.trim();
+    if (!PLACEHOLDER_RE.test(trimmed)) {
+      const n = Number(trimmed);
+      return Number.isInteger(n) && n > 0;
+    }
+    const varName = placeholderVar(trimmed);
+    if (!varName) return false;
+    const raw = (process.env[varName] ?? env[varName]) || "";
+    const n = Number(raw);
+    return Number.isInteger(n) && n > 0;
+  });
+}
+
 /**
  * Inspect an existing config (raw parse, no env substitution) and return
  * which wizard-coverable fields are missing or still placeholder values.
  */
 export function analyzeConfig(cwd: string): AnalyzeResult {
   const resolved = resolveConfigFile(cwd, "hal.config");
-  const env = loadEnvFromConfigDir(cwd);
 
   if (!resolved) {
     return {
       configExists: false,
       configPath: null,
       configFormat: null,
-      missingFields: [
-        "project-name",
-        "cwd",
-        "bot-token",
-        "user-id",
-        "engine",
-        "session",
-      ],
+      missingFields: ["project-name", "cwd", "bot-token", "user-id", "engine"],
     };
   }
 
@@ -95,16 +133,11 @@ export function analyzeConfig(cwd: string): AnalyzeResult {
       configExists: true,
       configPath: resolved.path,
       configFormat: resolved.format,
-      missingFields: [
-        "project-name",
-        "cwd",
-        "bot-token",
-        "user-id",
-        "engine",
-        "session",
-      ],
+      missingFields: ["project-name", "cwd", "bot-token", "user-id", "engine"],
     };
   }
+
+  const env = loadEnvForParsedConfig(cwd, raw);
 
   const missing: string[] = [];
 
@@ -137,7 +170,10 @@ export function analyzeConfig(cwd: string): AnalyzeResult {
   // user-id: check globals or first project
   const globalIds = raw.globals?.access?.allowedUserIds;
   const projectIds = firstProject?.access?.allowedUserIds;
-  if (!hasRealUserId(globalIds) && !hasRealUserId(projectIds)) {
+  if (
+    !hasResolvableUserId(globalIds, env) &&
+    !hasResolvableUserId(projectIds, env)
+  ) {
     missing.push("user-id");
   }
 
@@ -148,12 +184,7 @@ export function analyzeConfig(cwd: string): AnalyzeResult {
     missing.push("engine");
   }
 
-  // session: check globals or first project
-  const globalSession = raw.globals?.engine?.session;
-  const projectSession = firstProject?.engine?.session;
-  if (globalSession === undefined && projectSession === undefined) {
-    missing.push("session");
-  }
+  // session is optional; do not treat missing as incomplete (resolver defaults to true).
 
   return {
     configExists: true,

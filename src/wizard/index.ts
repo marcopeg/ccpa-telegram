@@ -8,6 +8,42 @@ import type { PartialConfig, PrefillFlags, WizardContext } from "./types.js";
 
 export type { PrefillFlags };
 
+function supportsAnsiColor(
+  out: NodeJS.WriteStream = process.stdout,
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  if (!out.isTTY) return false;
+  if ("NO_COLOR" in env) return false;
+  if ((env.TERM ?? "").toLowerCase() === "dumb") return false;
+  return true;
+}
+
+function renderHalBanner(useColor: boolean): string {
+  const subtitle = "MULTI-ENGINE TELEGRAM COMMAND DECK FOR AI CODING AGENTS";
+  const frame =
+    "================================================================";
+  const accentStart = useColor ? "\u001b[31;1m" : "";
+  const accentEnd = useColor ? "\u001b[0m" : "";
+  return [
+    frame,
+    "",
+    " _   _      _      _     ",
+    "| | | |    / \\    | |    ",
+    "| |_| |   / _ \\   | |    ",
+    "|  _  |  / ___ \\  | |___ ",
+    "|_| |_| /_/   \\_\\ |_____|",
+    "",
+    `${accentStart}${subtitle}${accentEnd}`,
+    "",
+    frame,
+  ].join("\n");
+}
+
+function printWizardBanner(out: NodeJS.WriteStream = process.stdout): void {
+  const banner = renderHalBanner(supportsAnsiColor(out));
+  out.write(`${banner}\n\n`);
+}
+
 /**
  * Main entry point for the interactive setup wizard.
  *
@@ -21,6 +57,8 @@ export async function startWizard(
   prefill: PrefillFlags,
   reset: boolean,
 ): Promise<boolean> {
+  printWizardBanner();
+
   let existingConfig: PartialConfig | null = null;
   let existingConfigPath: string | null = null;
   let existingConfigFormat: import("../config.js").ConfigFormat | null = null;

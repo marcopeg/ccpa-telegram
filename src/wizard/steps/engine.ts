@@ -27,7 +27,42 @@ export const engineStep: WizardStep = {
     return !!(globalEngine || projectEngine);
   },
 
+  shouldSkip(ctx: WizardContext): boolean {
+    const e = ctx.prefill.engine;
+    return (
+      typeof e === "string" && (VALID_ENGINES as readonly string[]).includes(e)
+    );
+  },
+
   run: async (ctx: WizardContext) => {
+    // Prefill: engine flag means "enable only this engine and set it as default".
+    if (
+      ctx.prefill.engine &&
+      (VALID_ENGINES as readonly string[]).includes(ctx.prefill.engine)
+    ) {
+      const engine = ctx.prefill.engine as EngineName;
+      ctx.results.enabledEngines = [engine];
+      ctx.results.engine = engine;
+
+      // Model prefill: only for self-discovery engines, and only if valid in discovered list.
+      const m = ctx.prefill.model;
+      if (engine === "cursor" || engine === "opencode") {
+        const cmd = defaultEngineCommand(engine);
+        const models =
+          engine === "cursor"
+            ? getCursorModelsFromCli(ctx.cwd, cmd)
+            : getOpencodeModelsFromCli(ctx.cwd, cmd);
+        if (typeof m === "string" && models.some((x) => x.name === m)) {
+          ctx.results.model = m;
+        } else {
+          ctx.results.model = undefined;
+        }
+      } else {
+        ctx.results.model = undefined;
+      }
+      return;
+    }
+
     let availableList: EngineName[] = [];
     if (ctx.availableEnginesPromise) {
       // If discovery hasn't finished yet, show a spinner so it doesn't feel stuck.
@@ -91,13 +126,6 @@ export const engineStep: WizardStep = {
     ctx.results.enabledEngines = enabledEngines;
     ctx.results.engine = defaultEngine;
 
-    // Model selection: only when engine supports discovery (Cursor/OpenCode)
-    if (ctx.prefill.model) {
-      ctx.results.model = ctx.prefill.model;
-      console.log(`  Model pre-filled: ${ctx.prefill.model}`);
-      return;
-    }
-
     const engineForModels = defaultEngine;
     if (engineForModels === "cursor" || engineForModels === "opencode") {
       const s = spinner();
@@ -108,6 +136,16 @@ export const engineStep: WizardStep = {
           ? getCursorModelsFromCli(ctx.cwd, cmd)
           : getOpencodeModelsFromCli(ctx.cwd, cmd);
       s.stop(models.length > 0 ? "Models loaded" : "No models discovered");
+
+      // Prefill model: validate against discovered list (only for self-discovery engines)
+      if (
+        ctx.prefill.model &&
+        models.some((m) => m.name === ctx.prefill.model)
+      ) {
+        ctx.results.model = ctx.prefill.model;
+        console.log(`  Model pre-filled: ${ctx.prefill.model}`);
+        return;
+      }
 
       if (models.length > 0) {
         const picked = await select({

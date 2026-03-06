@@ -38,7 +38,17 @@ export const cwdStep: WizardStep = {
     );
   },
 
+  shouldSkip(ctx: WizardContext): boolean {
+    return typeof ctx.prefill.cwd === "string" && ctx.prefill.cwd.trim() !== "";
+  },
+
   run: async (ctx: WizardContext) => {
+    // Pre-fill: apply silently
+    if (ctx.prefill.cwd && ctx.prefill.cwd.trim() !== "") {
+      ctx.results.cwd = ctx.prefill.cwd.trim();
+      return;
+    }
+
     const subdirs = listSubdirs(ctx.cwd);
     const absRoot = resolve(ctx.cwd);
     const options: { value: string; label: string }[] = [

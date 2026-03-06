@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { confirm, select } from "@clack/prompts";
+import { resolveCustomEnvPaths } from "../config.js";
 import { getEngine } from "../engine/index.js";
 import { buildConfigFromResults } from "./config-builder.js";
 import { guardCancel } from "./runner.js";
@@ -29,7 +30,7 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
   console.log("─────────────────────────────────────────────────────────\n");
 
   if (built.envEntries && Object.keys(built.envEntries).length > 0) {
-    const envPath = pickEnvPath(ctx.cwd);
+    const envPath = pickEnvPath(ctx);
     console.log(`Proposed ${envPath} entries:\n`);
     for (const [k, v] of Object.entries(built.envEntries)) {
       console.log(`  ${k}=${v}`);
@@ -58,7 +59,7 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
 
   // Write env entries
   if (built.envEntries && Object.keys(built.envEntries).length > 0) {
-    const envPath = pickEnvPath(ctx.cwd);
+    const envPath = pickEnvPath(ctx);
     upsertEnvFile(envPath, built.envEntries);
     console.log(`  Env updated:    ${envPath}`);
   }
@@ -108,9 +109,16 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
   }
 }
 
-function pickEnvPath(configDir: string): string {
-  const envLocal = join(configDir, ".env.local");
-  const env = join(configDir, ".env");
+function pickEnvPath(ctx: WizardContext): string {
+  // Respect existing config's custom env path (task 041).
+  const configured = ctx.existingConfig?.env;
+  if (typeof configured === "string" && configured.trim() !== "") {
+    const { mainPath } = resolveCustomEnvPaths(ctx.cwd, configured);
+    return mainPath;
+  }
+
+  const envLocal = join(ctx.cwd, ".env.local");
+  const env = join(ctx.cwd, ".env");
   if (existsSync(env)) return env;
   if (existsSync(envLocal)) return envLocal;
   return env;

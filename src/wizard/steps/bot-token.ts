@@ -79,14 +79,16 @@ export const botTokenStep: WizardStep = {
   },
 
   shouldSkip(ctx: WizardContext): boolean {
-    if (!ctx.prefill.botKey) return false;
-    return BOT_TOKEN_RE.test(ctx.prefill.botKey);
+    const key = ctx.prefill.apiKey ?? ctx.prefill.botKey;
+    if (!key) return false;
+    return BOT_TOKEN_RE.test(key);
   },
 
   run: async (ctx: WizardContext) => {
     // Pre-fill: apply silently
-    if (ctx.prefill.botKey && BOT_TOKEN_RE.test(ctx.prefill.botKey)) {
-      ctx.results.botToken = ctx.prefill.botKey;
+    const key = ctx.prefill.apiKey ?? ctx.prefill.botKey;
+    if (key && BOT_TOKEN_RE.test(key)) {
+      ctx.results.botToken = key;
       return;
     }
 

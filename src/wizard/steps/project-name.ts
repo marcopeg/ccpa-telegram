@@ -22,7 +22,30 @@ export const projectNameStep: WizardStep = {
     return Object.keys(projects).length > 0;
   },
 
+  shouldSkip(ctx: WizardContext): boolean {
+    return (
+      typeof ctx.prefill.name === "string" && ctx.prefill.name.trim() !== ""
+    );
+  },
+
   run: async (ctx: WizardContext) => {
+    // Pre-fill: apply silently
+    if (ctx.prefill.name) {
+      const pre = ctx.prefill.name.trim();
+      if (pre) {
+        const baseSlug = slugify(pre);
+        const existing = new Set(
+          Object.keys(ctx.existingConfig?.projects ?? {}),
+        );
+        let slug = baseSlug;
+        let n = 2;
+        while (existing.has(slug)) slug = `${baseSlug}-${n++}`;
+        ctx.results.projectKey = slug;
+        ctx.results.projectName = pre;
+        return;
+      }
+    }
+
     const answer = await text({
       message: "Project name (optional — press Enter to skip):",
       placeholder: "e.g. My Backend",

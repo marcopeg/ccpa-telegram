@@ -111,9 +111,15 @@ function _openFileInEditor(filePath: string, editor: string): void {
 
 interface ParsedArgs {
   command: "start" | "init" | "wiz";
-  cwd: string;
+  configDir: string;
+  /** Project cwd for wizard config. */
+  cwd?: string;
+  /** Project name for wizard config. */
+  name?: string;
   engine: EngineName;
   model?: string;
+  apiKey?: string;
+  /** Back-compat alias for apiKey. */
   botKey?: string;
   userId?: string;
   session?: string;
@@ -133,10 +139,13 @@ Commands:
   start           Start the bots (default)
 
 Options:
-  --cwd <path>       Directory for config file and project cwd (default: current directory)
+  --config-dir <path> Directory to read/write hal.config.* (default: current directory)
+  --cwd <path>        Project cwd to write into config (wizard prefill)
+  --name <value>      Project name to write into config (wizard prefill)
   --engine <name>    Engine: claude, copilot, codex, opencode, cursor, antigravity (default: codex)
   --model <name>     Default model for the chosen engine (default: engine default)
-  --bot-key <value>  Pre-fill bot token in wizard (skips that step)
+  --api-key <value>  Telegram bot token to use for the project (wizard prefill)
+  --bot-key <value>  (deprecated) alias for --api-key
   --user-id <value>  Pre-fill Telegram user ID in wizard (skips that step)
   --session <mode>   Pre-fill session mode in wizard: true, false, shared, user
   --reset            Re-ask all wizard questions even if values already exist
@@ -148,9 +157,9 @@ Examples:
   npx @marcopeg/hal wiz --engine codex --model gpt-5.2-codex
   npx @marcopeg/hal init
   npx @marcopeg/hal init --engine opencode --model opencode/gpt-5-nano
-  npx @marcopeg/hal init --cwd ./workspace
+  npx @marcopeg/hal init --config-dir ./workspace
   npx @marcopeg/hal
-  npx @marcopeg/hal --cwd ./workspace
+  npx @marcopeg/hal --config-dir ./workspace
 
 Configuration (hal.config.json):
   {
@@ -181,10 +190,13 @@ const VALID_ENGINES: readonly EngineName[] = [
 
 function parseArgs(): ParsedArgs {
   const args = process.argv.slice(2);
-  let cwd = process.cwd();
+  let configDir = process.cwd();
+  let projectCwd: string | undefined;
+  let name: string | undefined;
   let command: "start" | "init" | "wiz" = "start";
   let engine: EngineName = "codex";
   let model: string | undefined;
+  let apiKey: string | undefined;
   let botKey: string | undefined;
   let userId: string | undefined;
   let session: string | undefined;
@@ -193,11 +205,21 @@ function parseArgs(): ParsedArgs {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg === "--cwd" && args[i + 1]) {
-      cwd = resolve(process.cwd(), args[i + 1]);
+    if (arg === "--config-dir" && args[i + 1]) {
+      configDir = resolve(process.cwd(), args[i + 1]);
+      i++;
+    } else if (arg.startsWith("--config-dir=")) {
+      configDir = resolve(process.cwd(), arg.slice(13));
+    } else if (arg === "--cwd" && args[i + 1]) {
+      projectCwd = args[i + 1];
       i++;
     } else if (arg.startsWith("--cwd=")) {
-      cwd = resolve(process.cwd(), arg.slice(6));
+      projectCwd = arg.slice(6);
+    } else if (arg === "--name" && args[i + 1]) {
+      name = args[i + 1];
+      i++;
+    } else if (arg.startsWith("--name=")) {
+      name = arg.slice(7);
     } else if (arg === "--engine" && args[i + 1]) {
       const val = args[i + 1] as EngineName;
       if (!VALID_ENGINES.includes(val)) {
@@ -222,6 +244,11 @@ function parseArgs(): ParsedArgs {
       i++;
     } else if (arg.startsWith("--model=")) {
       model = arg.slice(8);
+    } else if (arg === "--api-key" && args[i + 1]) {
+      apiKey = args[i + 1];
+      i++;
+    } else if (arg.startsWith("--api-key=")) {
+      apiKey = arg.slice(10);
     } else if (arg === "--bot-key" && args[i + 1]) {
       botKey = args[i + 1];
       i++;
@@ -251,7 +278,19 @@ function parseArgs(): ParsedArgs {
     }
   }
 
-  return { command, cwd, engine, model, botKey, userId, session, reset };
+  return {
+    command,
+    configDir,
+    cwd: projectCwd,
+    name,
+    engine,
+    model,
+    apiKey,
+    botKey,
+    userId,
+    session,
+    reset,
+  };
 }
 
 // ─── init command ─────────────────────────────────────────────────────────────
@@ -488,13 +527,20 @@ function printConfigError(err: unknown): never {
   process.exit(1);
 }
 
-async function runStart(configDir: string): Promise<void> {
+async function runStart(
+  configDir: string,
+  wizardPrefill: Record<string, unknown>,
+): Promise<void> {
   // Auto-trigger wizard when config is missing or incomplete (TTY only)
   if (process.stdin.isTTY) {
     const { needsWizard } = await import("./wizard/analyzer.js");
     if (needsWizard(configDir)) {
       const { startWizard } = await import("./wizard/index.js");
-      const shouldContinue = await startWizard(configDir, {}, false);
+      const shouldContinue = await startWizard(
+        configDir,
+        wizardPrefill as never,
+        false,
+      );
       if (!shouldContinue) return;
     }
   }
@@ -602,26 +648,55 @@ async function runStart(configDir: string): Promise<void> {
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const { command, cwd, engine, model, botKey, userId, session, reset } =
-    parseArgs();
+  const {
+    command,
+    configDir,
+    cwd,
+    name,
+    engine,
+    model,
+    apiKey,
+    botKey,
+    userId,
+    session,
+    reset,
+  } = parseArgs();
 
   if (command === "wiz") {
     const { startWizard } = await import("./wizard/index.js");
     const shouldStart = await startWizard(
-      cwd,
-      { engine, model, botKey, userId, session },
+      configDir,
+      { name, cwd, engine, model, apiKey, botKey, userId, session },
       reset ?? false,
     );
     if (shouldStart) {
-      await runStart(cwd);
+      await runStart(configDir, {
+        name,
+        cwd,
+        engine,
+        model,
+        apiKey,
+        botKey,
+        userId,
+        session,
+      });
     }
     return;
   }
 
   if (command === "init") {
-    await runInit(cwd, engine, model);
+    await runInit(configDir, engine, model);
   } else {
-    await runStart(cwd);
+    await runStart(configDir, {
+      name,
+      cwd,
+      engine,
+      model,
+      apiKey,
+      botKey,
+      userId,
+      session,
+    });
   }
 }
 
