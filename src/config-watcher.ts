@@ -20,16 +20,25 @@ export interface ConfigWatcherHandle {
   stop: () => Promise<void>;
 }
 
+export interface ConfigWatcherOptions {
+  /** Extra paths to watch (e.g. custom env file and its .local sibling). */
+  extraPaths?: string[];
+}
+
 /**
- * Watch the four hal config files in configDir and invoke onConfigChange
- * (debounced) when any of them are added, changed, or removed.
+ * Watch hal config files in configDir (and optional extraPaths) and invoke
+ * onConfigChange (debounced) when any are added, changed, or removed.
  * Use ignoreInitial so the initial scan does not trigger the callback.
  */
 export function startConfigWatcher(
   configDir: string,
   onConfigChange: () => void | Promise<void>,
+  options: ConfigWatcherOptions = {},
 ): ConfigWatcherHandle {
-  const watchedPaths = CONFIG_FILES.map((f) => join(configDir, f));
+  const basePaths = CONFIG_FILES.map((f) => join(configDir, f));
+  const extraPaths = options.extraPaths ?? [];
+  const watchedPaths =
+    extraPaths.length > 0 ? [...basePaths, ...extraPaths] : basePaths;
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let closed = false;
 

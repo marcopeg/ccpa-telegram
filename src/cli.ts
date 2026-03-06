@@ -8,6 +8,7 @@ import type pino from "pino";
 import { type BotHandle, startBot } from "./bot.js";
 import type { LoadedConfigResult } from "./config.js";
 import {
+  resolveCustomEnvPaths,
   resolveProjectConfig,
   tryLoadMultiConfig,
   validateAccessPolicies,
@@ -488,29 +489,43 @@ async function runStart(configDir: string): Promise<void> {
   }
 
   let reloading = false;
-  const configWatcher = startConfigWatcher(configDir, async () => {
-    if (reloading) return;
-    reloading = true;
-    try {
-      startupLogger.info("Config change detected");
-      await Promise.all(
-        runResult.botHandles.map((h) => h.stop().catch(() => {})),
-      );
-      startupLogger.info("All bots stopped");
+  const watcherExtraPaths =
+    loaded.config.env !== undefined
+      ? (() => {
+          const { mainPath, localPath } = resolveCustomEnvPaths(
+            configDir,
+            loaded.config.env!,
+          );
+          return [mainPath, localPath];
+        })()
+      : undefined;
+  const configWatcher = startConfigWatcher(
+    configDir,
+    async () => {
+      if (reloading) return;
+      reloading = true;
       try {
-        const result = tryLoadMultiConfig(configDir);
-        runResult = await runBotsForConfig(configDir, result, startupLogger);
-      } catch (err) {
-        startupLogger.error(
-          { error: err instanceof Error ? err.message : String(err) },
-          "Reload failed",
+        startupLogger.info("Config change detected");
+        await Promise.all(
+          runResult.botHandles.map((h) => h.stop().catch(() => {})),
         );
-        process.exit(1);
+        startupLogger.info("All bots stopped");
+        try {
+          const result = tryLoadMultiConfig(configDir);
+          runResult = await runBotsForConfig(configDir, result, startupLogger);
+        } catch (err) {
+          startupLogger.error(
+            { error: err instanceof Error ? err.message : String(err) },
+            "Reload failed",
+          );
+          process.exit(1);
+        }
+      } finally {
+        reloading = false;
       }
-    } finally {
-      reloading = false;
-    }
-  });
+    },
+    watcherExtraPaths ? { extraPaths: watcherExtraPaths } : {},
+  );
 
   async function shutdown(signal: string): Promise<void> {
     startupLogger.info({ signal }, "Received shutdown signal");

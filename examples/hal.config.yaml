@@ -1,3 +1,6 @@
+# Optional: path to a custom env file (and its .local sibling); when set, config-dir .env is not loaded.
+# env: ~/.hal/secrets.env
+
 globals:
   access:
     allowedUserIds:

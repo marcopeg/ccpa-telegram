@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import { basename, isAbsolute, join, resolve } from "node:path";
+import { homedir } from "node:os";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { parse as parseEnv } from "dotenv";
 import stripJsonComments from "strip-json-comments";
 import { parse as parseYaml } from "yaml";
@@ -260,6 +261,7 @@ const ProjectsMapSchema = z
   });
 
 const MultiConfigFileSchema = z.object({
+  env: z.string().optional(),
   globals: GlobalsFileSchema,
   providers: ProvidersConfigSchema,
   context: z.record(z.string(), z.string()).optional(),
@@ -275,6 +277,7 @@ const LocalProjectSchema = ProjectFileSchema.partial().extend({
 
 const LocalConfigFileSchema = z
   .object({
+    env: z.string().optional(),
     globals: GlobalsFileSchema,
     providers: ProvidersConfigSchema,
     context: z.record(z.string(), z.string()).optional(),
@@ -840,30 +843,104 @@ export function validateProviderDefaultUniqueness(
   }
 }
 
+// ─── Custom env path resolution ───────────────────────────────────────────────
+
+/**
+ * Resolves the custom env file path from config. Relative paths are resolved
+ * against configDir; absolute paths are used as-is after tilde expansion.
+ * Returns the main file path and its .local sibling path (same directory,
+ * base filename + ".local").
+ */
+export function resolveCustomEnvPaths(
+  configDir: string,
+  envRaw: string,
+): { mainPath: string; localPath: string } {
+  let expanded = envRaw.trim();
+  if (expanded.startsWith("~")) {
+    const rest = expanded.slice(1);
+    const home = homedir();
+    expanded =
+      rest === "" || rest.startsWith("/") ? join(home, rest) : join(home, rest);
+  }
+  const mainPath = isAbsolute(expanded)
+    ? resolve(expanded)
+    : resolve(configDir, expanded);
+  const localPath = join(dirname(mainPath), `${basename(mainPath)}.local`);
+  return { mainPath: resolve(mainPath), localPath: resolve(localPath) };
+}
+
 // ─── Phase 1: .env file loading ───────────────────────────────────────────────
+
+/** Used in env-related ConfigLoadError messages. */
+const ENV_DOCS_LINK =
+  "https://github.com/marcopeg/hal/blob/main/docs/config/README.md#environment-variable-substitution";
 
 interface EnvSources {
   vars: Record<string, string>;
   loadedFiles: string[];
 }
 
-function loadEnvFiles(configDir: string, projectCwds: string[]): EnvSources {
+function loadEnvFiles(
+  configDir: string,
+  options: { envPath?: string },
+): EnvSources {
   const loadedFiles: string[] = [];
   const vars: Record<string, string> = {};
 
-  // Candidates in ascending priority order (later entries win)
-  const candidates: string[] = [];
+  const configDirEnv = join(configDir, ".env");
+  const configDirEnvLocal = join(configDir, ".env.local");
 
-  // Per-project .env files (lower priority than config-dir)
-  for (const cwd of projectCwds) {
-    candidates.push(join(cwd, ".env"));
-    candidates.push(join(cwd, ".env.local"));
+  if (options.envPath !== undefined) {
+    // Explicit custom env: only the configured file and its .local sibling.
+    const mainPath = resolve(options.envPath);
+    const localPath = join(dirname(mainPath), `${basename(mainPath)}.local`);
+
+    // Conflict: config specifies a different file but config-dir has .env or .env.local
+    if (
+      mainPath !== resolve(configDirEnv) &&
+      (existsSync(configDirEnv) || existsSync(configDirEnvLocal))
+    ) {
+      throw new ConfigLoadError(
+        `Configuration error: \`env\` is set to a custom file, but the config directory also has .env or .env.local. ` +
+          "Use only one source — either remove `env` and use config-dir .env, or remove/rename config-dir .env and use `env`. " +
+          `See ${ENV_DOCS_LINK}`,
+      );
+    }
+
+    // Main file is required and must be readable
+    if (!existsSync(mainPath)) {
+      throw new ConfigLoadError(
+        `Configuration error: env file not found: ${mainPath}. ` +
+          `When \`env\` is set, the file must exist. See ${ENV_DOCS_LINK}`,
+      );
+    }
+    try {
+      const content = readFileSync(mainPath, "utf-8");
+      const parsed = parseEnv(content);
+      Object.assign(vars, parsed);
+      loadedFiles.push(mainPath);
+    } catch (err) {
+      throw new ConfigLoadError(
+        `Configuration error: cannot read env file ${mainPath} — ${err instanceof Error ? err.message : String(err)}. See ${ENV_DOCS_LINK}`,
+      );
+    }
+
+    if (existsSync(localPath)) {
+      try {
+        const content = readFileSync(localPath, "utf-8");
+        const parsed = parseEnv(content);
+        Object.assign(vars, parsed);
+        loadedFiles.push(localPath);
+      } catch {
+        // .local is optional; skip read errors
+      }
+    }
+
+    return { vars, loadedFiles };
   }
 
-  // Config-dir .env files (higher priority)
-  candidates.push(join(configDir, ".env"));
-  candidates.push(join(configDir, ".env.local"));
-
+  // Default mode: only config-dir .env and .env.local
+  const candidates = [configDirEnv, configDirEnvLocal];
   for (const filePath of candidates) {
     if (!existsSync(filePath)) continue;
     try {
@@ -872,7 +949,7 @@ function loadEnvFiles(configDir: string, projectCwds: string[]): EnvSources {
       Object.assign(vars, parsed);
       loadedFiles.push(filePath);
     } catch {
-      // non-fatal: missing read permission etc. — skip silently
+      // non-fatal for default-mode files
     }
   }
 
@@ -1096,9 +1173,12 @@ function mergeLocalIntoBase(
         : local.context
       : base.context;
 
+  const mergedEnv = local.env ?? base.env;
+
   if (!local.projects || Object.keys(local.projects).length === 0) {
     return {
       ...base,
+      env: mergedEnv,
       globals: mergedGlobals,
       providers: mergedProviders,
       context: mergedContext,
@@ -1126,6 +1206,7 @@ function mergeLocalIntoBase(
   normalizeProjectMap(mergedProjects);
 
   return {
+    env: mergedEnv,
     globals: mergedGlobals,
     providers: mergedProviders,
     context: mergedContext,
@@ -1195,15 +1276,12 @@ function loadMultiConfigInternal(configDir: string): LoadedConfigResult {
     );
   }
 
-  // 4. Load .env files (using raw cwds from merged config for path resolution)
-  // Stable order: sort project keys so iteration is deterministic.
-  const projectKeys = Object.keys(merged.projects).sort();
-  const rawCwds = projectKeys.map((key) => {
-    const p = merged.projects[key];
-    const cwd = p.cwd ?? key;
-    return isAbsolute(cwd) ? cwd : resolve(configDir, cwd);
-  });
-  const envSources = loadEnvFiles(configDir, rawCwds);
+  // 4. Load .env files (single source: config-dir .env or explicit env path)
+  const envOptions =
+    merged.env !== undefined
+      ? { envPath: resolveCustomEnvPaths(configDir, merged.env).mainPath }
+      : {};
+  const envSources = loadEnvFiles(configDir, envOptions);
 
   // 5. Substitute env vars in the merged raw object (before final Zod pass)
   const substituted = substituteEnvVars(

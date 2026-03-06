@@ -120,27 +120,47 @@ Minimal **JSONC** example (same structure with `//` comments and trailing commas
 
 ## Environment variable substitution
 
-Any string value in the config files (except inside `context` blocks — see [Context](context/README.md)) can reference an environment variable with `${VAR_NAME}` syntax. This works identically for all config formats (JSON, JSONC, YAML). Variables are resolved at boot time from the following sources in priority order (first match wins):
+Any string value in the config files (except inside `context` blocks — see [Context](context/README.md)) can reference an environment variable with `${VAR_NAME}` syntax. This works identically for all config formats (JSON, JSONC, YAML). Variables are resolved at boot time from **one** of two modes:
 
-1. `{config-dir}/.env.local` _(gitignored)_
-2. `{config-dir}/.env`
-3. `{project-cwd}/.env.local` _(gitignored)_
-4. `{project-cwd}/.env`
-5. Shell environment (`process.env`)
+### Single-source model
+
+- **Default (no `env` in config):** Env is loaded only from the config directory (the directory where you run the CLI): `{config-dir}/.env`, then `{config-dir}/.env.local`. The `.local` file overrides the base file. No per-project `.env` files are loaded.
+- **Explicit (`env` set):** Env is loaded only from the path you set in the top-level `env` key and its sibling `.local` file (e.g. `env: "secrets.env"` → `secrets.env` and `secrets.env.local` in the same directory). The config-dir `.env` is **not** loaded in this mode.
+
+Resolution order within each mode:
+
+- **Default mode:** `{config-dir}/.env`, then `{config-dir}/.env.local` (later overrides).
+- **Explicit mode:** The configured file, then that file’s `.local` sibling in the same directory (e.g. `path/to/secrets.env` then `path/to/secrets.env.local`).
+
+The `env` path is resolved relative to the config file’s directory, or as an absolute path. Tilde (`~`) is expanded to your home directory.
+
+### Conflict (boot error)
+
+If `env` is set and points to a **different** file than `{config-dir}/.env`, and `{config-dir}/.env` or `{config-dir}/.env.local` exists, the process exits at boot with an error. Use only one source: either remove `env` and use config-dir `.env`, or remove/rename the config-dir `.env` files and use `env`.
+
+### Missing or unreadable custom file (boot error)
+
+When `env` is set, the main file (the one you specified) must exist and be readable. If it is missing or unreadable, the process exits at boot with a clear error and a link to this documentation. The `.local` sibling remains optional.
+
+### Watcher
+
+When `env` is set, the config watcher also watches the custom env path and its `.local` sibling. Changes to either file (or creation of the `.local` file after startup) trigger a config reload, same as for other config files.
+
+### Example (default mode)
 
 ```bash
-# .env  (safe to commit — no real secrets)
+# {config-dir}/.env  (safe to commit — no real secrets)
 BACKEND_BOT_TOKEN=
 FRONTEND_BOT_TOKEN=
 
-# .env.local  (gitignored — real secrets go here)
+# {config-dir}/.env.local  (gitignored — real secrets go here)
 BACKEND_BOT_TOKEN=7123456789:AAHActual-token-here
 FRONTEND_BOT_TOKEN=7987654321:AAHAnother-token-here
 ```
 
 If a referenced variable cannot be resolved from any source the bot exits at boot with a clear error message naming the variable and the config field that references it.
 
-On every boot an `info`-level log lists all config and env files that were loaded, in resolution order, so you can always see exactly where each value came from.
+On every boot an `info`-level log lists all config and env files that were loaded, in order, so you can see exactly where each value came from.
 
 ## globals
 

@@ -1,6 +1,9 @@
 # HAL config reference — all supported keys
 # Full key index for docs. See [Configuration](README.md). Short copy-paste example: ../../examples/hal.config.yaml
 
+# Optional path to a custom env file for variable substitution (see README → Environment variable substitution).
+# env: "~/.hal/secrets.env"
+
 # ─── Top-level: globals (defaults for all projects) ─────────────────────────────
 # See this README for globals table and Access control section.
 
