@@ -133,7 +133,7 @@ export function buildConfigFromResults(ctx: WizardContext): BuildResult {
     }
   }
 
-  // Serialize
+  // Serialize with fixed key order: providers, globals, projects
   const format: ConfigFormat = ctx.existingConfigFormat ?? "yaml";
   const targetPath = ctx.existingConfigPath ?? `${ctx.cwd}/hal.config.yaml`;
 
@@ -141,10 +141,27 @@ export function buildConfigFromResults(ctx: WizardContext): BuildResult {
   if (format === "yaml") {
     content = buildYamlContent(base);
   } else {
-    content = `${JSON.stringify(base, null, 2)}\n`;
+    const ordered = orderTopLevelKeys(base);
+    content = `${JSON.stringify(ordered, null, 2)}\n`;
   }
 
   return { content, targetPath, envEntries };
+}
+
+/** Top-level key order and blank line between sections. */
+const TOP_LEVEL_ORDER: (keyof PartialConfig)[] = [
+  "providers",
+  "globals",
+  "projects",
+];
+
+function orderTopLevelKeys(config: PartialConfig): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const key of TOP_LEVEL_ORDER) {
+    const v = config[key as keyof PartialConfig];
+    if (v !== undefined && v !== null) out[key] = v;
+  }
+  return out;
 }
 
 function buildYamlContent(config: PartialConfig): string {
@@ -153,6 +170,11 @@ function buildYamlContent(config: PartialConfig): string {
     `# Full config docs: ${DOCS_CONFIG}`,
     "",
   ].join("\n");
-  const body = stringifyYaml(config, { indent: 2 });
-  return `${header}\n${body}`;
+  const ordered = orderTopLevelKeys(config);
+  const body = stringifyYaml(ordered, { indent: 2 });
+  // Insert blank line before each top-level key except the first
+  const withBlanks = body
+    .replace(/\n(globals:)/m, "\n\n$1")
+    .replace(/\n(projects:)/m, "\n\n$1");
+  return `${header}\n${withBlanks}`;
 }
