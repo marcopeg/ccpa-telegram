@@ -177,13 +177,17 @@ The engine can send files back through Telegram. Each user has a `downloads/` fo
 
 ## Releasing
 
-Releases use [conventional commits](https://www.conventionalcommits.org/) to drive `CHANGELOG.md` generation.
+Releases are handled by [release-it](https://github.com/release-it/release-it) with [conventional commits](https://www.conventionalcommits.org/): it bumps the version, updates `CHANGELOG.md` from the commit history, commits, tags, and publishes.
 
-1. **Clean tree** — Commit or stash all changes so the working tree is clean.
-2. **Auth** — Run `npm login` if you are not already logged in to the registry.
-3. **Release** — Run `pnpm run deploy` (or `npm run deploy`). This runs `npm version patch` then `npm publish --access public`. The `version` script regenerates `CHANGELOG.md` from commits since the last tag and adds it to the release commit before the version tag is created.
+**Package manager:** This repo uses **pnpm** (see `packageManager` in `package.json`). You can use **npm** instead: install deps and run scripts with either. For releasing, `pnpm run deploy` and `npm run deploy` both work; the only requirement is Node 18+ and being logged in to the registry (`npm login`).
 
-For a minor or major bump, run `npm version minor` or `npm version major` (which also runs the changelog step), then `npm publish --access public`.
+1. **Clean tree** — Commit or stash all changes. release-it will refuse to release if the working directory is dirty.
+2. **Auth** — Run `npm login` if you are not already logged in.
+3. **Release** — Either:
+   - **Patch (one command):** `pnpm run deploy` or `npm run deploy` — non-interactive patch bump, changelog update, commit, tag, and publish.
+   - **Interactive (choose patch/minor/major):** `pnpm run release` or `npm run release` — prompts for the version bump, then updates changelog, commits, tags, and publishes.
+
+Config lives in [.release-it.json](.release-it.json) (conventional-commits preset, `CHANGELOG.md` at repo root, npm publish with `--access public`).
 
 ## Security Notice
 
