@@ -4,8 +4,7 @@
     "commitMessage": "chore(release): ${version}"
   },
   "npm": {
-    "publish": true,
-    "publishArgs": ["--access", "public"]
+    "publish": false
   },
   "plugins": {
     "@release-it/conventional-changelog": {

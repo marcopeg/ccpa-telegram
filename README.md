@@ -177,27 +177,18 @@ The engine can send files back through Telegram. Each user has a `downloads/` fo
 
 ## Releasing
 
-Releases are handled by [release-it](https://github.com/release-it/release-it) with [conventional commits](https://www.conventionalcommits.org/): it bumps the version, updates `CHANGELOG.md` from the commit history, commits, tags, and publishes.
+Releases use [release-it](https://github.com/release-it/release-it) with [conventional commits](https://www.conventionalcommits.org/) for versioning and changelog, then you publish with npm so the browser/OTP flow works normally.
 
-**Package manager:** This repo uses **pnpm** (see `packageManager` in `package.json`). You can use **npm** instead: install deps and run scripts with either. For releasing, `pnpm run deploy` and `npm run deploy` both work; the only requirement is Node 18+ and being logged in to the registry (`npm login`).
+**Package manager:** This repo uses **pnpm** (see `packageManager` in `package.json`). You can use **npm** instead; Node 18+ and `npm login` are the only requirements.
 
-1. **Clean tree** — Commit or stash all changes. release-it will refuse to release if the working directory is dirty.
+1. **Clean tree** — Commit or stash all changes. release-it will refuse to run if the working directory is dirty.
 2. **Auth** — Run `npm login` if you are not already logged in.
-3. **Release** — Either:
-   - **Patch (one command):** `pnpm run deploy` or `npm run deploy` — non-interactive patch bump, changelog update, commit, tag, and publish.
-   - **Interactive (choose patch/minor/major):** `pnpm run release` or `npm run release` — prompts for the version bump, then updates changelog, commits, tags, and publishes.
+3. **Version + changelog** — Either:
+   - **Patch:** `pnpm run deploy` or `npm run deploy` — non-interactive patch bump, updates `CHANGELOG.md`, commit, and tag.
+   - **Interactive (patch/minor/major):** `pnpm run release` or `npm run release` — choose the bump, then same (changelog, commit, tag).
+4. **Publish** — Run `pnpm run publish` or `npm run publish`. This runs `npm publish --access public` in your terminal, so npm can open the browser or prompt for your OTP as usual when you have 2FA enabled.
 
-**npm 2FA (OTP):** When your npm account uses two-factor auth, pass the one-time password so release-it can forward it to `npm publish`:
-
-```bash
-pnpm run deploy -- --npm.otp=123456
-# or interactive
-pnpm run release -- --npm.otp=123456
-```
-
-Replace `123456` with the code from your authenticator app. The `--` is required so the option is passed to the script (and then to release-it). If the OTP still isn’t picked up (e.g. on some Windows setups), run release-it directly: `pnpm exec release-it patch --ci --npm.otp=123456` or `pnpm exec release-it --npm.otp=123456` for interactive.
-
-Config lives in [.release-it.json](.release-it.json) (conventional-commits preset, `CHANGELOG.md` at repo root, npm publish with `--access public`).
+Config: [.release-it.json](.release-it.json) (conventional-commits preset, `CHANGELOG.md` at repo root). release-it is configured not to run publish; the separate publish step keeps the flow simple and restores the normal npm 2FA experience.
 
 ## Security Notice
 
