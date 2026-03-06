@@ -16,8 +16,9 @@ projects:
     engine:
       name: codex
       session: user
-  frontend:
-    cwd: ./frontend
+  timetracker:
+    active: false
+    cwd: ./timetracker
     engine:
       name: codex
     telegram:

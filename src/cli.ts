@@ -24,13 +24,6 @@ import type { EngineName } from "./engine/types.js";
 import { createProjectLogger, createStartupLogger } from "./logger.js";
 import type { ProjectContext } from "./types.js";
 
-// ─── Init: doc URLs (GitHub marcopeg/hal + docs path) ──────────────────────────
-
-const HAL_DOCS_BASE = "https://github.com/marcopeg/hal/blob/main/docs";
-const HAL_DOCS_TELEGRAM = `${HAL_DOCS_BASE}/telegram/README.md`;
-const HAL_DOCS_TELEGRAM_CREATE_BOT = `${HAL_DOCS_BASE}/telegram/README.md#creating-a-telegram-bot`;
-const HAL_DOCS_CONFIG = `${HAL_DOCS_BASE}/config/README.md`;
-
 /** One default model per engine for the chosen project engine. */
 const DEFAULT_PROVIDER_MODEL: Record<EngineName, string> = {
   claude: "sonnet",
@@ -65,13 +58,7 @@ function buildYamlInitConfig(
   return template
     .replace(/\{\{ENGINE_NAME\}\}/g, engineName)
     .replace(/\{\{ENGINE_MODEL\}\}/g, model)
-    .replace(/\{\{PROJECT_CWD\}\}/g, JSON.stringify(projectCwd))
-    .replace(/\{\{HAL_DOCS_CONFIG\}\}/g, HAL_DOCS_CONFIG)
-    .replace(/\{\{HAL_DOCS_TELEGRAM\}\}/g, HAL_DOCS_TELEGRAM)
-    .replace(
-      /\{\{HAL_DOCS_TELEGRAM_CREATE_BOT\}\}/g,
-      HAL_DOCS_TELEGRAM_CREATE_BOT,
-    );
+    .replace(/\{\{PROJECT_CWD\}\}/g, JSON.stringify(projectCwd));
 }
 
 /** Prompt Y/n; Enter or empty = yes. Reads exactly one line then closes stdin. */
@@ -294,12 +281,12 @@ async function runInit(
   console.log("\nNext steps:");
   console.log(
     "  1. Set TELEGRAM_BOT_TOKEN in .env or .env.local (see docs: " +
-      HAL_DOCS_TELEGRAM_CREATE_BOT +
+      "https://github.com/marcopeg/hal/blob/main/docs/telegram/README.md#creating-a-telegram-bot" +
       ")",
   );
   console.log(
     "  2. Add your Telegram user ID to access.allowedUserIds (see: " +
-      HAL_DOCS_TELEGRAM +
+      "https://github.com/marcopeg/hal/blob/main/docs/telegram/README.md" +
       ")",
   );
   console.log("  3. Run: npx @marcopeg/hal");
