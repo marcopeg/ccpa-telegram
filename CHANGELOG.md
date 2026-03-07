@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.34](https://github.com/marcopeg/hal/compare/v1.0.33...v1.0.34) (2026-03-07)
+
+### Features
+
+* 055 add npm command support with configuration options ([6764001](https://github.com/marcopeg/hal/commit/6764001f862153e9a45045c39e7dd2bf8b4c477c))
+* slightly improve copilot output ([959a209](https://github.com/marcopeg/hal/commit/959a209fe814a80071764a3490ef17a3630abcf3))
+
+### Bug Fixes
+
+* use default model in case of engine mismatch ([34f4e61](https://github.com/marcopeg/hal/commit/34f4e614f717743af5240fe71bcf92ac2cd906df))
+
 ## [1.0.33](https://github.com/marcopeg/hal/compare/v1.0.32...v1.0.33) (2026-03-06)
 
 ### Features
