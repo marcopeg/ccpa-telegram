@@ -1,0 +1,14 @@
+quick-start:
+  title: Quick Start
+  excerpt: New to HAL? Start here. These guides walk you through installation, your first config file, and sending your first message to a Claude agent — all in under 5 minutes.
+  image: /blog-placeholder-1.jpg
+
+engines:
+  title: Engines
+  excerpt: HAL runs on top of multiple AI coding CLIs. Choose Claude Code, GitHub Copilot, Codex, OpenCode, Cursor, or Antigravity — globally or per project. Switch at runtime with /engine.
+  image: /blog-placeholder-2.jpg
+
+features:
+  title: Features
+  excerpt: From voice messages and file sending to multi-project support and custom slash commands — a deep look at what HAL can do and how it works under the hood.
+  image: /blog-placeholder-3.jpg

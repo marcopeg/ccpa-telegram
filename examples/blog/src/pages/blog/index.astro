@@ -1,0 +1,205 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { filterDrafts, getSlugFromId, isDraft } from '../../utils/posts';
+
+const posts = filterDrafts(await getCollection('posts')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			html body main {
+				width: 100%;
+				max-width: 1600px;
+				margin: 0 auto;
+				padding: 0 4vw;
+				box-sizing: border-box;
+			}
+			ul {
+				display: grid;
+				grid-template-columns: repeat(6, 1fr);
+				gap: 4.8vmin 4vmin;
+				list-style-type: none;
+				margin: 0;
+				padding: 4vmin 0 0;
+			}
+			ul li {
+				grid-column: span 2;
+				display: flex;
+				flex-direction: column;
+			}
+			/* Featured Post (1) */
+			ul li:first-child {
+				grid-column: span 6;
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 4vmin;
+				margin-bottom: 4rem;
+			}
+			ul li:first-child a {
+				display: contents;
+			}
+			ul li:first-child .hero-link {
+				grid-column: span 2;
+			}
+			ul li:first-child .post-content {
+				grid-column: span 1;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+			}
+			/* Row of 2 (Next 2 posts) */
+			ul li:nth-child(2),
+			ul li:nth-child(3) {
+				grid-column: span 3;
+				margin-bottom: 2rem;
+			}
+			
+			ul li img {
+				width: 100%;
+				aspect-ratio: 16 / 9;
+				object-fit: cover;
+				border-radius: 5px;
+				margin-bottom: 2rem;
+				transition: opacity 0.2s ease-in-out;
+			}
+			ul li:first-child img {
+				aspect-ratio: auto;
+				height: 100%;
+				margin-bottom: 0;
+			}
+			ul li a {
+				text-decoration: none;
+				color: inherit;
+			}
+			ul li a:hover img {
+				opacity: 0.9;
+			}
+			.tag {
+				display: block;
+				font-size: 1.2rem;
+				font-weight: 600;
+				text-transform: lowercase;
+				color: #738a94;
+				margin-bottom: 0.5rem;
+				min-height: 2.2rem; /* Increased to ensure visible gap even if empty */
+				line-height: 1.8;
+			}
+			.title {
+				margin: 0;
+				font-size: 2.6rem;
+				font-weight: 800;
+				line-height: 1.2;
+				color: #15171a;
+			}
+			ul li:first-child .title {
+				font-size: 4.4rem;
+				line-height: 1.05;
+			}
+			.excerpt {
+				margin: 1rem 0 0;
+				font-size: 1.6rem;
+				line-height: 1.5;
+				color: #15171a;
+				display: -webkit-box;
+				-webkit-line-clamp: 3;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+			}
+			ul li:first-child .excerpt {
+				-webkit-line-clamp: 5;
+			}
+			.date {
+				margin: 1.5rem 0 0;
+				font-size: 1.2rem;
+				color: #738a94;
+				font-weight: 600;
+				text-transform: uppercase;
+			}
+			@media (max-width: 991px) {
+				ul {
+					grid-template-columns: 1fr 1fr;
+				}
+				ul li, ul li:nth-child(2), ul li:nth-child(3) {
+					grid-column: span 1;
+				}
+				ul li:first-child {
+					grid-column: span 2;
+					grid-template-columns: 1fr;
+				}
+				ul li:first-child .hero-link,
+				ul li:first-child .post-content {
+					grid-column: span 1;
+				}
+				ul li:first-child img {
+					aspect-ratio: 16 / 9;
+				}
+			}
+			@media (max-width: 767px) {
+				ul {
+					grid-template-columns: 1fr;
+					gap: 80px;
+				}
+				ul li, ul li:first-child, ul li:nth-child(2), ul li:nth-child(3) {
+					grid-column: span 1;
+				}
+				ul li:first-child .title {
+					font-size: 3.4rem;
+				}
+				ul li img {
+					margin-bottom: 1rem;
+				}
+				.tag:empty,
+				.tag:has(> :only-child:empty) {
+					display: none;
+				}
+			}
+		.title.draft {
+			color: #dc2626 !important;
+		}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section>
+				<ul>
+					{
+						posts.map((post) => (
+							<li>
+								<a href={`/${getSlugFromId(post.id)}/`} class="hero-link">
+									{post.data.heroImage && (
+										<Image width={720} height={360} src={post.data.heroImage} alt="" />
+									)}
+								</a>
+								<div class="post-content">
+									<a href={`/${getSlugFromId(post.id)}/`}>
+										<span class="tag">
+											{post.data.tags && post.data.tags.length > 0 ? post.data.tags[0] : <>&nbsp;</>}
+										</span>
+										<h4 class:list={["title", { "draft": isDraft(post.id) }]}>{post.data.title}</h4>
+										<p class="excerpt">{post.data.description}</p>
+									</a>
+									<p class="date">
+										<FormattedDate date={post.data.pubDate} />
+									</p>
+								</div>
+							</li>
+						))
+					}
+				</ul>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

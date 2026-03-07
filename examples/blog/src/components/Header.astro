@@ -1,0 +1,197 @@
+---
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import HeaderLink from './HeaderLink.astro';
+
+interface Props {
+	isHome?: boolean;
+}
+
+const { isHome = false } = Astro.props;
+---
+
+<header class:list={[{ 'is-home': isHome }]}>
+	<div class="header-top outer">
+		<nav class="inner">
+			{ !isHome && (
+				<div class="gh-head-brand">
+					<a class="gh-head-logo" href="/">{SITE_TITLE}</a>
+				</div>
+			)}
+			<div class="gh-head-menu">
+				<ul class="nav">
+					<li><HeaderLink href="/about">About</HeaderLink></li>
+					<li><HeaderLink href="/tag/quick-start">Quick Start</HeaderLink></li>
+					<li><HeaderLink href="/tag/engines">Engines</HeaderLink></li>
+					<li><HeaderLink href="/tag/features">Features</HeaderLink></li>
+				</ul>
+			</div>
+			<div class="gh-head-actions">
+				<button class="gh-search gh-icon-btn" aria-label="Search this site">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+				</button>
+			</div>
+		</nav>
+	</div>
+
+	{isHome && (
+		<div class="site-header-content outer">
+			<div class="site-header-inner inner">
+				<h1 class="site-title">{SITE_TITLE}</h1>
+				<p class="site-description">{SITE_DESCRIPTION}</p>
+			</div>
+		</div>
+	)}
+</header>
+
+<style>
+	header {
+		background: #1b9cff !important;
+		color: #fff !important;
+		margin: 0;
+		padding: 0;
+		display: block;
+		width: 100%;
+	}
+
+	.header-top {
+		height: 88px;
+		display: flex;
+		align-items: center;
+	}
+
+	nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	.gh-head-brand {
+		margin-right: 32px;
+	}
+
+	.gh-head-logo {
+		font-weight: 800;
+		font-size: 2.4rem;
+		letter-spacing: -0.02em;
+		color: #fff !important;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	.gh-head-menu {
+		flex-grow: 1;
+		display: flex;
+		justify-content: flex-start;
+	}
+
+	.nav {
+		display: flex;
+		align-items: center;
+		list-style: none !important;
+		margin: 0;
+		padding: 0;
+		gap: 32px;
+	}
+
+	.nav li {
+		margin: 0;
+		padding: 0;
+		list-style: none !important;
+	}
+
+	.nav :global(a) {
+		color: #fff !important;
+		text-decoration: none !important;
+		font-weight: 500;
+		font-size: 1.6rem;
+		opacity: 0.8;
+		transition: opacity 0.2s;
+	}
+
+	.nav :global(a:hover),
+	.nav :global(a.active) {
+		opacity: 1 !important;
+	}
+
+	.gh-head-actions {
+		display: flex;
+		align-items: center;
+	}
+
+	.gh-search {
+		background: transparent;
+		border: none;
+		color: #fff;
+		cursor: pointer;
+		padding: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0.8;
+		transition: opacity 0.2s;
+	}
+
+	.gh-search:hover {
+		opacity: 1;
+	}
+
+	/* Homepage specific styles */
+	.site-header-content {
+		padding-top: max(12vmin, 64px);
+		padding-bottom: max(12vmin, 64px);
+		text-align: left;
+		background: #1b9cff !important;
+	}
+
+	.site-title {
+		font-size: min(8rem, 12vw);
+		font-weight: 800;
+		margin: 0;
+		line-height: 1;
+		color: #fff !important;
+	}
+
+	.site-description {
+		font-size: 2.4rem;
+		font-weight: 400;
+		margin-top: 2rem;
+		padding-bottom: 4.4rem;
+		line-height: 1.4;
+		max-width: 720px;
+		color: #fff !important;
+		opacity: 0.9;
+	}
+
+	.outer {
+		width: 100%;
+		max-width: 1020px;
+		margin: 0 auto;
+		padding: 0 1em;
+		box-sizing: border-box;
+	}
+
+	.is-home .outer {
+		max-width: 1600px;
+		padding: 0 4vw;
+	}
+
+	.inner {
+		width: 100%;
+	}
+
+	@media (max-width: 767px) {
+		.header-top {
+			height: 64px;
+		}
+		.nav {
+			display: none;
+		}
+		.site-title {
+			font-size: 4rem;
+		}
+		.site-description {
+			font-size: 1.8rem;
+		}
+	}
+</style>

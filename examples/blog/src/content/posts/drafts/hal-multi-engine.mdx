@@ -1,0 +1,57 @@
+---
+title: "HAL with Multiple AI Engines"
+description: "Claude is the default, but HAL also supports Codex, GitHub Copilot, and more. Switch engines per-session with /engine — or set a project-level default."
+pubDate: "2026-03-15T09:00:00.000Z"
+heroImage: "/blog-placeholder-5.jpg"
+tags: ["engines"]
+---
+
+> 🚧 This post is a draft. Content is incomplete.
+
+HAL started as a Claude wrapper. But the architecture — spawn a CLI subprocess, stream structured JSON output — generalizes to any AI agent that speaks the same protocol.
+
+Today HAL supports:
+
+- **Claude** (Anthropic) — the default
+- **Codex** (OpenAI)
+- **GitHub Copilot**
+- More coming
+
+---
+
+## Switching engines
+
+From Telegram:
+
+```
+/engine codex
+```
+
+HAL stores the engine choice in your session. Every message from that point forwards uses Codex. Switch back anytime:
+
+```
+/engine claude
+```
+
+---
+
+## Setting a default engine per project
+
+In `hal.config.yaml`:
+
+```yaml
+projects:
+  my-app:
+    cwd: "/path/to/my-app"
+    engine: codex
+```
+
+---
+
+## TODO: cover
+
+- [ ] How each engine's CLI is invoked differently
+- [ ] Model selection per engine (`/model` command)
+- [ ] Config keys: `engine`, `model`, per-project vs global defaults
+- [ ] Tradeoffs: when to use Claude vs Codex vs Copilot
+- [ ] How to add a new engine (for contributors)

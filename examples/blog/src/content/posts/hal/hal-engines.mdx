@@ -1,0 +1,120 @@
+---
+title: "Choosing Your AI Engine"
+description: "HAL supports Claude Code, GitHub Copilot, Codex, OpenCode, Cursor, and Antigravity. Here's how they compare, how to configure them, and how to switch between them at runtime."
+pubDate: "2026-02-15T09:00:00.000Z"
+heroImage: "/blog-placeholder-2.jpg"
+tags: ["engines"]
+---
+
+HAL is engine-agnostic. It ships with support for six AI coding CLIs — you pick the one that fits your workflow, your budget, or your project.
+
+---
+
+## Supported engines
+
+| Engine | Config name | Instruction file |
+|---|---|---|
+| Claude Code (Anthropic) | `claude` | `CLAUDE.md` |
+| GitHub Copilot | `copilot` | `AGENTS.md` |
+| Codex (OpenAI) | `codex` | `AGENTS.md` |
+| OpenCode | `opencode` | `AGENTS.md` |
+| Cursor | `cursor` | `AGENTS.md` |
+| Antigravity (Google Gemini) | `antigravity` | `GEMINI.md` |
+
+Each engine needs its own CLI installed and authenticated on your server. HAL spawns it as a subprocess — it doesn't bundle any AI logic itself.
+
+---
+
+## Setting the engine
+
+**Globally**, in `hal.config.yaml`:
+
+```yaml
+globals:
+  engine:
+    name: claude
+```
+
+**Per project**, to override the global:
+
+```yaml
+projects:
+  frontend:
+    cwd: ./frontend
+    engine:
+      name: copilot
+      model: gpt-5-mini
+```
+
+**At runtime**, from Telegram:
+
+```
+/engine codex
+```
+
+HAL stores the choice in your session. Switch back any time with `/engine claude`.
+
+---
+
+## Feature comparison
+
+Not all engines work the same way inside HAL:
+
+| Feature | Claude | Copilot | Codex | OpenCode | Cursor | Antigravity |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Live streaming progress | ✓ | — | — | — | — | ✓ |
+| Per-user session | ✓ | — | — | — | — | ✓ |
+| Network access flag | — | — | ✓ | — | — | — |
+| Full disk access flag | — | — | ✓ | — | — | — |
+
+**Streaming progress** means HAL forwards tool calls and intermediate steps to Telegram as they happen. With Claude and Antigravity you see the agent "thinking" in real time. With the others, you get a single reply when the run is done.
+
+**Per-user session** means each Telegram user gets their own conversation context. Claude uses `--resume` per user; Antigravity does the same. The others default to a single shared session across all users.
+
+---
+
+## Selecting a model
+
+Use `/model` in Telegram to switch models for the active engine. You can also fix a model in config:
+
+```yaml
+projects:
+  my-app:
+    engine:
+      name: claude
+      model: claude-opus-4-6
+```
+
+To expose a list of models for the `/model` picker, add a `providers` block:
+
+```yaml
+providers:
+  claude:
+    - name: claude-sonnet-4-6
+      description: Balanced performance and speed
+      default: true
+    - name: claude-opus-4-6
+      description: Most capable, complex reasoning
+  codex:
+    - name: gpt-5.2-codex
+      description: Advanced coding model
+      default: true
+```
+
+Without a `providers` block, HAL auto-discovers available engines at boot and `/engine` is enabled automatically when more than one is found.
+
+---
+
+## Which engine should I use?
+
+**Start with Claude Code** if you're new. It has the best streaming support, per-user sessions, and the widest tool coverage in HAL.
+
+**Use Copilot or Codex** if you're already paying for GitHub Copilot or OpenAI and want to reuse that subscription.
+
+**Use Cursor** if your project already has a `.cursorrules` setup and you want consistency with your IDE.
+
+**Use Antigravity** if you're in the Google ecosystem and want streaming progress like Claude.
+
+---
+
+For setup details and per-engine config options, see the [HAL documentation](https://github.com/marcopeg/hal/tree/main/docs/engines).

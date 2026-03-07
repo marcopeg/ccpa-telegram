@@ -1,0 +1,62 @@
+---
+title: "Hello, HAL"
+description: "Meet HAL — a Telegram bot that puts Claude Code in your pocket. Send a message, get a working agent. No IDE required."
+pubDate: "2026-01-01T09:00:00.000Z"
+heroImage: "/blog-placeholder-1.jpg"
+tags: ["features", "quick-start"]
+---
+
+You know that moment when you think _"I just need to ask the AI something real quick"_ — but then you have to open your laptop, launch the IDE, wait for the model to load context, and by then you've forgotten what you wanted?
+
+**HAL fixes that.**
+
+HAL is a Telegram bot that runs [Claude Code](https://claude.ai/code) as your personal assistant. You send a message. It spins up a Claude agent, runs it against your project, and replies — right in the chat.
+
+No IDE. No terminal. Just Telegram.
+
+---
+
+## What can it do?
+
+Whatever Claude Code can do — because that's what's running under the hood.
+
+- Answer questions about your codebase
+- Write and edit files
+- Run shell commands
+- Search docs
+- Execute tasks defined in your project
+
+The agent has full access to a project directory on your server. You configure which project it works on, and HAL keeps the session going as long as you're chatting.
+
+---
+
+## The "hello world" moment
+
+Install HAL, point it at a project, and send your first message:
+
+```
+/start
+```
+
+You'll see HAL introduce itself and confirm which project it's connected to. Then type anything:
+
+```
+What files are in this project?
+```
+
+Claude will list them. That's it. You're in.
+
+---
+
+## Why Telegram?
+
+Because it's already on your phone. It works offline, has great notifications, and you never have to think about "opening an app" — you just send a message the same way you'd text a friend.
+
+HAL lives where the conversation already is.
+
+---
+
+## What's next?
+
+- [Run HAL in 5 minutes →](./hal-quickstart)
+- [See how HAL connects to Claude under the hood →](./hal-under-the-hood)

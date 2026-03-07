@@ -1,0 +1,25 @@
+{
+  "name": "astro",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "tunnel": "./scripts/tunnel.sh",
+    "tunnel:stop": "./scripts/tunnel.sh stop",
+    "tunnel:logs": "./scripts/tunnel.sh logs",
+    "hello": "node -e \"console.log('Hello! Current date: ' + new Date().toLocaleString())\""
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.13",
+    "@astrojs/rss": "^4.0.15",
+    "@astrojs/sitemap": "^3.7.0",
+    "@types/js-yaml": "^4.0.9",
+    "astro": "^5.17.1",
+    "js-yaml": "^4.1.1",
+    "sharp": "^0.34.3",
+    "turndown": "^7.2.2"
+  }
+}

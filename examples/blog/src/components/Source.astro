@@ -1,0 +1,78 @@
+---
+interface Props {
+	lang?: string;
+	filename?: string;
+}
+
+const { lang, filename } = Astro.props;
+---
+
+<div class="source-container">
+	<div class="source-block">
+		<pre><code class={lang ? `language-${lang.toLowerCase()}` : ''}><slot /></code></pre>
+	</div>
+	{filename && <p class="source-filename">{filename}</p>}
+</div>
+
+<style>
+	.source-container {
+		margin: max(3.2vmin, 24px) 0;
+		width: 100%;
+	}
+
+	.source-block {
+		background: #1e1e1e;
+		border-radius: 8px;
+		overflow: hidden;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+	}
+
+	.source-block pre {
+		margin: 0;
+		padding: 2rem 2.4rem;
+		overflow-x: auto;
+		background: transparent;
+	}
+
+	.source-block code {
+		font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
+		font-size: 1.5rem;
+		line-height: 1.7;
+		color: #e5eff5;
+		background: transparent;
+		border: none;
+		padding: 0;
+		white-space: pre;
+		display: block;
+	}
+
+	.source-filename {
+		margin-top: 1.2rem;
+		text-align: center;
+		font-size: 1.4rem;
+		color: #738a94;
+		font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
+		font-weight: 400;
+	}
+
+	/* Override any global code styling */
+	.source-block :global(code) {
+		all: unset;
+		font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
+		font-size: 1.5rem;
+		line-height: 1.7;
+		color: #e5eff5;
+		display: block;
+		white-space: pre;
+	}
+
+	@media (max-width: 650px) {
+		.source-block code {
+			font-size: 1.3rem;
+		}
+
+		.source-filename {
+			font-size: 1.2rem;
+		}
+	}
+</style>

@@ -1,0 +1,79 @@
+---
+interface Props {
+	src: string;
+	alt: string;
+	width?: number;
+	height?: number;
+	inline?: boolean;
+	full?: boolean;
+}
+
+const { src, alt, width, height, inline = false, full = false } = Astro.props;
+
+// Determine the layout class
+let layoutClass = 'kg-width-wide'; // default: extends beyond content column
+if (inline) {
+	layoutClass = ''; // stays within content column
+} else if (full) {
+	layoutClass = 'kg-width-full'; // full viewport width
+}
+---
+
+<figure class:list={['image-figure', layoutClass]}>
+	<img
+		src={src}
+		alt={alt}
+		width={width}
+		height={height}
+		loading="lazy"
+	/>
+	{alt && <figcaption>{alt}</figcaption>}
+</figure>
+
+<style>
+	.image-figure {
+		margin: max(3.2vmin, 24px) 0;
+		text-align: center;
+		width: 100%;
+	}
+
+	/* Wide layout (default) - uses Ghost grid */
+	.image-figure.kg-width-wide {
+		/* Grid column set by BlogPost.astro: wide-start / wide-end */
+	}
+
+	/* Full layout - uses Ghost grid */
+	.image-figure.kg-width-full {
+		/* Grid column set by BlogPost.astro: full-start / full-end */
+	}
+
+	.image-figure img {
+		display: block;
+		margin: 0 auto;
+		max-width: 100%;
+		height: auto;
+		border-radius: 5px;
+	}
+
+	/* Full width images should not have border radius */
+	.image-figure.kg-width-full img {
+		border-radius: 0 !important;
+		width: 100%;
+	}
+
+	.image-figure figcaption {
+		padding: 1.5rem 1.5rem 0;
+		text-align: center;
+		color: #738a94;
+		font-size: 1.3rem;
+		line-height: 1.4em;
+		font-weight: 400;
+	}
+
+	@media (max-width: 650px) {
+		.image-figure figcaption {
+			font-size: 1.2rem;
+			padding: 1rem 1rem 0;
+		}
+	}
+</style>

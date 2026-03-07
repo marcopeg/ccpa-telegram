@@ -1,0 +1,207 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
+import { filterDrafts } from '../../utils/posts';
+
+// Get featured tags from tags.yaml
+const featuredTags = await getCollection('tags');
+
+// Get all blog posts and extract unique tags
+const allPosts = filterDrafts(await getCollection('posts'));
+const allTagsSet = new Set<string>();
+allPosts.forEach(post => {
+	if (post.data.tags) {
+		post.data.tags.forEach(tag => allTagsSet.add(tag));
+	}
+});
+
+// Filter out featured tags from the complete tag list
+const featuredTagTitles = new Set(featuredTags.map(t => t.data.title.toLowerCase()));
+const otherTags = Array.from(allTagsSet).filter(tag => 
+	!featuredTagTitles.has(tag.toLowerCase())
+).sort();
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Tags - ${SITE_TITLE}`} description="Browse all tags and categories" />
+		<style>
+			html body main {
+				width: 100%;
+				max-width: 1600px;
+				margin: 0 auto;
+				padding: 0 4vw;
+				box-sizing: border-box;
+			}
+			
+			.page-header {
+				margin: 4vmin 0;
+			}
+			
+			.page-title {
+				font-size: 4.4rem;
+				font-weight: 800;
+				line-height: 1.05;
+				color: #15171a;
+				margin: 0 0 1rem;
+			}
+			
+			.page-description {
+				font-size: 1.8rem;
+				line-height: 1.5;
+				color: #738a94;
+				margin: 0 0 4vmin;
+			}
+			
+			/* Featured Tags Grid */
+			.featured-tags {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+				gap: 4vmin;
+				margin-bottom: 6vmin;
+			}
+			
+			.tag-card {
+				display: flex;
+				flex-direction: column;
+				text-decoration: none;
+				color: inherit;
+				transition: transform 0.2s ease;
+			}
+			
+			.tag-card:hover {
+				transform: translateY(-4px);
+			}
+			
+			.tag-card-image {
+				width: 100%;
+				height: 200px;
+				object-fit: cover;
+				border-radius: 5px;
+				margin-bottom: 1.5rem;
+			}
+			
+			.tag-card-title {
+				font-size: 2.6rem;
+				font-weight: 800;
+				line-height: 1.2;
+				color: #15171a;
+				margin: 0 0 1rem;
+			}
+			
+			.tag-card-excerpt {
+				font-size: 1.5rem;
+				line-height: 1.5;
+				color: #738a94;
+				margin: 0;
+			}
+			
+			/* Other Tags Section */
+			.other-tags-section {
+				margin-top: 6vmin;
+				padding-top: 4vmin;
+				border-top: 1px solid #e5eff5;
+			}
+			
+			.other-tags-title {
+				font-size: 2rem;
+				font-weight: 700;
+				color: #15171a;
+				margin: 0 0 2rem;
+			}
+			
+			.other-tags-list {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 1.5rem;
+				align-items: center;
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			
+			.other-tags-list li {
+				display: flex;
+				align-items: center;
+				gap: 1.5rem;
+			}
+			
+			.other-tags-list li:not(:last-child)::after {
+				content: "•";
+				color: #738a94;
+				font-size: 1.2rem;
+			}
+			
+			.other-tags-list a {
+				font-size: 1.5rem;
+				font-weight: 600;
+				color: #15171a;
+				text-decoration: none;
+				transition: color 0.2s ease;
+			}
+			
+			.other-tags-list a:hover {
+				color: #0066CC;
+			}
+			
+			@media (max-width: 767px) {
+				.page-title {
+					font-size: 3.4rem;
+				}
+				
+				.featured-tags {
+					grid-template-columns: 1fr;
+				}
+				
+				.other-tags-list {
+					gap: 1rem;
+				}
+				
+				.other-tags-list li {
+					gap: 1rem;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div class="page-header">
+				<h1 class="page-title">Tags</h1>
+				<p class="page-description">Browse articles by topic and category</p>
+			</div>
+			
+			<!-- Featured Tags from tags.yaml -->
+			<section class="featured-tags">
+				{featuredTags.map((tag) => (
+					<a href={`/tag/${tag.id}`} class="tag-card">
+						<img src={tag.data.image} alt={tag.data.title} class="tag-card-image" />
+						<h2 class="tag-card-title">{tag.data.title}</h2>
+						<p class="tag-card-excerpt">{tag.data.excerpt}</p>
+					</a>
+				))}
+			</section>
+			
+			<!-- Other Tags -->
+			{otherTags.length > 0 && (
+				<section class="other-tags-section">
+					<h2 class="other-tags-title">More Tags</h2>
+					<ul class="other-tags-list">
+						{otherTags.map((tag) => (
+							<li>
+								<a href={`/tag/${tag.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-')}`}>
+									{tag}
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+			)}
+		</main>
+		<Footer />
+	</body>
+</html>

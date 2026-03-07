@@ -1,0 +1,94 @@
+---
+interface Props {
+	url?: string;
+	id?: string;
+}
+
+const { url, id } = Astro.props;
+
+// Extract tweet ID from URL if provided
+let tweetId = id;
+if (url && !tweetId) {
+	// Match patterns like:
+	// https://twitter.com/username/status/1234567890
+	// https://x.com/username/status/1234567890
+	const match = url.match(/status\/(\d+)/);
+	if (match) {
+		tweetId = match[1];
+	}
+}
+
+if (!tweetId) {
+	throw new Error('EmbedTwitter: Either url or id prop is required');
+}
+
+// Construct the tweet URL - using twitter.com as it's more reliable for embeds
+const tweetUrl = `https://twitter.com/i/status/${tweetId}`;
+---
+
+<div class="twitter-embed-container">
+	<blockquote class="twitter-tweet" data-conversation="none" data-theme="light" data-dnt="true">
+		<a href={tweetUrl}>View tweet {tweetId}</a>
+	</blockquote>
+</div>
+
+<script is:inline>
+	(function() {
+		// Load Twitter widget script if not already loaded
+		if (typeof window !== 'undefined') {
+			if (!window.twttrScriptLoaded) {
+				window.twttrScriptLoaded = true;
+
+				const script = document.createElement('script');
+				script.src = 'https://platform.twitter.com/widgets.js';
+				script.async = true;
+				script.charset = 'utf-8';
+
+				// Add load event to trigger widget rendering
+				script.onload = function() {
+					if (window.twttr && window.twttr.widgets) {
+						window.twttr.widgets.load();
+					}
+				};
+
+				document.head.appendChild(script);
+			} else if (window.twttr && window.twttr.widgets) {
+				// If script already loaded, render new tweets
+				window.twttr.widgets.load();
+			}
+		}
+	})();
+</script>
+
+<style>
+	.twitter-embed-container {
+		margin: 2.4rem 0;
+		display: flex;
+		justify-content: center;
+		width: 100%;
+	}
+
+	/* Ensure the embedded tweet is centered and has proper spacing */
+	:global(.twitter-tweet) {
+		margin: 0 auto !important;
+	}
+
+	/* Loading state styling */
+	.twitter-embed-container blockquote {
+		min-height: 200px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #f7f9fa;
+		border: 1px solid #e1e8ed;
+		border-radius: 12px;
+		padding: 20px;
+		color: #657786;
+		text-decoration: none;
+	}
+
+	.twitter-embed-container blockquote a {
+		color: #1da1f2;
+		text-decoration: none;
+	}
+</style>

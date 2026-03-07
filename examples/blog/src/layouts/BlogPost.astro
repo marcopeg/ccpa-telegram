@@ -1,0 +1,698 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+import Header from "../components/Header.astro";
+import {
+	filterDrafts,
+	getReadingTime,
+	getSlugFromId,
+	isDraft,
+} from "../utils/posts";
+import { getImageAsset } from "../utils/images";
+import fs from "fs";
+import yaml from "js-yaml";
+import path from "path";
+
+type Props = {
+	title: string;
+	description?: string;
+	pubDate?: Date;
+	updatedDate?: Date;
+	heroImage?: string;
+	tags?: string[];
+	slug?: string;
+	author?: string;
+	body?: string;
+	postId?: string;
+	noindex?: boolean;
+};
+
+const {
+	title,
+	description,
+	pubDate,
+	updatedDate,
+	heroImage,
+	tags,
+	author = "mpeg",
+	body,
+	postId,
+	noindex = false,
+} = Astro.props;
+const firstTag = tags?.[0];
+const socialImage = getImageAsset(heroImage);
+
+// Load authors data
+const authorsPath = path.join(process.cwd(), "src/data/authors.yaml");
+const authorsData = yaml.load(fs.readFileSync(authorsPath, "utf8")) as Record<
+	string,
+	any
+>;
+const authorInfo = authorsData[author];
+
+// Calculate reading time
+const readingTime = body ? getReadingTime(body) : "1 min read";
+
+function formatDate(date: Date): string {
+	return date.toLocaleDateString("en-GB", {
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+	});
+}
+
+// Get related articles based on shared tags
+let relatedPosts: CollectionEntry<"posts">[] = [];
+if (tags && tags.length > 0) {
+	const allPosts = filterDrafts(await getCollection("posts"));
+
+	relatedPosts = allPosts
+		.filter((post) => {
+			// Exclude current post
+			if (postId && post.id === postId) return false;
+			if (post.data.title === title) return false;
+
+			// Check if post has at least one shared tag
+			return post.data.tags?.some((tag) => tags.includes(tag));
+		})
+		.sort((a, b) => {
+			// Sort by number of shared tags (most relevant first)
+			const sharedA =
+				a.data.tags?.filter((tag) => tags.includes(tag)).length || 0;
+			const sharedB =
+				b.data.tags?.filter((tag) => tags.includes(tag)).length || 0;
+			return sharedB - sharedA;
+		})
+		.slice(0, 6); // Limit to 6 related posts
+}
+---
+
+<html lang="en">
+	<head>
+		<BaseHead
+			title={title}
+			description={description}
+			image={socialImage}
+			noindex={noindex}
+		/>
+		<style>
+			/* Reset any global constraints that might interfere with the grid */
+			main {
+				padding: max(8vmin, 40px) 0 max(8vmin, 64px);
+				width: 100% !important;
+				max-width: none !important;
+				margin: 0 !important;
+				display: block !important;
+			}
+
+			.gh-article {
+				display: block !important;
+				width: 100%;
+				word-break: break-word;
+			}
+
+			/* gh-canvas Grid System - Matching Ghost exactly */
+			.gh-canvas {
+				--gap: max(4vmin, 20px);
+				--main: min(720px, 100% - var(--gap) * 2);
+				--wide: minmax(0, calc((1200px - 720px) / 2));
+				--full: minmax(var(--gap), 1fr);
+
+				display: grid;
+				grid-template-columns:
+					[full-start] var(--full)
+					[wide-start] var(--wide)
+					[main-start] var(--main) [main-end]
+					var(--wide) [wide-end]
+					var(--full) [full-end];
+				width: 100%;
+			}
+
+			/* All direct children of a gh-canvas grid default to the main column */
+			.gh-canvas > * {
+				grid-column: main-start / main-end;
+			}
+
+			/* Breakout columns */
+			.gh-canvas > .kg-width-wide {
+				grid-column: wide-start / wide-end;
+			}
+
+			.gh-canvas > .kg-width-full {
+				grid-column: full-start / full-end;
+				width: 100%;
+			}
+
+			.article-header {
+				padding: 0 0 max(2vmin, 16px);
+				text-align: left;
+				grid-column: main-start / main-end;
+			}
+
+			.article-tag {
+				display: block;
+				margin-bottom: 16px;
+				color: #979797;
+				font-size: 1.6rem;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0;
+			}
+
+			.article-title {
+				margin: 0 0 0 0;
+				color: #15171a;
+				font-size: clamp(3.2rem, 5vw, 5.2rem);
+				font-weight: 800;
+				line-height: 1.05;
+				letter-spacing: -0.01em;
+			}
+
+			.article-excerpt {
+				margin: 20px 0 0 0;
+				max-width: 720px;
+				color: #15171a;
+				font-size: 2rem;
+				line-height: 1.45;
+			}
+
+			.article-byline {
+				display: flex;
+				align-items: center;
+				gap: 1.2rem;
+				margin-top: 2.4rem;
+			}
+
+			.author-avatar {
+				width: 56px;
+				height: 56px;
+				border-radius: 50%;
+				object-fit: cover;
+			}
+
+			.author-info {
+				display: flex;
+				flex-direction: column;
+				gap: 0.2rem;
+			}
+
+			.author-name {
+				font-size: 1.6rem;
+				font-weight: 700;
+				color: #15171a;
+				letter-spacing: 0;
+			}
+
+			.article-meta {
+				font-size: 1.3rem;
+				font-weight: 400;
+				color: #738a94;
+				letter-spacing: 0;
+			}
+
+			.article-image {
+				grid-column: wide-start / wide-end;
+				width: 100%;
+				margin: max(1.6vmin, 12px) 0 max(3.2vmin, 24px);
+			}
+
+			.article-image img {
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+				width: 100%;
+			}
+
+			/* Content Layout & Typography */
+			.gh-content {
+				--gap: max(4vmin, 20px);
+				--main: min(720px, 100% - var(--gap) * 2);
+				--wide: minmax(0, calc((1200px - 720px) / 2));
+				--full: minmax(var(--gap), 1fr);
+
+				display: grid;
+				grid-template-columns:
+					[full-start] var(--full)
+					[wide-start] var(--wide)
+					[main-start] var(--main) [main-end]
+					var(--wide) [wide-end]
+					var(--full) [full-end];
+			}
+
+			/* Explicitly place all direct children (including Slot content) in the main column */
+			.gh-content > :global(*) {
+				grid-column: main-start / main-end;
+			}
+
+			/* Allow breakout classes within content as well */
+			.gh-content > :global(.kg-width-wide) {
+				grid-column: wide-start / wide-end;
+			}
+
+			.gh-content > :global(.kg-width-full) {
+				grid-column: full-start / full-end;
+			}
+
+			/* Default vertical spacing - matching Ghost exactly */
+			.gh-content > :global(* + *) {
+				margin-top: max(3.2vmin, 24px);
+				margin-bottom: 0;
+			}
+
+			/* Reset margins for headings */
+			.gh-content > :global([id]) {
+				margin: 0;
+				color: #15171a;
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+					"Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+					"Droid Sans", "Helvetica Neue", sans-serif;
+				font-weight: 700;
+				text-rendering: optimizeLegibility;
+				letter-spacing: -0.01em;
+				line-height: 1.15;
+				-webkit-font-smoothing: antialiased;
+				-moz-osx-font-smoothing: grayscale;
+			}
+
+			/* Add back top margin to all headings, except first child */
+			.gh-content > :global([id]:not(:first-child)) {
+				margin: 2em 0 0;
+			}
+
+			/* Small margin between heading and next element */
+			.gh-content > :global([id] + *) {
+				margin-top: 1.5rem !important;
+			}
+
+			/* Larger margin before/after HRs and blockquotes */
+			.gh-content > :global(hr),
+			.gh-content > :global(blockquote) {
+				position: relative;
+				margin-top: max(4.8vmin, 32px);
+			}
+
+			.gh-content > :global(hr + *),
+			.gh-content > :global(blockquote + *) {
+				margin-top: max(4.8vmin, 32px) !important;
+			}
+
+			/* Links */
+			.gh-content :global(a) {
+				color: var(--accent, #2337ff);
+				text-decoration: underline;
+				word-break: break-word;
+			}
+
+			/* Body text elements */
+			.gh-content > :global(blockquote:not([class])),
+			.gh-content > :global(ol),
+			.gh-content > :global(ul),
+			.gh-content > :global(dl),
+			.gh-content > :global(p) {
+				font-family: Georgia, Times, serif;
+				font-weight: 400;
+				font-size: 2rem;
+				line-height: 1.6em;
+				color: #15171a;
+				text-rendering: optimizeLegibility;
+				-webkit-font-smoothing: antialiased;
+			}
+
+			/* Lists */
+			.gh-content > :global(ul),
+			.gh-content > :global(ol),
+			.gh-content > :global(dl) {
+				padding-left: 1.9em;
+			}
+
+			.gh-content :global(li) {
+				padding-left: 0.3em;
+				line-height: 1.6em;
+			}
+
+			.gh-content :global(li + li) {
+				margin-top: 0.5em;
+			}
+
+			/* Blockquotes - centered quote style (like Quote component) */
+			.gh-content > :global(blockquote:not([class])) {
+				border: none;
+				padding: 0;
+				margin: max(4.8vmin, 32px) 0;
+				text-align: center;
+				font-family: Georgia, Times, serif;
+				font-size: 2.4rem;
+				font-weight: 400;
+				font-style: italic;
+				line-height: 1.5;
+				color: #738a94;
+			}
+
+			.gh-content > :global(blockquote:not([class]) p) {
+				margin: 0;
+				font-size: inherit;
+				line-height: inherit;
+				color: inherit;
+			}
+
+			/* Inline code */
+			.gh-content :global(:not(pre) > code) {
+				vertical-align: middle;
+				padding: 0.15em 0.4em 0.15em;
+				border: #e1eaef 1px solid;
+				font-weight: 400 !important;
+				font-size: 0.9em;
+				line-height: 1em;
+				color: #15171a;
+				background: #f0f6f9;
+				border-radius: 0.25em;
+			}
+
+			/* Code blocks */
+			.gh-content :global(pre) {
+				overflow: auto;
+				padding: 16px 20px;
+				color: #e5eff5;
+				font-size: 1.4rem;
+				line-height: 1.5em;
+				background: #15171a;
+				border-radius: 5px;
+				box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.1),
+					0 0 1px rgba(0, 0, 0, 0.4);
+			}
+
+			.gh-content :global(pre code) {
+				padding: 0;
+				font-size: inherit;
+				line-height: inherit;
+				background: transparent;
+				border: 0;
+			}
+
+			/* Heading sizes */
+			.gh-content :global(h1) {
+				font-size: 4.8rem;
+				font-weight: 800;
+				letter-spacing: -0.015em;
+			}
+
+			.gh-content :global(h2) {
+				font-size: 2.8rem;
+				font-weight: 800;
+			}
+
+			.gh-content :global(h3) {
+				font-size: 2.4rem;
+				font-weight: 700;
+			}
+
+			.gh-content :global(h4),
+			.gh-content :global(h5) {
+				font-size: 2rem;
+			}
+
+			.gh-content :global(h6) {
+				font-size: 1.8rem;
+			}
+
+			/* HR */
+			.gh-content :global(hr) {
+				position: relative;
+				display: block;
+				width: 100%;
+				margin: 2.5em 0 3.5em;
+				padding: 0;
+				height: 1px;
+				border: 0;
+				border-top: 1px solid #f0f0f0;
+			}
+
+			/* Images */
+			.gh-content :global(img) {
+				display: block;
+				margin: 0 auto;
+				max-width: 100%;
+				height: auto;
+			}
+
+			/* Figcaptions */
+			.gh-content :global(figcaption) {
+				padding: 1.5rem 1.5rem 0;
+				text-align: center;
+				color: rgba(0, 0, 0, 0.5);
+				font-size: 1.3rem;
+				line-height: 1.4em;
+			}
+
+			.gh-content :global(figcaption strong) {
+				color: rgba(0, 0, 0, 0.8);
+			}
+
+			.gh-content :global(figcaption a) {
+				text-decoration: underline;
+			}
+
+			/* Related Articles Section */
+			.related-articles {
+				margin-top: 8rem;
+				padding-top: 4rem;
+				border-top: 1px solid #e5eff5;
+				grid-column: main-start / main-end;
+			}
+
+			.related-articles h2 {
+				font-size: 3.2rem;
+				font-weight: 800;
+				margin: 0 0 3rem 0;
+				color: #15171a;
+			}
+
+			.related-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 3rem;
+			}
+
+			.gh-content :global(a.related-post) {
+				display: flex;
+				flex-direction: column;
+				text-decoration: none !important;
+				color: inherit;
+			}
+
+			.gh-content :global(a.related-post *) {
+				text-decoration: none !important;
+			}
+
+			.related-post:hover .related-title {
+				color: var(--accent);
+			}
+
+			.related-image {
+				width: 100%;
+				aspect-ratio: 16 / 9;
+				object-fit: cover;
+				border-radius: 5px;
+				margin-bottom: 1.5rem;
+			}
+
+			.related-tag {
+				display: block;
+				font-size: 1.2rem;
+				font-weight: 600;
+				text-transform: uppercase;
+				color: #738a94;
+				margin-bottom: 0.5rem;
+			}
+
+			.related-title {
+				font-size: 2rem;
+				font-weight: 700;
+				line-height: 1.3;
+				color: #15171a;
+				margin: 0 0 0.5rem 0;
+				transition: color 0.2s ease;
+			}
+
+			.related-excerpt {
+				font-size: 1.5rem;
+				line-height: 1.5;
+				color: #738a94;
+				margin: 0;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+			}
+
+			/* Mobile Responsive Styles */
+			@media (max-width: 767px) {
+				.article-excerpt {
+					margin-top: 14px;
+					font-size: 1.7rem;
+				}
+			}
+
+			@media (max-width: 650px) {
+				.gh-content > :global(blockquote:not([class])),
+				.gh-content > :global(ol),
+				.gh-content > :global(ul),
+				.gh-content > :global(dl),
+				.gh-content > :global(p) {
+					font-size: 1.8rem;
+				}
+
+				.gh-content > :global(blockquote:not([class])) {
+					font-size: 2rem;
+				}
+
+				.gh-content :global(h1) {
+					font-size: 2.8rem;
+				}
+
+				.gh-content :global(h2) {
+					font-size: 2.3rem;
+				}
+
+				.gh-content :global(h3),
+				.gh-content :global(h4) {
+					font-size: 1.7rem;
+				}
+			}
+			.article-title.draft {
+				color: #dc2626 !important;
+			}
+		</style>
+		<style is:global>
+			.draft-banner {
+				position: sticky;
+				top: 0;
+				z-index: 100;
+				background: #fef3c7;
+				border-bottom: 2px solid #f59e0b;
+				color: #92400e;
+				text-align: center;
+				padding: 10px 16px;
+				font-size: 1.4rem;
+				letter-spacing: 0.01em;
+			}
+		</style>
+	</head>
+
+	<body>
+		<Header />
+		{
+			noindex && (
+				<div class="draft-banner">
+					⚠️ <strong>DRAFT</strong> — This article is not published.
+					Do not share this URL.
+				</div>
+			)
+		}
+		<main>
+			<article class="gh-article">
+				<header class="gh-canvas">
+					<div class="article-header">
+						{
+							firstTag && (
+								<span class="article-tag">{firstTag}</span>
+							)
+						}
+						<h1
+							class:list={[
+								"article-title",
+								{ draft: postId && isDraft(postId) },
+							]}
+						>
+							{title}
+						</h1>
+						<p class="article-excerpt">{description}</p>
+
+						{
+							authorInfo && pubDate && (
+								<div class="article-byline">
+									<img
+										src={authorInfo.image}
+										alt={authorInfo.name}
+										class="author-avatar"
+									/>
+									<div class="author-info">
+										<div class="author-name">
+											{authorInfo.name}
+										</div>
+										<div class="article-meta">
+											{formatDate(pubDate)} ·{" "}
+											{readingTime}
+										</div>
+									</div>
+								</div>
+							)
+						}
+					</div>
+
+					{
+						heroImage && (
+							<figure class="article-image kg-width-wide">
+								<Image
+									width={1200}
+									height={800}
+									widths={[600, 900, 1200]}
+									sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1200px"
+									src={getImageAsset(heroImage)}
+									alt={title}
+									format="webp"
+									loading="eager"
+									fetchpriority="high"
+								/>
+							</figure>
+						)
+					}
+				</header>
+
+				<section class="gh-content gh-canvas">
+					<slot />
+
+					{
+						relatedPosts.length > 0 && (
+							<div class="related-articles">
+								<h2>Related Articles</h2>
+								<div class="related-grid">
+									{relatedPosts.map((post) => (
+										<a
+											href={`/${getSlugFromId(post.id)}/`}
+											class="related-post"
+										>
+											{post.data.heroImage && (
+												<img
+													src={post.data.heroImage}
+													alt={post.data.title}
+													class="related-image"
+													loading="lazy"
+												/>
+											)}
+											<span class="related-tag">
+												{post.data.tags?.[0] ||
+													"\u00A0"}
+											</span>
+											<h3 class="related-title">
+												{post.data.title}
+											</h3>
+											<p class="related-excerpt">
+												{post.data.description}
+											</p>
+										</a>
+									))}
+								</div>
+							</div>
+						)
+					}
+				</section>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>

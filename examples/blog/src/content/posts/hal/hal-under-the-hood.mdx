@@ -1,0 +1,103 @@
+---
+title: "How HAL Works Under the Hood"
+description: "HAL is a thin, opinionated wrapper around the Claude Code CLI. Here's what happens between 'send message' and 'get reply' — and why that architecture keeps things simple."
+pubDate: "2026-02-01T09:00:00.000Z"
+heroImage: "/blog-placeholder-3.jpg"
+tags: ["features"]
+---
+
+HAL looks like a chatbot. Under the hood it's closer to a terminal emulator that speaks Telegram.
+
+Here's the full picture.
+
+---
+
+## The three layers
+
+```
+Telegram ←→ Grammy bot ←→ Claude Code CLI
+```
+
+**Grammy** handles the Telegram protocol — receiving messages, sending replies, managing the connection. It's the standard Node.js Telegram bot framework, and HAL leans on it for everything protocol-related.
+
+**Claude Code CLI** is Anthropic's official command-line agent. HAL spawns it as a subprocess, passes your message, and streams the output back. HAL doesn't reimplement any AI logic — it delegates 100% of that to Claude.
+
+**HAL itself** is the glue: config loading, user session management, routing messages to the right project, and formatting Claude's streaming JSON output into readable Telegram messages.
+
+---
+
+## What happens when you send a message
+
+1. Telegram delivers your message to the Grammy listener.
+2. HAL looks up your user session — which project you're working on, which model is selected.
+3. HAL spawns `claude` as a child process, passing your message and the project's working directory.
+4. Claude streams output as newline-delimited JSON. HAL parses each event.
+5. Progress updates (tool calls, file reads, etc.) are forwarded to Telegram as they arrive.
+6. When Claude finishes, HAL sends the final response.
+
+The subprocess exits after each message. There's no long-running Claude process — each turn is a fresh spawn.
+
+---
+
+## Streaming output
+
+Claude Code emits structured JSON events:
+
+```json
+{"type": "assistant", "message": {"content": [{"type": "text", "text": "Looking at the files..."}]}}
+{"type": "result", "result": "Here's what I found:..."}
+```
+
+HAL listens to `stdout`, parses each line, and decides what to forward to Telegram. Tool calls show as short status updates. The final result goes as the main reply.
+
+---
+
+## Sessions and projects
+
+Each Telegram user gets a session stored under `.hal/users/{userId}/`. The session tracks:
+
+- **Active project** — which `projects` entry from `hal.config.yaml` is currently selected
+- **Active model** — which Claude model to use (switchable with `/model`)
+- **Engine** — which AI backend (Claude, Copilot, Codex, etc.) via `/engine`
+
+Switching projects is a Telegram command, not a config restart. HAL reads the session at the start of every message.
+
+---
+
+## Why this architecture?
+
+The goal was to keep HAL as thin as possible. Claude Code already handles:
+
+- Tool execution (file read/write, shell, search)
+- Context management
+- Model selection
+- Safety limits
+
+HAL's only job is to bridge Telegram ↔ Claude and manage the per-user state that Telegram requires (who is this user, what are they working on right now).
+
+That keeps the codebase small and ensures HAL automatically benefits from every Claude Code improvement without needing updates.
+
+---
+
+## The config file
+
+Everything HAL needs lives in `hal.config.yaml`:
+
+```yaml
+telegram:
+  token: "..."
+
+users:
+  - id: 123456789
+    name: "Alice"
+
+projects:
+  my-app:
+    cwd: "/home/alice/my-app"
+```
+
+The `projects` map is keyed by a slug. The slug becomes the project name and the default working directory label. Multiple projects are supported — users switch between them with `/project`.
+
+---
+
+Want to go deeper? The full config reference is in `docs/config/reference.yaml` in the repo.

@@ -1,0 +1,179 @@
+---
+interface Props {
+	icon?: string;
+	bg?: string;
+	fg?: string;
+	secondary?: boolean;
+	light?: boolean;
+}
+
+const { icon = '👉', bg, fg, secondary = false, light = false } = Astro.props;
+
+// Predefined color schemes
+const colorSchemes = {
+	default: {
+		bg: 'var(--accent)', // #1b9cff
+		fg: '#ffffff'
+	},
+	secondary: {
+		bg: '#fef3c7',
+		fg: '#78350f'
+	},
+	light: {
+		bg: '#dbeafe',
+		fg: '#0c4a6e'
+	}
+};
+
+// Default colors
+const defaultBg = 'var(--accent)'; // #1b9cff
+const defaultFg = '#ffffff';
+
+// Function to parse color string to RGB
+function parseColor(color: string): { r: number; g: number; b: number } | null {
+	// If it's a CSS variable or other non-parseable format, return null
+	if (color.includes('var(') || color.includes('rgb(') || color.includes('hsl(')) {
+		// For now, we can't calculate contrast for these formats in SSR
+		return null;
+	}
+
+	// Remove # if present
+	let hex = color.replace('#', '').trim();
+
+	// Handle 3-digit hex
+	if (hex.length === 3) {
+		hex = hex.split('').map(char => char + char).join('');
+	}
+
+	const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return result ? {
+		r: parseInt(result[1], 16),
+		g: parseInt(result[2], 16),
+		b: parseInt(result[3], 16)
+	} : null;
+}
+
+// Calculate relative luminance (WCAG formula)
+function getLuminance(r: number, g: number, b: number): number {
+	const [rs, gs, bs] = [r, g, b].map(c => {
+		c = c / 255;
+		return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+	});
+	return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+// Calculate contrast ratio between two colors
+function getContrastRatio(l1: number, l2: number): number {
+	const lighter = Math.max(l1, l2);
+	const darker = Math.min(l1, l2);
+	return (lighter + 0.05) / (darker + 0.05);
+}
+
+// Determine the best foreground color for a given background
+function getContrastColor(bgColor: string): string {
+	// Try to parse the color
+	const rgb = parseColor(bgColor);
+
+	if (!rgb) {
+		// If we can't parse it (e.g., CSS variable, rgb(), etc.), return default white
+		return defaultFg;
+	}
+
+	const bgLuminance = getLuminance(rgb.r, rgb.g, rgb.b);
+	const whiteLuminance = getLuminance(255, 255, 255);
+	const blackLuminance = getLuminance(0, 0, 0);
+
+	const contrastWithWhite = getContrastRatio(bgLuminance, whiteLuminance);
+	const contrastWithBlack = getContrastRatio(bgLuminance, blackLuminance);
+
+	// Return white or black depending on which has better contrast
+	// WCAG AA requires 4.5:1 for normal text
+	return contrastWithWhite > contrastWithBlack ? '#ffffff' : '#000000';
+}
+
+// Determine final colors based on props priority
+let backgroundColor: string;
+let foregroundColor: string;
+
+if (secondary) {
+	// Use secondary color scheme
+	backgroundColor = bg || colorSchemes.secondary.bg;
+	foregroundColor = fg || colorSchemes.secondary.fg;
+} else if (light) {
+	// Use light color scheme
+	backgroundColor = bg || colorSchemes.light.bg;
+	foregroundColor = fg || colorSchemes.light.fg;
+} else {
+	// Use default or custom colors
+	backgroundColor = bg || colorSchemes.default.bg;
+	foregroundColor = fg || (bg ? getContrastColor(bg) : colorSchemes.default.fg);
+}
+---
+
+<div class="callout" style={`background-color: ${backgroundColor}; color: ${foregroundColor};`}>
+	<div class="callout-icon">
+		{icon}
+	</div>
+	<div class="callout-content">
+		<slot />
+	</div>
+</div>
+
+<style>
+	.callout {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.6rem;
+		padding: 2rem 2.4rem;
+		border-radius: 8px;
+		margin: 2.4rem 0;
+	}
+
+	.callout-icon {
+		flex-shrink: 0;
+		font-size: 2.4rem;
+		line-height: 1;
+		padding-top: 0.2rem;
+	}
+
+	.callout-content {
+		flex: 1;
+		font-size: 1.8rem;
+		line-height: 1.6;
+	}
+
+	/* Override link colors inside callout to inherit the foreground color */
+	.callout :global(a) {
+		color: inherit;
+		text-decoration: underline;
+		font-weight: 600;
+	}
+
+	.callout :global(a:hover) {
+		opacity: 0.9;
+	}
+
+	/* Remove margins from first and last children */
+	.callout-content :global(> *:first-child) {
+		margin-top: 0;
+	}
+
+	.callout-content :global(> *:last-child) {
+		margin-bottom: 0;
+	}
+
+	/* Reset paragraph margins inside callout */
+	.callout-content :global(p) {
+		margin: 0;
+	}
+
+	.callout-content :global(p + p) {
+		margin-top: 1em;
+	}
+
+	/* Style strong/bold text */
+	.callout-content :global(strong),
+	.callout-content :global(b) {
+		font-weight: 700;
+	}
+</style>

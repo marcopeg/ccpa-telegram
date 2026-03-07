@@ -1,0 +1,43 @@
+---
+title: "Writing Custom HAL Commands"
+description: "HAL ships with built-in Telegram commands, but the real power is in writing your own. An .mjs file, a prompt, and you've got a repeatable workflow on every /command."
+pubDate: "2026-03-01T09:00:00.000Z"
+heroImage: "/blog-placeholder-4.jpg"
+tags: ["features"]
+---
+
+> 🚧 This post is a draft. Content is incomplete.
+
+HAL's built-in commands (`/start`, `/help`, `/model`, `/engine`, `/clean`) cover the basics. But the real unlock is writing your own.
+
+---
+
+## What a custom command looks like
+
+Drop a `.mjs` file into `.hal/commands/` in your project:
+
+```js
+// .hal/commands/standup.mjs
+export default {
+  description: "Generate a standup summary from recent git commits",
+  prompt: `
+    Look at the last 24 hours of git commits in this project.
+    Write a short standup update in this format:
+    - What I did yesterday
+    - What I'm doing today
+    - Any blockers
+    Keep it under 5 bullets total.
+  `,
+};
+```
+
+Now `/standup` is a real Telegram command. Send it, and Claude runs the prompt against your project.
+
+---
+
+## TODO: cover
+
+- [ ] How HAL discovers and registers command files
+- [ ] Dynamic prompts (passing arguments from the message)
+- [ ] Commands that chain into multi-turn flows
+- [ ] Real examples from the HAL repo itself

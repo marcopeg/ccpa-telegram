@@ -1,0 +1,100 @@
+---
+title: "HAL in 5 Minutes"
+description: "Clone the repo, drop in a config file, run one command. You'll have a working Telegram bot connected to Claude Code before your coffee gets cold."
+pubDate: "2026-01-15T09:00:00.000Z"
+heroImage: "/blog-placeholder-2.jpg"
+tags: ["quick-start"]
+---
+
+Let's get HAL running. This takes about 5 minutes if you already have Node.js and a Telegram bot token handy.
+
+---
+
+## What you need
+
+- Node.js 18+
+- pnpm (`npm i -g pnpm`)
+- A Telegram bot token from [@BotFather](https://t.me/BotFather)
+- An Anthropic API key (for Claude)
+
+---
+
+## Step 1 — Clone and install
+
+```bash
+git clone https://github.com/marcopeg/hal
+cd hal
+pnpm install
+```
+
+---
+
+## Step 2 — Create your config
+
+Create a `hal.config.yaml` in the project root:
+
+```yaml
+telegram:
+  token: "YOUR_TELEGRAM_BOT_TOKEN"
+
+users:
+  - id: YOUR_TELEGRAM_USER_ID
+    name: "Your Name"
+
+projects:
+  my-project:
+    cwd: "/path/to/your/project"
+```
+
+Replace the placeholders:
+
+- `YOUR_TELEGRAM_BOT_TOKEN` — from BotFather (`/newbot`)
+- `YOUR_TELEGRAM_USER_ID` — your numeric Telegram ID (send `/start` to [@userinfobot](https://t.me/userinfobot))
+- `/path/to/your/project` — absolute path to any local folder you want HAL to work on
+
+---
+
+## Step 3 — Run it
+
+```bash
+pnpm run dev
+```
+
+HAL starts, connects to Telegram, and logs that it's ready. Open Telegram, find your bot, and send:
+
+```
+/start
+```
+
+You should see a greeting and your project name confirmed. Now try:
+
+```
+List the files in the root of this project
+```
+
+Claude will run, explore the directory, and reply. You're live.
+
+---
+
+## Step 4 — Try a real task
+
+Send something more interesting:
+
+```
+What does the README say this project is for?
+```
+
+Or push it further:
+
+```
+Look at the package.json and tell me if there are any outdated patterns
+```
+
+Claude has full read access to the project folder. It can also write files, run scripts, and do anything the Claude Code CLI supports.
+
+---
+
+## What's next?
+
+- [How HAL connects to Claude under the hood →](./hal-under-the-hood)
+- Check `examples/hal.config.yaml` in the repo for all available config options

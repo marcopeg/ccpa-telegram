@@ -1,0 +1,98 @@
+---
+export interface Props {
+	books: string[];
+}
+
+const { books } = Astro.props;
+
+// Group books in 3-2-3-2 pattern
+const groupedBooks: string[][] = [];
+let index = 0;
+
+while (index < books.length) {
+	// Alternate between 3 and 2 books per row
+	const booksPerRow = groupedBooks.length % 2 === 0 ? 3 : 2;
+	groupedBooks.push(books.slice(index, index + booksPerRow));
+	index += booksPerRow;
+}
+---
+
+<div class="book-wall">
+	{groupedBooks.map((row, rowIndex) => (
+		<div class={`book-row book-row-${row.length}`}>
+			{row.map((book, bookIndex) => (
+				<div class="book-item">
+					<img
+						src={book}
+						alt=""
+						loading="lazy"
+						decoding="async"
+						width="300"
+						height="450"
+					/>
+				</div>
+			))}
+		</div>
+	))}
+</div>
+
+<style>
+	.book-wall {
+		display: flex;
+		flex-direction: column;
+		gap: 2vmin;
+		margin: 4rem 0;
+	}
+
+	.book-row {
+		display: grid;
+		gap: 2vmin;
+		width: 100%;
+	}
+
+	.book-row-3 {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.book-row-2 {
+		grid-template-columns: repeat(2, 1fr);
+		/* Center 2-item rows by adding space on sides */
+		padding: 0 calc((100% / 6) / 2);
+	}
+
+	.book-item {
+		position: relative;
+		overflow: hidden;
+		border-radius: 4px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.book-item:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	}
+
+	.book-item img {
+		width: 100%;
+		height: auto;
+		display: block;
+		aspect-ratio: 2 / 3;
+		object-fit: cover;
+	}
+
+	@media (max-width: 767px) {
+		.book-row-3,
+		.book-row-2 {
+			grid-template-columns: repeat(2, 1fr);
+			padding: 0;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.book-row-3,
+		.book-row-2 {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

@@ -1,0 +1,60 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`404: Not Found - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<style>
+			main {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
+				text-align: center;
+				padding: 2rem;
+			}
+			h1 {
+				font-size: 8rem;
+				margin: 0;
+				color: rgb(var(--black));
+				font-weight: 800;
+				line-height: 1;
+			}
+			p {
+				font-size: 2rem;
+				color: rgb(var(--gray-dark));
+				margin: 1rem 0 3rem;
+			}
+			.home-link {
+				display: inline-block;
+				padding: 1.2rem 2.4rem;
+				background-color: var(--accent);
+				color: white;
+				text-decoration: none;
+				border-radius: 8px;
+				font-weight: 600;
+				font-size: 1.6rem;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+			.home-link:hover {
+				background-color: var(--accent-dark);
+				transform: translateY(-2px);
+				color: white; /* Ensure color remains white on hover */
+			}
+			.home-link:active {
+				transform: translateY(0);
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>404</h1>
+			<p>Oops! The page you're looking for doesn't exist.</p>
+			<a href="/" class="home-link">Back to Home</a>
+		</main>
+	</body>
+</html>

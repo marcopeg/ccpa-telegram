@@ -1,0 +1,181 @@
+---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
+import BlogPost from '../layouts/BlogPost.astro';
+import { filterDrafts, getSlugFromId, isDraft } from '../utils/posts';
+
+export async function getStaticPaths() {
+	const allPosts = await getCollection('posts');
+	const pages = await getCollection('pages');
+	const isDev = import.meta.env.DEV;
+
+	// Published posts: always served at /<slug>/
+	const publishedPosts = filterDrafts(allPosts);
+
+	// Draft posts: in production → /__draft__/<slug>/  |  in dev → /<slug>/ (flat, like today)
+	const draftPosts = allPosts.filter(post => isDraft(post.id));
+
+	return [
+		// Published posts at flat URL
+		...publishedPosts.map((post) => ({
+			params: { slug: getSlugFromId(post.id) },
+			props: { entry: post, type: 'post' as const, noindex: false },
+		})),
+		// Draft posts — use __draft__ prefix in production, flat URL in dev
+		...draftPosts.map((post) => ({
+			params: { slug: isDev ? getSlugFromId(post.id) : `__draft__/${getSlugFromId(post.id)}` },
+			props: { entry: post, type: 'post' as const, noindex: true },
+		})),
+		// Pages
+		...pages.map((page) => ({
+			// Use slug from frontmatter, or fall back to filename (page.id)
+			params: { slug: page.data.slug || page.id },
+			props: { entry: page, type: 'page' as const, noindex: false },
+		})),
+	];
+}
+
+type Props = {
+	entry: CollectionEntry<'posts'> | CollectionEntry<'pages'>;
+	type: 'post' | 'page';
+	noindex: boolean;
+};
+
+const { entry, type, noindex } = Astro.props;
+const { Content } = await render(entry);
+
+// Helper function to format filename as title
+function formatTitle(slug: string): string {
+	return slug
+		.split('-')
+		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
+}
+
+let pageData;
+
+if (type === 'page') {
+	const pageEntry = entry as CollectionEntry<'pages'>;
+	pageData = {
+		title: (pageEntry.data.title || formatTitle(pageEntry.data.slug || pageEntry.id)) as string,
+		description: (pageEntry.data.description || '') as string,
+		pubDate: pageEntry.data.pubDate,
+		heroImage: pageEntry.data.heroImage,
+		slug: (pageEntry.data.slug || pageEntry.id) as string,
+		body: pageEntry.body,
+		postId: pageEntry.id,
+	};
+} else {
+	const postEntry = entry as CollectionEntry<'posts'>;
+	pageData = {
+		...postEntry.data,
+		slug: getSlugFromId(postEntry.id),
+		body: postEntry.body,
+		postId: postEntry.id
+	};
+}
+---
+
+<BlogPost {...pageData} noindex={noindex}>
+	<Content />
+
+	{pageData.slug === 'about' && (
+		<>
+			<div class="tags-list">
+				{(await getCollection('tags')).map((tag) => (
+					<a href={`/tag/${tag.id}`} class="tag-item">
+						<img src={tag.data.image} alt={tag.data.title} class="tag-image" />
+						<div class="tag-content">
+							<h3 class="tag-title">{tag.data.title}</h3>
+							<p class="tag-description">{tag.data.excerpt}</p>
+						</div>
+					</a>
+				))}
+			</div>
+
+			<style>
+				.tags-list {
+					display: flex;
+					flex-direction: column;
+					gap: 0;
+					margin-top: 4rem;
+					border-top: 1px solid #e5e7eb;
+				}
+
+				.tag-item {
+					display: flex;
+					gap: 2.4rem;
+					align-items: center;
+					text-decoration: none !important;
+					color: inherit;
+					padding: 2.4rem 0;
+					border-bottom: 1px solid #e5e7eb;
+					transition: opacity 0.2s ease;
+				}
+
+				.tag-item * {
+					text-decoration: none !important;
+				}
+
+				.tag-item:hover {
+					opacity: 0.7;
+				}
+
+				.tag-item:hover .tag-title {
+					color: var(--accent);
+				}
+
+				.tag-image {
+					width: 120px;
+					height: 80px;
+					object-fit: cover;
+					border-radius: 4px;
+					flex-shrink: 0;
+				}
+
+				.tag-content {
+					flex: 1;
+					min-width: 0;
+				}
+
+				.tag-title {
+					margin: 0 0 0.6rem 0;
+					font-size: 1.8rem;
+					font-weight: 700;
+					color: #15171a;
+					letter-spacing: -0.01em;
+					transition: color 0.2s ease;
+					text-decoration: none;
+				}
+
+				.tag-description {
+					margin: 0;
+					font-size: 1.5rem;
+					line-height: 1.5;
+					color: #738a94;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+					text-decoration: none;
+				}
+
+				@media (max-width: 640px) {
+					.tag-item {
+						gap: 1.6rem;
+						padding: 2rem 0;
+					}
+
+					.tag-image {
+						width: 100px;
+						height: 67px;
+					}
+
+					.tag-title {
+						font-size: 1.6rem;
+					}
+
+					.tag-description {
+						font-size: 1.4rem;
+					}
+				}
+			</style>
+		</>
+	)}
+</BlogPost>
