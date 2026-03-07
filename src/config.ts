@@ -646,7 +646,21 @@ export function resolveProjectConfig(
     },
     engine: engineName,
     engineCommand: project.engine?.command ?? globals.engine?.command,
-    engineModel: project.engine?.model ?? globals.engine?.model,
+    // Only inherit globals' model when the project uses the same engine; otherwise
+    // leave model undefined so the project's engine uses its own default (avoids
+    // e.g. passing opencode's model to a copilot project that has no model set).
+    engineModel: (() => {
+      if (project.engine?.model !== undefined) return project.engine.model;
+      const globalsEngineName = globals.engine?.name;
+      if (
+        globalsEngineName !== undefined &&
+        engineName === globalsEngineName &&
+        globals.engine?.model !== undefined
+      ) {
+        return globals.engine.model;
+      }
+      return undefined;
+    })(),
     engineSession: (() => {
       const raw = project.engine?.session ?? globals.engine?.session ?? true;
       const mode: SessionMode = raw === undefined ? true : (raw as SessionMode);

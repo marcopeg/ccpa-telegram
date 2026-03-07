@@ -1,10 +1,7 @@
-# HAL configuration
-# Full config docs: https://github.com/marcopeg/hal/blob/main/docs/config/README.md
-
 providers:
   codex: null
   opencode: null
-
+  copilot: null
 globals:
   access:
     allowedUserIds:
@@ -12,16 +9,18 @@ globals:
   engine:
     name: opencode
     model: opencode/gpt-5-nano
-
 projects:
   obsidian:
     cwd: ./obsidian
     telegram:
       botToken: ${OBSIDIAN_TELEGRAM_TOKEN}
+    engine:
+      name: copilot
   timetracker:
     active: false
     cwd: ./timetracker
     engine:
       name: codex
+      model: gpt-5.3-codex
     telegram:
       botToken: ${TIMETRACKER_TELEGRAM_TOKEN}
