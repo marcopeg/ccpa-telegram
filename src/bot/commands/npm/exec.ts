@@ -9,6 +9,13 @@ export interface NpmResult {
 }
 
 /**
+ * How long to wait after 'exit' fires for remaining pipe data to flush
+ * before force-closing streams. Covers scripts that spawn background
+ * children which inherit (but don't write to) the parent's stdio pipes.
+ */
+const DRAIN_GRACE_MS = 500;
+
+/**
  * Run `npm run <script>` in the given cwd with a hard timeout.
  *
  * On timeout the process is terminated with a graceful escalation:
@@ -24,6 +31,7 @@ export function npmExec(
     let timedOut = false;
     let stdoutBuf = "";
     let stderrBuf = "";
+    let resolved = false;
 
     const child = spawn("npm", ["run", script], {
       cwd,
@@ -40,6 +48,28 @@ export function npmExec(
     });
 
     let killTimer: ReturnType<typeof setTimeout> | undefined;
+    let drainTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const done = (code: number | null) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeoutTimer);
+      if (killTimer) clearTimeout(killTimer);
+      if (drainTimer) clearTimeout(drainTimer);
+
+      child.stdout?.removeAllListeners();
+      child.stderr?.removeAllListeners();
+      child.stdout?.destroy();
+      child.stderr?.destroy();
+
+      resolve({
+        stdout: stdoutBuf,
+        stderr: stderrBuf,
+        exitCode: code,
+        timedOut,
+        durationMs: Date.now() - start,
+      });
+    };
 
     const timeoutTimer = setTimeout(() => {
       timedOut = true;
@@ -57,22 +87,23 @@ export function npmExec(
       }, 3_000);
     }, timeoutMs);
 
-    child.on("close", (code) => {
-      clearTimeout(timeoutTimer);
-      if (killTimer) clearTimeout(killTimer);
+    // Scripts that spawn background processes may exit while those children
+    // keep the stdio pipes open, preventing 'close' from firing.
+    // After 'exit', allow a brief drain window for final output, then resolve.
+    child.on("exit", (code) => {
+      drainTimer = setTimeout(() => done(code), DRAIN_GRACE_MS);
+    });
 
-      resolve({
-        stdout: stdoutBuf,
-        stderr: stderrBuf,
-        exitCode: code,
-        timedOut,
-        durationMs: Date.now() - start,
-      });
+    child.on("close", (code) => {
+      done(code);
     });
 
     child.on("error", (err) => {
+      if (resolved) return;
       clearTimeout(timeoutTimer);
       if (killTimer) clearTimeout(killTimer);
+      if (drainTimer) clearTimeout(drainTimer);
+      resolved = true;
 
       resolve({
         stdout: stdoutBuf,
