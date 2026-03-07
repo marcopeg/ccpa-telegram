@@ -32,6 +32,7 @@ The commands in the menu should be sorted:
 - [049 — Antigravity log streaming](./drafts/049.antigravity-log-streaming.md)
 - [050 — Copilot log streaming](./drafts/050.copilot-log-streaming.md)
 - [056 — Debounce messages](./drafts/056.debounce-messages.md)
+- [058 — Fix broken sessions for Copilot and Codex](./drafts/058.fix-broken-sessions-for-copilot-and-codex.md)
 
 ## Completed
 
