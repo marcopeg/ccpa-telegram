@@ -1,6 +1,6 @@
 ---
 name: docs_write
-description: Write or extend human-facing documentation from user-provided content. Asks targeted questions about placement, scope, and tone, then produces or updates a doc page under docs/ following project conventions. Use when adding new content to docs, drafting a new page, or turning rough notes into polished documentation.
+description: Write or extend human-facing docs from user-provided content. Asks targeted questions about placement, scope, and tone, then produces or updates a doc page following project conventions. Use when drafting or adding to docs.
 telegram: true
 ---
 
