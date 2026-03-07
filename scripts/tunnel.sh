@@ -90,7 +90,7 @@ fi
 
 log "Starting docs server..."
 rm -f "$DEV_LOG"
-npx mdts --no-open >"$DEV_LOG" 2>&1 &
+npx mdts docs --no-open >"$DEV_LOG" 2>&1 &
 DEV_PID=$!
 
 log "Waiting for docs server to report its port..."
@@ -113,7 +113,7 @@ rm -f "$LT_LOG"
   while true; do
     attempt=$(( attempt + 1 ))
     echo "[localtunnel] attempt #${attempt} starting..." >> "$LT_LOG"
-    npx --yes localtunnel --port "$PORT" >> "$LT_LOG" 2>&1 || true
+    npx --yes localtunnel --port "$PORT" --local-host localhost >> "$LT_LOG" 2>&1 || true
     echo "[localtunnel] exited, restarting in 2s..." >> "$LT_LOG"
     sleep 2
   done

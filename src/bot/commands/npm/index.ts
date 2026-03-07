@@ -67,7 +67,7 @@ async function runScript(
 
   if (!allowed.includes(script)) {
     await gramCtx.reply(
-      `Script "${script}" is not allowed.\n\nAvailable scripts: ${allowed.join(", ")}`,
+      `Script "${script}" is not allowed or not found.\n\nYou don't need to type the script name manually. Just send /npm to get a list of available commands as buttons.`,
     );
     return;
   }

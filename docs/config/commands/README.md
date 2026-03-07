@@ -24,6 +24,13 @@ commands:
     enabled: true
   clean:
     enabled: true
+  npm:
+    enabled: false
+    whitelist: ["build", "test"]
+    blacklist: ["start"]
+    timeoutMs: 60000
+    maxOutputChars: 4000
+    sendAsFileWhenLarge: true
 ```
 
 ## Custom messages
@@ -99,6 +106,26 @@ The `/engine` command lets users switch the AI engine for the current project. S
 - `/engine <name>` — validates the name against the configured engines and writes the change to the config file.
 
 **Auto-disable:** `/engine` is **automatically hidden** from the bot when only zero or one engines have model lists defined in `providers`. The `enabled` flag in config can still explicitly disable it regardless.
+
+## /npm
+
+The `/npm` command lets users run scripts defined in the project's `package.json`.
+
+- `/npm` (no argument) — shows an inline keyboard with all available scripts.
+- `/npm <script>` — runs the specified script.
+
+If the `package.json` does not exist or has no scripts, the command returns an error. The command is disabled by default (`enabled: false`).
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `enabled` | Enable the `/npm` command | `false` |
+| `whitelist` | Array of allowed script names. If set, only these scripts can be run. | `undefined` |
+| `blacklist` | Array of forbidden script names. If set, these scripts are hidden and blocked. | `undefined` |
+| `timeoutMs` | Maximum execution time in milliseconds before the script is killed | `60000` |
+| `maxOutputChars` | Maximum characters of log output to send in the Telegram message | `4000` |
+| `sendAsFileWhenLarge` | If `true` and output exceeds `maxOutputChars`, sends the full log as a document | `true` |
+
+When `whitelist` is provided, only scripts in the whitelist (that also exist in `package.json`) are available. When `blacklist` is provided, those scripts are removed from the available list.
 
 ## Default messages
 

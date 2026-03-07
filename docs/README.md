@@ -1,6 +1,6 @@
 # Documentation
 
-Index of HAL documentation. The repository root [README](../../README.md) is the quick start and marketing overview; this folder holds the full, structured docs.
+Index of HAL documentation. The repository root [README](../README.md) is the quick start and marketing overview; this folder holds the full, structured docs.
 
 ## Contents
 
