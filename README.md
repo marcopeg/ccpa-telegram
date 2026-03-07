@@ -16,7 +16,7 @@ A Telegram bot that provides access to AI coding agents as a personal assistant.
 - **Multi-project support** — run multiple bots from a single config, each connected to a different independent directory
 - **Context injection** — every message includes system metadata (timestamps, user info, custom values) and supports custom injections via config and per-project hooks (`.mjs`) with hot-reload
 - **Custom slash commands** — add `.mjs` command files per-project or globally; hot-reloaded so the engine can create new commands at runtime
-- **Skills** — `.agents/skills/` entries are automatically exposed as Telegram slash commands; no extra setup needed
+- **Skills** — `.agents/skills/` entries can be exposed as Telegram slash commands by adding `telegram: true` to their frontmatter
 - Persistent conversation sessions per user (availability based on engine)
 - Per-project access control, rate limiting, and logging
 
