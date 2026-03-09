@@ -29,7 +29,7 @@
     "release:patch": "pnpm run lint:hard && pnpm run build && release-it patch --ci",
     "release:minor": "pnpm run lint:hard && pnpm run build && release-it minor --ci",
     "release:major": "pnpm run lint:hard && pnpm run build && release-it major --ci",
-    "release:push": "git push && git push --tags && pnpm publish --access public",
+    "release:push": "source .env && git push && git push --tags && pnpm publish --access public",
     "docs": "npx mdts",
     "tunnel:start": "./scripts/tunnel.sh",
     "tunnel:stop": "./scripts/tunnel.sh stop",
