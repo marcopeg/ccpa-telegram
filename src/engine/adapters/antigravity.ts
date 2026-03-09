@@ -1,7 +1,8 @@
-import { execSync, spawn } from "node:child_process";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
 import type { ProjectContext } from "../../types.js";
 import { buildContextualPrompt } from "../prompt.js";
+import { spawnEngineProcess } from "../spawn.js";
 import type {
   EngineAdapter,
   EngineExecuteOptions,
@@ -86,11 +87,12 @@ export function createAntigravityAdapter(
       logger.info({ command: cmd, args, cwd }, "Executing Gemini CLI");
 
       return new Promise((resolve) => {
-        const proc = spawn(cmd, args, {
-          cwd,
-          env: process.env,
-          stdio: ["ignore", "pipe", "pipe"],
-        });
+        const proc = spawnEngineProcess(
+          cmd,
+          args,
+          { cwd, env: process.env, stdio: ["ignore", "pipe", "pipe"] },
+          config.engineEnvFile,
+        );
 
         let stderrOutput = "";
         let lastResult: EngineResult | null = null;

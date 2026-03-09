@@ -9,11 +9,12 @@ The commands in the menu should be sorted:
 
 ## In Progress
 
+- [059 — CLI env file sourcing](./059.cli-env-file-sourcing.md) | [plan](./059.cli-env-file-sourcing.plan.md)
+
 ## Ready Tasks
 - [022 — Default engine auto-detection](./ready/022.default-engine.md) | [plan](./ready/022.default-engine.plan.md)
 - [046 — Codex log streaming](./ready/046.codex-log-streaming.md) | [plan](./ready/046.codex-log-streaming.plan.md)
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
-- [059 — CLI env file sourcing](./ready/059.cli-env-file-sourcing.md) | [plan](./ready/059.cli-env-file-sourcing.plan.md)
 
 
 ## Drafts
@@ -33,6 +34,7 @@ The commands in the menu should be sorted:
 - [049 — Antigravity log streaming](./drafts/049.antigravity-log-streaming.md)
 - [050 — Copilot log streaming](./drafts/050.copilot-log-streaming.md)
 - [056 — Debounce messages](./drafts/056.debounce-messages.md)
+- [060 — Stale session empty-response recovery](./drafts/060.stale-session-empty-response-recovery.md)
 
 ## Completed
 

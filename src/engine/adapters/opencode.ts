@@ -1,7 +1,8 @@
-import { execSync, spawn } from "node:child_process";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
 import type { ProjectContext } from "../../types.js";
 import { buildContextualPrompt } from "../prompt.js";
+import { spawnEngineProcess } from "../spawn.js";
 import type {
   EngineAdapter,
   EngineExecuteOptions,
@@ -83,11 +84,12 @@ export function createOpencodeAdapter(
       };
 
       return new Promise((resolve) => {
-        const proc = spawn(cmd, args, {
-          cwd,
-          env,
-          stdio: ["ignore", "pipe", "pipe"],
-        });
+        const proc = spawnEngineProcess(
+          cmd,
+          args,
+          { cwd, env, stdio: ["ignore", "pipe", "pipe"] },
+          config.engineEnvFile,
+        );
 
         let stdout = "";
         let stderrOutput = "";

@@ -13,6 +13,7 @@ import {
   resolveProjectConfig,
   tryLoadMultiConfig,
   validateAccessPolicies,
+  validateEngineEnvFiles,
   validateProjects,
   validateProviderDefaultUniqueness,
 } from "./config.js";
@@ -472,6 +473,7 @@ async function runBotsForConfig(
 
   validateProjects(resolvedProjects);
   validateAccessPolicies(resolvedProjects);
+  validateEngineEnvFiles(resolvedProjects);
 
   const sourceLines = loadedFiles.map((f, i) => {
     const isLocal = /hal\.config\.local\.\w+$/.test(f);
@@ -479,6 +481,13 @@ async function runBotsForConfig(
     return `  ${i + 1}. ${f}${suffix}`;
   });
   sourceLines.push("  env: process.env  (bash context, last resort)");
+  for (const project of resolvedProjects) {
+    if (project.engineEnvFile) {
+      sourceLines.push(
+        `  engine.envFile [${project.slug}]: ${project.engineEnvFile}`,
+      );
+    }
+  }
   startupLogger.info(`Configuration sourced:\n${sourceLines.join("\n")}`);
 
   startupLogger.info(

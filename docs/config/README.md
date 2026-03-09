@@ -173,6 +173,7 @@ Default settings applied to all projects. Any setting defined in a project overr
 | `globals.engine.model` | Override the AI model (see [Engines](../engines/README.md#model-defaults)) | _(per engine)_ |
 | `globals.engine.session` | Session mode: `false` (stateless), `true` (adapter default, omit = same), `"shared"`, or `"user"`. See [Session configuration](session/README.md). **`"user"` with OpenCode/Copilot fails at boot.** | `true` |
 | `globals.engine.sessionMsg` | Message sent when renewing session (e.g. `/clean`) | `"hi!"` |
+| `globals.engine.envFile` | Path to an env file sourced before running the engine CLI (child process only; not for HAL config substitution). Relative to project `cwd`; absolute paths used as-is. Active projects with a missing/unreadable file fail at boot. | _(none)_ |
 | `globals.engine.codex.*` | Codex permission flags | See [Codex](../engines/codex/README.md) |
 | `globals.engine.antigravity.*` | Antigravity flags | See [Antigravity](../engines/antigravity/README.md) |
 | `globals.logging` | Log level, flow, persist | See [Logging](logging/README.md) |
@@ -243,6 +244,7 @@ This validation runs at both initial boot and after config hot-reload. A reload 
 | `engine.model` | No | Override the AI model (see [Engines](../engines/README.md#model-defaults)) |
 | `engine.session` | No | Session mode for this project: `false` \| `true` \| `"shared"` \| `"user"` (see [Session configuration](session/README.md)) |
 | `engine.sessionMsg` | No | Message used when renewing session |
+| `engine.envFile` | No | Path to an env file sourced before running the engine CLI (child process only). Relative to this project's `cwd` or absolute. Missing/unreadable at boot causes boot failure for this project. |
 | `engine.codex.*` | No | Codex permission flags (see [Codex](../engines/codex/README.md)) |
 | `engine.antigravity.*` | No | Antigravity flags (see [Antigravity](../engines/antigravity/README.md)) |
 | `providers` | No | Override the top-level model list for this project; entries may include `default: true` (at most one per list). See [Engines](../engines/README.md#model-list-providers-key). |

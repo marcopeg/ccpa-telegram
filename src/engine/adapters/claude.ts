@@ -1,7 +1,8 @@
-import { execSync, spawn } from "node:child_process";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
 import type { ProjectContext } from "../../types.js";
 import { buildContextualPrompt } from "../prompt.js";
+import { spawnEngineProcess } from "../spawn.js";
 import type {
   EngineAdapter,
   EngineExecuteOptions,
@@ -72,11 +73,12 @@ export function createClaudeAdapter(
       logger.info({ command: cmd, args, cwd }, "Executing Claude CLI");
 
       return new Promise((resolve) => {
-        const proc = spawn(cmd, args, {
-          cwd,
-          env: process.env,
-          stdio: ["ignore", "pipe", "pipe"],
-        });
+        const proc = spawnEngineProcess(
+          cmd,
+          args,
+          { cwd, env: process.env, stdio: ["ignore", "pipe", "pipe"] },
+          config.engineEnvFile,
+        );
 
         let stderrOutput = "";
         let lastResult: EngineResult | null = null;
@@ -173,7 +175,7 @@ export function createClaudeAdapter(
                   config.engineSession === "shared";
                 lastResult = {
                   success: !event.is_error,
-                  output: event.result || "",
+                  output: event.result || lastAssistantText || "",
                   sessionId: omitSessionId ? undefined : rawSessionId,
                   error: errorMessage,
                 };

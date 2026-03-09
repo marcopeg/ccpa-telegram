@@ -1,4 +1,5 @@
 providers:
+  cursor: null
   claude: null
   codex: null
   opencode: null
@@ -18,7 +19,7 @@ globals:
     model: opencode/gpt-5-nano
 projects:
   copilot:
-    active: true
+    active: false
     cwd: ./copilot
     telegram:
       botToken: ${HAL_COPILOR_CODE_TELEGRAM_TOKEN}
@@ -33,7 +34,7 @@ projects:
           - tunnel:logs
           - hello
   opencode:
-    active: true
+    active: false
     cwd: ./opencode
     engine:
       name: opencode
@@ -44,29 +45,31 @@ projects:
     cwd: ./claude-code
     engine:
       name: claude
+      # model: stepfun/step-3.5-flash:free
+      # envFile: .env  # optional; path to env file sourced before running engine CLI (relative to cwd, or absolute)
     telegram:
       botToken: ${HAL_CLAUDE_CODE_TELEGRAM_TOKEN}
   codex:
-    active: true
+    active: false
     cwd: ./codex
     engine:
       name: codex
     telegram:
       botToken: ${HAL_CODEX_TELEGRAM_TOKEN}
   antigravity:
-    active: true
+    active: false
     cwd: ./antigravity
     engine:
       name: antigravity
     telegram:
       botToken: ${HAL_ANTIGRAVITY_TELEGRAM_TOKEN}
-  cursor:
-    active: true
-    cwd: ./cursor
-    engine:
-      name: cursor
-    telegram:
-      botToken: ${HAL_CURSOR_TELEGRAM_TOKEN}
+  # cursor:
+  #   active: false
+  #   cwd: ./cursor
+  #   engine:
+  #     name: cursor
+  #   telegram:
+  #     botToken: ${HAL_CURSOR_TELEGRAM_TOKEN}
 
 
 

@@ -68,6 +68,7 @@ const EngineConfigSchema = z
     model: z.string(),
     session: SessionSchema,
     sessionMsg: z.string(),
+    envFile: z.string().optional(),
     codex: CodexEngineConfigSchema,
     antigravity: AntigravityEngineConfigSchema,
   })
@@ -339,6 +340,7 @@ export interface ResolvedProjectConfig {
   engine: EngineName;
   engineCommand: string | undefined;
   engineModel: string | undefined;
+  engineEnvFile: string | undefined;
   engineSession: SessionMode;
   engineSessionMsg: string;
   codex: {
@@ -730,6 +732,11 @@ export function resolveProjectConfig(
     },
     engine: engineName,
     engineCommand: project.engine?.command ?? globals.engine?.command,
+    engineEnvFile: (() => {
+      const raw = project.engine?.envFile ?? globals.engine?.envFile;
+      if (!raw) return undefined;
+      return isAbsolute(raw) ? raw : resolve(resolvedCwd, raw);
+    })(),
     // Only inherit globals' model when the project uses the same engine; otherwise
     // leave model undefined so the project's engine uses its own default (avoids
     // e.g. passing opencode's model to a copilot project that has no model set).
@@ -883,6 +890,28 @@ export function validateAccessPolicies(
     throw new ConfigLoadError(
       `Configuration error: invalid access policy\n${errors.map((e) => `  - ${e}`).join("\n")}`,
     );
+  }
+}
+
+// ─── Boot-time engine env file validation (active projects only) ──────────────
+
+export function validateEngineEnvFiles(
+  projects: ResolvedProjectConfig[],
+): void {
+  for (const project of projects) {
+    if (!project.engineEnvFile) continue;
+    if (!existsSync(project.engineEnvFile)) {
+      throw new ConfigLoadError(
+        `Configuration error: project "${project.slug}" engine.envFile not found or unreadable: ${project.engineEnvFile}`,
+      );
+    }
+    try {
+      readFileSync(project.engineEnvFile, { flag: "r" });
+    } catch (err) {
+      throw new ConfigLoadError(
+        `Configuration error: project "${project.slug}" engine.envFile not found or unreadable: ${project.engineEnvFile} — ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 }
 
