@@ -13,6 +13,7 @@ import {
   saveSessionId,
 } from "../../user/setup.js";
 import { resolveCommandPath, resolveSkillEntry } from "../commands/loader.js";
+import { shouldLoadSessionFromUserDir } from "./session.js";
 
 /**
  * Returns a handler for text messages.
@@ -181,14 +182,11 @@ export function createTextHandler(ctx: ProjectContext) {
         return;
       }
 
-      const sessionEnabled = config.engineSession !== false;
-      const usePerUserSession =
-        sessionEnabled &&
-        !(config.engine === "claude" && config.engineSession === "shared") &&
-        (config.engineSession === "user" ||
-          config.engine === "claude" ||
-          config.engine === "antigravity");
-      const sessionId = usePerUserSession ? await getSessionId(userDir) : null;
+      const shouldLoadSession = shouldLoadSessionFromUserDir(
+        config.engineSession,
+        ctx.engine,
+      );
+      const sessionId = shouldLoadSession ? await getSessionId(userDir) : null;
       logger.debug({ sessionId: sessionId || "new" }, "Session");
 
       const statusMsg = await gramCtx.reply("_Processing..._", {

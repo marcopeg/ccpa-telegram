@@ -29,6 +29,11 @@ export function createCodexAdapter(
   return {
     name: "Codex",
     command: cmd,
+    sessionCapabilities: {
+      supportsUserIsolation: true,
+      defaultMode: "shared",
+      sharedContinuationRequiresMarker: true,
+    },
 
     check() {
       try {

@@ -4,7 +4,11 @@ import { createCodexAdapter } from "./adapters/codex.js";
 import { createCopilotAdapter } from "./adapters/copilot.js";
 import { createCursorAdapter } from "./adapters/cursor.js";
 import { createOpencodeAdapter } from "./adapters/opencode.js";
-import type { EngineAdapter, EngineName } from "./types.js";
+import type {
+  EngineAdapter,
+  EngineName,
+  EngineSessionCapabilities,
+} from "./types.js";
 
 type AdapterFactory = (command?: string, model?: string) => EngineAdapter;
 
@@ -35,4 +39,14 @@ export function getEngine(
     );
   }
   return factory(command, model);
+}
+
+/**
+ * Read static session capabilities for a given engine adapter.
+ * Does not execute any CLI command.
+ */
+export function getEngineSessionCapabilities(
+  name: EngineName,
+): EngineSessionCapabilities {
+  return getEngine(name).sessionCapabilities;
 }

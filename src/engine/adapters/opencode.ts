@@ -24,6 +24,11 @@ export function createOpencodeAdapter(
   return {
     name: "OpenCode",
     command: cmd,
+    sessionCapabilities: {
+      supportsUserIsolation: false,
+      defaultMode: "shared",
+      sharedContinuationRequiresMarker: true,
+    },
 
     check() {
       try {

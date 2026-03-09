@@ -6,6 +6,7 @@ import stripJsonComments from "strip-json-comments";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 import { isCliAvailable } from "./engine/cli-available.js";
+import { getEngineSessionCapabilities } from "./engine/registry.js";
 
 // ─── Zod helpers ──────────────────────────────────────────────────────────────
 
@@ -747,12 +748,11 @@ export function resolveProjectConfig(
     engineSession: (() => {
       const raw = project.engine?.session ?? globals.engine?.session ?? true;
       const mode: SessionMode = raw === undefined ? true : (raw as SessionMode);
-      if (
-        mode === "user" &&
-        (engineName === "opencode" || engineName === "copilot")
-      ) {
+      const sessionCaps = getEngineSessionCapabilities(engineName);
+      if (mode === "user" && !sessionCaps.supportsUserIsolation) {
         throw new ConfigLoadError(
-          `Configuration error: engine.session "user" is not supported by the ${engineName} adapter. Use true or "shared". See docs/config/session/README.md.`,
+          `Configuration error: engine.session "user" is not supported by the ${engineName} adapter. ` +
+            `Use true or "shared". See docs/config/session/README.md.`,
         );
       }
       return mode;

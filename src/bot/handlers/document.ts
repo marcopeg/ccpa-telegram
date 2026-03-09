@@ -11,6 +11,7 @@ import {
   getUploadsPath,
   saveSessionId,
 } from "../../user/setup.js";
+import { shouldLoadSessionFromUserDir } from "./session.js";
 
 const SUPPORTED_MIME_TYPES = [
   "application/pdf",
@@ -105,14 +106,11 @@ export function createDocumentHandler(ctx: ProjectContext) {
       logger.debug({ path: docPath }, "Document saved");
 
       const prompt = `Please read the file "./uploads/${safeName}" and ${caption}`;
-      const sessionEnabled = config.engineSession !== false;
-      const usePerUserSession =
-        sessionEnabled &&
-        !(config.engine === "claude" && config.engineSession === "shared") &&
-        (config.engineSession === "user" ||
-          config.engine === "claude" ||
-          config.engine === "antigravity");
-      const sessionId = usePerUserSession ? await getSessionId(userDir) : null;
+      const shouldLoadSession = shouldLoadSessionFromUserDir(
+        config.engineSession,
+        ctx.engine,
+      );
+      const sessionId = shouldLoadSession ? await getSessionId(userDir) : null;
 
       const statusMsg = await gramCtx.reply("_Processing..._", {
         parse_mode: "Markdown",

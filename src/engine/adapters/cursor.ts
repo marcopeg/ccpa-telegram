@@ -21,6 +21,11 @@ export function createCursorAdapter(
   return {
     name: "Cursor",
     command: cmd,
+    sessionCapabilities: {
+      supportsUserIsolation: true,
+      defaultMode: "shared",
+      sharedContinuationRequiresMarker: true,
+    },
 
     check() {
       try {

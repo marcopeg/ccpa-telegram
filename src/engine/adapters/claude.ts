@@ -20,6 +20,11 @@ export function createClaudeAdapter(
   return {
     name: "Claude Code",
     command: cmd,
+    sessionCapabilities: {
+      supportsUserIsolation: true,
+      defaultMode: "user",
+      sharedContinuationRequiresMarker: false,
+    },
 
     check() {
       try {

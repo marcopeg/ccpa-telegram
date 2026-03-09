@@ -1,4 +1,5 @@
 providers:
+  claude: null
   codex: null
   opencode: null
   copilot:
@@ -14,13 +15,13 @@ globals:
     name: opencode
     model: opencode/gpt-5-nano
 projects:
-  obsidian:
-    cwd: ./blog
+  copilot:
+    active: true
+    cwd: ./copilot
     telegram:
-      botToken: ${OBSIDIAN_TELEGRAM_TOKEN}
+      botToken: ${HAL_COPILOR_CODE_TELEGRAM_TOKEN}
     engine:
-      name: opencode
-      model: github-copilot/gpt-5.3-codex
+      name: copilot
     commands:
       npm:
         enabled: true
@@ -29,13 +30,35 @@ projects:
           - tunnel:stop
           - tunnel:logs
           - hello
-  timetracker:
-    active: false
-    cwd: ./timetracker
+  opencode:
+    active: true
+    cwd: ./opencode
+    engine:
+      name: opencode
+    telegram:
+      botToken: ${HAL_OPENCODE_TELEGRAM_TOKEN}
+  claude-code:
+    active: true
+    cwd: ./claude-code
+    engine:
+      name: claude
+    telegram:
+      botToken: ${HAL_CLAUDE_CODE_TELEGRAM_TOKEN}
+  codex:
+    active: true
+    cwd: ./codex
     engine:
       name: codex
-      model: gpt-5.3-codex
     telegram:
-      botToken: ${TIMETRACKER_TELEGRAM_TOKEN}
-    # Enable /npm command with a whitelist of allowed scripts
-    
+      botToken: ${HAL_CODEX_TELEGRAM_TOKEN}
+  antigravity:
+    active: true
+    cwd: ./antigravity
+    engine:
+      name: antigravity
+    telegram:
+      botToken: ${HAL_ANTIGRAVITY_TELEGRAM_TOKEN}
+
+
+
+

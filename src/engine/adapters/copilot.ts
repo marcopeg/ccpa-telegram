@@ -51,6 +51,11 @@ export function createCopilotAdapter(
   return {
     name: "GitHub Copilot",
     command: cmd,
+    sessionCapabilities: {
+      supportsUserIsolation: false,
+      defaultMode: "shared",
+      sharedContinuationRequiresMarker: true,
+    },
 
     check() {
       try {

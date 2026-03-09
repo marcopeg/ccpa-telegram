@@ -11,6 +11,7 @@ import {
   getUploadsPath,
   saveSessionId,
 } from "../../user/setup.js";
+import { shouldLoadSessionFromUserDir } from "./session.js";
 
 /**
  * Returns a handler for photo messages.
@@ -56,14 +57,11 @@ export function createPhotoHandler(ctx: ProjectContext) {
       logger.debug({ path: imagePath }, "Image saved");
 
       const prompt = `Please look at the image file "./uploads/${imageName}" and ${caption}`;
-      const sessionEnabled = config.engineSession !== false;
-      const usePerUserSession =
-        sessionEnabled &&
-        !(config.engine === "claude" && config.engineSession === "shared") &&
-        (config.engineSession === "user" ||
-          config.engine === "claude" ||
-          config.engine === "antigravity");
-      const sessionId = usePerUserSession ? await getSessionId(userDir) : null;
+      const shouldLoadSession = shouldLoadSessionFromUserDir(
+        config.engineSession,
+        ctx.engine,
+      );
+      const sessionId = shouldLoadSession ? await getSessionId(userDir) : null;
 
       const statusMsg = await gramCtx.reply("_Processing..._", {
         parse_mode: "Markdown",

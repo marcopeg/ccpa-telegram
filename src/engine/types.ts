@@ -51,6 +51,18 @@ export interface ParsedResponse {
   outputTokens?: number;
 }
 
+export interface EngineSessionCapabilities {
+  /** True when adapter can resume by user-specific session identifier. */
+  supportsUserIsolation: boolean;
+  /** Effective mode used when config is engine.session=true. */
+  defaultMode: "user" | "shared";
+  /**
+   * True when shared/cwd-scoped continuation needs a persisted marker
+   * to decide whether to pass continuation flags on subsequent messages.
+   */
+  sharedContinuationRequiresMarker: boolean;
+}
+
 // ─── Adapter contract ───────────────────────────────────────────────────────
 
 export interface EngineAdapter {
@@ -60,6 +72,8 @@ export interface EngineAdapter {
   readonly command: string;
   /** Verify the CLI is installed and available; throw on failure */
   check(): void;
+  /** Session behavior capabilities used by config/session policy. */
+  readonly sessionCapabilities: EngineSessionCapabilities;
   /** Execute a prompt and return a normalised result */
   execute(
     options: EngineExecuteOptions,

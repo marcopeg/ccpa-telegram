@@ -14,6 +14,7 @@ import {
   getUploadsPath,
   saveSessionId,
 } from "../../user/setup.js";
+import { shouldLoadSessionFromUserDir } from "./session.js";
 
 const execAsync = promisify(exec);
 
@@ -142,14 +143,11 @@ export function createVoiceHandler(ctx: ProjectContext) {
         // Ignore cleanup errors
       }
 
-      const sessionEnabled = config.engineSession !== false;
-      const usePerUserSession =
-        sessionEnabled &&
-        !(config.engine === "claude" && config.engineSession === "shared") &&
-        (config.engineSession === "user" ||
-          config.engine === "claude" ||
-          config.engine === "antigravity");
-      const sessionId = usePerUserSession ? await getSessionId(userDir) : null;
+      const shouldLoadSession = shouldLoadSessionFromUserDir(
+        config.engineSession,
+        ctx.engine,
+      );
+      const sessionId = shouldLoadSession ? await getSessionId(userDir) : null;
       let lastProgressUpdate = Date.now();
       let lastProgressText = "Processing...";
 

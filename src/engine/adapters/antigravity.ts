@@ -31,6 +31,11 @@ export function createAntigravityAdapter(
   return {
     name: "Antigravity (Gemini CLI)",
     command: cmd,
+    sessionCapabilities: {
+      supportsUserIsolation: true,
+      defaultMode: "user",
+      sharedContinuationRequiresMarker: false,
+    },
 
     check() {
       try {
