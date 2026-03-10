@@ -9,8 +9,6 @@ The commands in the menu should be sorted:
 
 ## In Progress
 
-- [032a — Core scheduler + system-level crons](./032a.core-scheduler-and-system-crons.md) | [plan](./032a.core-scheduler-and-system-crons.plan.md)
-
 ## Ready Tasks
 - [046 — Codex log streaming](./ready/046.codex-log-streaming.md) | [plan](./ready/046.codex-log-streaming.plan.md)
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
@@ -81,3 +79,4 @@ The commands in the menu should be sorted:
 - [057 — Status/info command with feature flags](./completed/057.status-info-command.md) | [plan](./completed/057.status-info-command.plan.md)
 - [058 — Fix broken session continuity across adapters](./completed/058.fix-broken-sessions-for-copilot-and-codex.md) | [plan](./completed/058.fix-broken-sessions-for-copilot-and-codex.plan.md)
 - [059 — CLI env file sourcing](./completed/059.cli-env-file-sourcing.md) | [plan](./completed/059.cli-env-file-sourcing.plan.md)
+- [032a — Core scheduler + system-level crons](./completed/032a.core-scheduler-and-system-crons.md) | [plan](./completed/032a.core-scheduler-and-system-crons.plan.md)

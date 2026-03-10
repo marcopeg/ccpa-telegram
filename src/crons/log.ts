@@ -14,13 +14,17 @@ export interface CronLogProjectConfig {
 export interface CronLogEntry {
   jobName: string;
   sourceFile: string;
+  /** Scope tier: "system", or project slug for 032b. */
+  scope: string;
+  /** Cron file type — drives the subfolder name and filename suffix. */
+  type: "md" | "mjs";
   startedAt: Date;
   finishedAt: Date;
   output: string;
   error?: string;
-  /** The raw prompt body before context injection. */
+  /** The raw prompt body before context injection (.md only). */
   prompt?: string;
-  /** The resolved context vars injected into the prompt. */
+  /** The resolved context vars injected into the prompt (.md only). */
   context?: Record<string, string>;
   /** Project this run targeted (undefined when no project available). */
   projectId?: string;
@@ -30,20 +34,32 @@ export interface CronLogEntry {
 
 /**
  * Write a cron execution log to:
- *   {logBaseDir}/.hal/logs/crons/{jobName}/{timestamp}.{jobName}.txt
  *
- * One folder per job name. Timestamp-first for sorting; job name repeated for portability.
- * For .md crons with multiple targets, one file is written per target run.
+ *   System:  {logBaseDir}/.hal/logs/crons/system/{jobName}.{type}/{timestamp}.{jobName}.txt
+ *   Project: {logBaseDir}/.hal/logs/crons/project/{slug}/{jobName}.{type}/{timestamp}.{jobName}.txt
+ *
+ * The folder name includes the file extension (.md / .mjs) so same-named
+ * .md and .mjs crons never collide. For .md crons with multiple targets,
+ * one file is written per target run and the project ID is appended to the filename.
  */
 export function writeCronLog(logBaseDir: string, entry: CronLogEntry): void {
-  const logDir = join(logBaseDir, ".hal", "logs", "crons", entry.jobName);
+  const scopePath =
+    entry.scope === "system" ? join("system") : join("project", entry.scope);
+
+  const logDir = join(
+    logBaseDir,
+    ".hal",
+    "logs",
+    "crons",
+    scopePath,
+    `${entry.jobName}.${entry.type}`,
+  );
   mkdirSync(logDir, { recursive: true });
 
   const ts = entry.startedAt
     .toISOString()
     .replace(/[:.]/g, "-")
     .replace("Z", "");
-
   const projectSuffix = entry.projectId ? `.${entry.projectId}` : "";
   const filename = `${ts}.${entry.jobName}${projectSuffix}.txt`;
   const filePath = join(logDir, filename);

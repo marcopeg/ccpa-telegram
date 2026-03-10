@@ -106,9 +106,16 @@ export class CronScheduler {
           this.cronCtx,
           this.logBaseDir,
           this.logger,
+          this.scope,
         );
       } else {
-        await executeMjsCron(def, this.cronCtx, this.logBaseDir, this.logger);
+        await executeMjsCron(
+          def,
+          this.cronCtx,
+          this.logBaseDir,
+          this.logger,
+          this.scope,
+        );
       }
     } catch (err) {
       this.logger.error(

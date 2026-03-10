@@ -18,6 +18,8 @@ Files in this directory are **hot-reloaded**: add, edit, or delete a file and th
 
 A `.md` cron sends a prompt to a project's AI engine on schedule. The YAML frontmatter configures scheduling and targets; the Markdown body is the prompt.
 
+The **filename** (without extension) is the job name. There is no `name` field.
+
 ### Frontmatter field reference
 
 | Field      | Type    | Required | Default | Description |
@@ -38,10 +40,24 @@ Each entry in `targets` is an object:
 | Field        | Type    | Required | Description |
 |--------------|---------|----------|-------------|
 | `projectId`  | string  | Yes      | Slug of the project whose engine runs the prompt |
-| `userId`     | number  | No       | Telegram user ID — currently used only for `flowResult` routing |
+| `userId`     | number  | No       | Telegram user ID — used as `bot.userId` in the injected context and for `flowResult` routing |
 | `flowResult` | boolean | No       | If `true`, the agent's response is sent as a Telegram DM to `userId`. Requires `userId`. |
 
 **Validation rule:** `flowResult: true` without `userId` is a configuration error — the process will not start.
+
+### Context injection
+
+Before calling the engine, the prompt is automatically wrapped with a `# Context` block (identical to user-driven messages) containing:
+
+| Variable | Description |
+|----------|-------------|
+| `sys.datetime`, `sys.date`, `sys.time`, `sys.ts`, `sys.tz` | Current date/time |
+| `project.name`, `project.cwd`, `project.slug` | Target project identity |
+| `engine.name`, `engine.command`, `engine.model` | Engine in use |
+| `bot.userId` | From `target.userId` (empty if not set) |
+| `bot.messageType` | Always `"cron"` |
+
+Any `context:` vars defined in the project config are also merged in, and both the global and project-level `context.mjs` hooks are run. This gives the engine the same project awareness it has when responding to user messages.
 
 ### Examples
 
@@ -81,7 +97,7 @@ Remind me to run the production deploy checklist. List the key steps: version bu
 
 #### Multi-target cron
 
-The same prompt runs on multiple projects. Each target is evaluated independently.
+The same prompt runs on multiple projects. Each target is evaluated independently and produces its own log file.
 
 ```markdown
 ---
@@ -118,7 +134,9 @@ Clean up temporary files older than 7 days in the `tmp/` directory. Report what 
 
 ## Programmatic crons (`.mjs`)
 
-A `.mjs` cron is an ES module that exports a scheduling declaration and a handler function. The handler receives a `CronContext` object and can use the Grammy Bot API to send messages, query external services, or perform any JavaScript operation.
+A `.mjs` cron is an ES module that exports a scheduling declaration and a handler function. The handler receives a `CronContext` object and can call the project's AI engine, use the Grammy Bot API to send messages, query external services, or perform any JavaScript operation.
+
+The **filename** (without extension) is the job name. There is no `name` export.
 
 ### Export reference
 
@@ -148,13 +166,28 @@ The `ctx` object passed to every handler:
 **Accessing a project:**
 
 ```js
-const { bot, config } = ctx.projects["my-project"];
+const project = ctx.projects["my-project"];
 ```
 
 **Sending a message:**
 
 ```js
-await bot.api.sendMessage(userId, "Hello from a scheduled task!");
+await project.bot.api.sendMessage(userId, "Hello from a scheduled task!");
+```
+
+**Calling the AI engine:**
+
+```js
+const response = await project.call("Summarise the last 10 git commits in one paragraph.");
+await project.bot.api.sendMessage(userId, response);
+```
+
+**Iterating available projects (e.g. pick the first active one):**
+
+```js
+const [slug, project] = Object.entries(ctx.projects)[0];
+const answer = await project.call("Quick status check — any issues?");
+console.log(`[${slug}] ${answer}`);
 ```
 
 ### Examples
@@ -167,17 +200,17 @@ export const enabled = true;
 export const schedule = "*/15 * * * *";
 
 export async function handler(ctx) {
-  const { bot } = ctx.projects["my-project"];
+  const project = ctx.projects["my-project"];
   const userId = 123456789;
 
   try {
     // Replace with your actual check logic
     const ok = true;
     if (ok) {
-      await bot.api.sendMessage(userId, "✓ Health check passed");
+      await project.bot.api.sendMessage(userId, "✓ Health check passed");
     }
   } catch (err) {
-    await bot.api.sendMessage(
+    await project.bot.api.sendMessage(
       userId,
       `✗ Health check failed: ${err.message}`,
     );
@@ -195,20 +228,43 @@ export const enabled = true;
 export const runAt = "2026-06-15T02:00:00Z";
 
 export async function handler(ctx) {
-  const { bot } = ctx.projects["backend"];
+  const project = ctx.projects["backend"];
   const adminId = 123456789;
 
-  await bot.api.sendMessage(adminId, "Starting schema migration…");
+  await project.bot.api.sendMessage(adminId, "Starting schema migration…");
 
   try {
     // Your migration logic here
-    await bot.api.sendMessage(adminId, "✓ Schema migration complete");
+    await project.bot.api.sendMessage(adminId, "✓ Schema migration complete");
   } catch (err) {
-    await bot.api.sendMessage(
+    await project.bot.api.sendMessage(
       adminId,
       `✗ Migration failed: ${err.message}`,
     );
   }
+}
+```
+
+#### One-shot AI call — log to stdout only
+
+Uses the first available project's engine to generate a response and logs it without sending a Telegram message.
+
+```js
+// .hal/crons/daily-insight.mjs
+export const enabled = true;
+export const runAt = "2026-06-01T09:00:00Z";
+
+export async function handler(ctx) {
+  const [slug, project] = Object.entries(ctx.projects)[0];
+  if (!project) {
+    console.log("[daily-insight] No projects available — skipping.");
+    return;
+  }
+
+  const insight = await project.call(
+    "Give one actionable insight about this project based on recent activity.",
+  );
+  console.log(`[daily-insight] (${slug})\n${insight}`);
 }
 ```
 
@@ -311,31 +367,82 @@ This makes it easy to filter cron activity in the log stream by scope or by job.
 Every job execution writes a log file to:
 
 ```
-{configDir}/.hal/logs/crons/{job-name}/{timestamp}.{job-name}.txt
+# System crons
+{configDir}/.hal/logs/crons/system/{job-name}.{md|mjs}/{timestamp}.{job-name}.txt
+
+# Project crons (032b)
+{configDir}/.hal/logs/crons/project/{project-slug}/{job-name}.{md|mjs}/{timestamp}.{job-name}.txt
 ```
 
-Example path:
+The folder name includes the file extension (`.md` / `.mjs`) so same-named prompt and programmatic crons never collide. For `.md` crons that target multiple projects, one file is written per target and the project ID is appended to the filename.
+
+Example paths:
 ```
-/path/to/config/.hal/logs/crons/daily-git-summary/2026-03-10T09-00-00-000.daily-git-summary.txt
+.hal/logs/crons/system/daily-git-summary.md/2026-03-10T09-00-00-000.daily-git-summary.txt
+.hal/logs/crons/system/daily-git-summary.md/2026-03-10T09-00-00-000.daily-git-summary.backend.txt
+.hal/logs/crons/system/daily-git-summary.md/2026-03-10T09-00-00-000.daily-git-summary.frontend.txt
+.hal/logs/crons/system/health-check.mjs/2026-03-10T09-00-00-000.health-check.txt
 ```
 
-Example log file content:
+### Log file content
+
+Each log file contains the following sections:
 
 ```
 job:     daily-git-summary
 source:  /path/to/config/.hal/crons/daily-git-summary.md
+project: my-project
 started: 2026-03-10T09:00:00.000Z
 ended:   2026-03-10T09:00:12.437Z
 status:  ok
 
+--- prompt ---
+Summarise the git log from the last 24 hours. List files changed, authors, and a one-sentence
+summary per commit. Keep it under 10 lines.
+
+--- context ---
+sys.datetime: 2026-03-10 09:00:00 UTC+0
+sys.date: 2026-03-10
+sys.time: 09:00:00
+sys.ts: 1741600800
+sys.tz: UTC
+project.name: my-project
+project.cwd: /path/to/my-project
+project.slug: -path-to-my-project
+engine.name: claude
+engine.command: claude
+bot.userId: 123456789
+bot.messageType: cron
+
+--- project config ---
+slug:    my-project
+name:    my-project
+cwd:     /path/to/my-project
+engine:  claude
+model:   (default)
+session: false
+
 --- output ---
 ## Git summary — 2026-03-10
 
-**my-project** — 3 commits yesterday:
+3 commits in the last 24 hours:
 - `abc1234` alice: fix null check in auth middleware
 - `def5678` bob: update readme with new env vars
 - `ghi9012` alice: bump version to 1.2.3
 ```
+
+Sections present per cron type:
+
+| Section | `.md` | `.mjs` |
+|---------|-------|--------|
+| Header (job, source, project, started, ended, status) | ✓ | ✓ |
+| `--- prompt ---` | ✓ | — |
+| `--- context ---` | ✓ | — |
+| `--- project config ---` | ✓ | — |
+| `--- output ---` | ✓ | ✓ |
+| `--- error ---` | on error | on error |
+
+`.mjs` logs record `(programmatic handler completed)` as output when the handler returns without throwing.
 
 ---
 
@@ -359,6 +466,7 @@ The system cron directory is watched for file changes. No restart is needed.
 
 | Rule | Behaviour |
 |------|-----------|
+| `enabled` absent or `false` | Job is loaded and validated but not scheduled. Silent (debug log). |
 | `flowResult: true` without `userId` | Hard error at boot (process exits). Logged error on hot reload (job skipped, process continues). |
 | `targets` is empty or missing | Hard error at boot. Logged error on hot reload. |
 | Both `schedule` and `runAt` set | Hard error at both boot and hot reload. |
@@ -366,7 +474,7 @@ The system cron directory is watched for file changes. No restart is needed.
 | `runAt` is in the past | Silent skip (debug log). Not an error. |
 | `.mjs` missing `handler` export | Hard error at boot. Logged error on hot reload. |
 | Invalid cron expression | Error from croner at scheduling time — logged, job skipped. |
-| `projectId` not found at runtime | Logged error per target; other targets in the same job continue. |
+| `projectId` not found at runtime | Logged error per target; a fallback log entry is written with `sys.*` context; other targets in the same job continue. |
 
 ---
 
@@ -374,7 +482,7 @@ The system cron directory is watched for file changes. No restart is needed.
 
 **Job never fires**
 - Check the cron expression with an online validator (e.g. [crontab.guru](https://crontab.guru)).
-- Check `enabled` — it may be `false`.
+- Check `enabled` — it may be `false` or absent (default is `false`).
 - For `runAt`: check it is in the future (UTC). Past dates are silently skipped.
 
 **`flowResult` DM not received**
@@ -385,10 +493,11 @@ The system cron directory is watched for file changes. No restart is needed.
 **`projectId not found` error in logs**
 - The `projectId` in the cron's `targets` must match a project slug in `hal.config.*`.
 - Project slugs are the keys in the `projects` map of your config file.
+- Projects marked `active: false` are not loaded and cannot be used as cron targets.
 
 **Hot reload not picking up file changes**
 - Verify the file is in `{configDir}/.hal/crons/` (not `{projectCwd}/.hal/crons/`).
-- Check for YAML parse errors — they are logged and the file is skipped.
+- Check for frontmatter parse errors — they are logged and the file is skipped.
 
 **Process exits at startup with a cron error**
 - A cron file has a hard validation error (e.g. `flowResult: true` without `userId`).

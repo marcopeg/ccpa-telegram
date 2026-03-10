@@ -31,6 +31,7 @@ export async function executeMdCron(
   cronCtx: CronContext,
   logBaseDir: string,
   logger: pino.Logger,
+  scope: string,
 ): Promise<void> {
   for (const target of def.targets) {
     const projectCtx = internalProjectCtxs[target.projectId];
@@ -44,6 +45,8 @@ export async function executeMdCron(
       writeCronLog(logBaseDir, {
         jobName: def.name,
         sourceFile: def.sourceFile,
+        scope,
+        type: def.type,
         startedAt: new Date(),
         finishedAt: new Date(),
         output: "",
@@ -101,6 +104,8 @@ export async function executeMdCron(
     writeCronLog(logBaseDir, {
       jobName: def.name,
       sourceFile: def.sourceFile,
+      scope,
+      type: def.type,
       startedAt,
       finishedAt: new Date(),
       output,

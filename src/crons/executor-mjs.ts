@@ -12,6 +12,7 @@ export async function executeMjsCron(
   ctx: CronContext,
   logBaseDir: string,
   logger: pino.Logger,
+  scope: string,
 ): Promise<void> {
   const startedAt = new Date();
   let output = "";
@@ -31,6 +32,8 @@ export async function executeMjsCron(
   writeCronLog(logBaseDir, {
     jobName: def.name,
     sourceFile: def.sourceFile,
+    scope,
+    type: def.type,
     startedAt,
     finishedAt: new Date(),
     output,
