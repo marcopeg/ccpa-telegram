@@ -3,9 +3,9 @@
 HAL runs one Telegram bot per project. You need two things before starting:
 
 1. **A bot token** — so Telegram knows which bot your config is running.
-2. **Your user ID** — so the bot can restrict access (optional but recommended) and associate your messages with your session.
+2. **Your user ID** — required so the bot can restrict access and associate your messages with your session.
 
-Follow the two sections below. Both are required for a typical setup.
+Follow the two sections below. Both are required to set up your first project.
 
 ---
 
@@ -61,7 +61,7 @@ Each HAL project uses a **separate** bot and token. If you have two projects (e.
 
 ## Finding Your Telegram User ID
 
-HAL uses your **Telegram user ID** (a numeric ID) for access control and per-user sessions. You need this number to add yourself to `allowedUserIds` so the bot accepts your messages (when you use the allowlist).
+HAL uses your **Telegram user ID** (a numeric ID) for access control and per-user sessions. You need this number to add yourself to `allowedUserIds` so the bot accepts your messages. HAL refuses to start without an allowlist unless you explicitly opt into unrestricted access.
 
 ### Step 1: Get your user ID
 
@@ -71,7 +71,7 @@ HAL uses your **Telegram user ID** (a numeric ID) for access control and per-use
 
 ### Step 2: Add it to HAL config
 
-- In your config, set **`allowedUserIds`** so that only you (and any other allowed users) can use the bot. If the list is empty, the bot may accept all users (depending on your config).
+- In your config, set **`allowedUserIds`** so that only you (and any other allowed users) can use the bot. If the list is empty, HAL refuses to start unless you explicitly set `dangerouslyAllowUnrestrictedAccess: true`.
 
   **Globally (all projects):**
 
@@ -101,6 +101,6 @@ HAL uses your **Telegram user ID** (a numeric ID) for access control and per-use
 
 - Restricts who can talk to your bot.
 - Keeps your bot private for development or team use.
-- Required if you want to rely on HAL’s access control; leave the list empty only if you intend to allow everyone (not recommended for tokens you care about).
+- Required for HAL’s access control; only use `dangerouslyAllowUnrestrictedAccess: true` if you intend to allow everyone (not recommended for tokens you care about).
 
 [← Back to documentation index](../README.md)
