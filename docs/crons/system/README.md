@@ -143,6 +143,7 @@ The `ctx` object passed to every handler:
 | `ctx.projects` | `Record<string, CronProjectContext>` | Map of project slug → project context |
 | `ctx.projects[key].config` | `ResolvedProjectConfig` | Project config slice |
 | `ctx.projects[key].bot` | `Bot` | Grammy Bot instance for this project (full Telegram API access) |
+| `ctx.projects[key].call(prompt)` | `(prompt: string) => Promise<string>` | Call the project's AI engine with a prompt and return the response |
 
 **Accessing a project:**
 

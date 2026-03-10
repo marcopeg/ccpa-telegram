@@ -37,6 +37,8 @@ export type CronDefinition = MdCronDefinition | MjsCronDefinition;
 export interface CronProjectContext {
   config: ResolvedProjectConfig;
   bot: Bot;
+  /** Call the project's AI engine with a prompt and return the response. */
+  call(prompt: string): Promise<string>;
 }
 
 /** Context object passed to .mjs handlers and used by .md executors. */

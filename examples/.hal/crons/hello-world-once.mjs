@@ -1,4 +1,4 @@
-export const enabled = true;
+export const enabled = false;
 export const runAt = "2026-03-10T14:45:00Z"; // fires once, 5 minutes after creation
 
 export async function handler(ctx) {

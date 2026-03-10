@@ -1,4 +1,5 @@
 import type { Bot } from "grammy";
+import { createAgent } from "../agent/index.js";
 import type { ProjectContext } from "../types.js";
 import type { CronContext } from "./types.js";
 
@@ -26,7 +27,11 @@ export function buildCronContext(
   const internalProjectCtxs: Record<string, ProjectContext> = {};
 
   for (const [slug, { projectCtx, bot }] of Object.entries(entries)) {
-    projects[slug] = { config: projectCtx.config, bot };
+    projects[slug] = {
+      config: projectCtx.config,
+      bot,
+      call: (prompt: string) => createAgent(projectCtx).call(prompt),
+    };
     internalProjectCtxs[slug] = projectCtx;
   }
 

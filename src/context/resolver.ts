@@ -112,7 +112,7 @@ function buildImplicitContext(gramCtx: GrammyContext): Record<string, string> {
 
 // ─── Implicit context: sys.* from system ────────────────────────────────────
 
-function buildSystemContext(): Record<string, string> {
+export function buildSystemContext(): Record<string, string> {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
 
