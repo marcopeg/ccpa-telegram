@@ -170,6 +170,51 @@ export async function handler(ctx) {
 
 ---
 
+## `scheduleStarts` — delay before start
+
+`scheduleStarts` is an optional property that delays when a job becomes active. Until the start time is reached, the job is **not scheduled**. Once the start time passes, the schedule is armed as if the file were just loaded.
+
+Accepted values:
+
+| Value | Meaning |
+|-------|---------|
+| Relative duration (`"20m"`, `"2h"`, `"3d"`) | Start time = now + duration (evaluated when the file is loaded) |
+| ISO 8601 datetime (`"2026-12-31T23:59:59Z"`) | Absolute wall-clock start time |
+
+### `.md` frontmatter
+
+```yaml
+---
+enabled: true
+schedule: "0 9 * * *"
+scheduleStarts: "20m"    # delay scheduling by 20 minutes
+---
+```
+
+```yaml
+---
+enabled: true
+runAt: "2026-06-01T09:00:00Z"
+scheduleStarts: "2026-06-01T08:00:00Z"
+---
+```
+
+### `.mjs` export
+
+```js
+export const enabled = true;
+export const schedule = "5m";
+export const scheduleStarts = "30m"; // start in 30 minutes
+```
+
+### Behaviour
+
+- `scheduleStarts` in the past → ignored; the job is scheduled immediately.
+- `scheduleStarts` in the future → job is armed only after the start time is reached.
+- For `runAt` jobs, if the start time is **after** `runAt`, the job will be skipped because the one-off time is already in the past.
+
+---
+
 ## `scheduleEnds` — expiry for recurring jobs
 
 `scheduleEnds` is an optional property that stops a recurring schedule after a given point in time. Once the deadline passes, no further executions are started. Already-running executions complete normally.
@@ -236,6 +281,8 @@ All formats are re-evaluated when a cron file is saved:
 | `runAt` | If the new date is in the future, the job is re-armed |
 | `Xs` / `+Xs` (interval) | Timer is reset; first fire will occur `X` after the file was saved |
 | `!Xs` (once) | Timer is reset; job fires once `X` after the file was saved |
+| `scheduleStarts` (relative) | Start time is re-evaluated from save time |
+| `scheduleStarts` (absolute) | Start time is unchanged unless the value itself is edited |
 | `scheduleEnds` (relative) | Deadline is re-evaluated from save time |
 | `scheduleEnds` (absolute) | Deadline is unchanged unless the value itself is edited |
 
@@ -249,6 +296,7 @@ All formats are re-evaluated when a cron file is saved:
 | Neither `schedule` nor `runAt` set | Error at both boot and hot reload |
 | `enabled` absent or `false` | Loaded and validated, but not scheduled (silent debug log) |
 | `runAt` in the past | Silent skip (debug log). Not an error. |
+| `scheduleStarts` in the past | Ignored; the job starts immediately. |
 | `scheduleEnds` in the past | Silent skip (debug log). Not an error. |
 | Invalid cron expression | Error from croner at scheduling time — logged, job skipped |
 | `+0s` / `!0s` (zero delay) | Technically valid — fires immediately on the next event-loop tick |

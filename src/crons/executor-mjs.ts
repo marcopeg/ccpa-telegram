@@ -7,6 +7,7 @@ import type { ProjectContext } from "../types.js";
 import { writeCronLog } from "./log.js";
 import type {
   CronContext,
+  CronRunState,
   MjsCronDefinition,
   ProjectCronContext,
   ProjectMjsCronDefinition,
@@ -23,13 +24,14 @@ export async function executeMjsCron(
   logBaseDir: string,
   logger: pino.Logger,
   scope: string,
+  state: CronRunState,
 ): Promise<void> {
   const startedAt = new Date();
   let output = "";
   let error: string | undefined;
 
   try {
-    await def.handler(ctx);
+    await def.handler({ ...ctx, cron: state });
     output = "(programmatic handler completed)";
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);
@@ -70,6 +72,7 @@ export async function executeMjsProjectCron(
   logBaseDir: string,
   logger: pino.Logger,
   scope: string,
+  state: CronRunState,
 ): Promise<void> {
   const startedAt = new Date();
   let output = "";
@@ -96,6 +99,8 @@ export async function executeMjsProjectCron(
       engineDefaultModel: defaultModel,
       userId: def.runAs,
     });
+    contextVars["cron.runs"] = String(state.runs);
+    contextVars["cron.lastRun"] = state.lastRun?.toISOString() ?? "";
 
     const cronCtx: ProjectCronContext = {
       project: config,

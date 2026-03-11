@@ -10,6 +10,7 @@ import { CronScheduler } from "./scheduler.js";
 import type {
   AnyDefinition,
   CronHandle,
+  CronRunState,
   MdCronDefinition,
   MjsCronDefinition,
   ProjectMdCronDefinition,
@@ -62,7 +63,7 @@ export async function startSystemCrons(
   logger.info({ count: definitions.length }, "System crons loaded");
 
   const scheduler = new CronScheduler(
-    async (def: AnyDefinition) => {
+    async (def: AnyDefinition, state: CronRunState) => {
       // System-tier scheduler is only ever loaded with system-tier definitions
       if (def.type === "md") {
         await executeMdCron(
@@ -72,6 +73,7 @@ export async function startSystemCrons(
           configDir,
           logger,
           "system",
+          state,
         );
       } else {
         await executeMjsCron(
@@ -80,6 +82,7 @@ export async function startSystemCrons(
           configDir,
           logger,
           "system",
+          state,
         );
       }
     },
@@ -153,7 +156,7 @@ export async function startProjectCrons(
   );
 
   const scheduler = new CronScheduler(
-    async (def: AnyDefinition) => {
+    async (def: AnyDefinition, state: CronRunState) => {
       // Project-tier scheduler is only ever loaded with project-tier definitions
       if (def.type === "md") {
         await executeMdProjectCron(
@@ -163,6 +166,7 @@ export async function startProjectCrons(
           configDir,
           logger,
           scope,
+          state,
         );
       } else {
         await executeMjsProjectCron(
@@ -172,6 +176,7 @@ export async function startProjectCrons(
           configDir,
           logger,
           scope,
+          state,
         );
       }
     },

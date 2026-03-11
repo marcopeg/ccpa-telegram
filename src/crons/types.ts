@@ -16,8 +16,13 @@ export interface MdCronDefinition {
   sourceFile: string;
   schedule?: string;
   runAt?: Date;
+  /** Absolute datetime before which the schedule will not start. */
+  scheduleStarts?: Date;
   /** Absolute datetime after which the schedule stops firing. */
   scheduleEnds?: Date;
+  /** Raw relative duration string for scheduleEnds (e.g. "10s"). When set, scheduleEnds
+   *  is re-resolved at the moment scheduleStarts fires so "wait Xs then run for Ys" works. */
+  scheduleEndsRaw?: string;
   enabled: boolean;
   targets: CronTarget[];
   prompt: string;
@@ -31,8 +36,13 @@ export interface MjsCronDefinition {
   sourceFile: string;
   schedule?: string;
   runAt?: Date;
+  /** Absolute datetime before which the schedule will not start. */
+  scheduleStarts?: Date;
   /** Absolute datetime after which the schedule stops firing. */
   scheduleEnds?: Date;
+  /** Raw relative duration string for scheduleEnds (e.g. "10s"). When set, scheduleEnds
+   *  is re-resolved at the moment scheduleStarts fires so "wait Xs then run for Ys" works. */
+  scheduleEndsRaw?: string;
   enabled: boolean;
   handler: (ctx: CronContext) => Promise<void>;
 }
@@ -47,8 +57,13 @@ export interface ProjectMdCronDefinition {
   sourceFile: string;
   schedule?: string;
   runAt?: Date;
+  /** Absolute datetime before which the schedule will not start. */
+  scheduleStarts?: Date;
   /** Absolute datetime after which the schedule stops firing. */
   scheduleEnds?: Date;
+  /** Raw relative duration string for scheduleEnds (e.g. "10s"). When set, scheduleEnds
+   *  is re-resolved at the moment scheduleStarts fires so "wait Xs then run for Ys" works. */
+  scheduleEndsRaw?: string;
   enabled: boolean;
   /** User ID whose context (bot.userId) is injected into the prompt AND who receives the result. */
   runAs?: number;
@@ -65,8 +80,13 @@ export interface ProjectMjsCronDefinition {
   sourceFile: string;
   schedule?: string;
   runAt?: Date;
+  /** Absolute datetime before which the schedule will not start. */
+  scheduleStarts?: Date;
   /** Absolute datetime after which the schedule stops firing. */
   scheduleEnds?: Date;
+  /** Raw relative duration string for scheduleEnds (e.g. "10s"). When set, scheduleEnds
+   *  is re-resolved at the moment scheduleStarts fires so "wait Xs then run for Ys" works. */
+  scheduleEndsRaw?: string;
   enabled: boolean;
   /** User ID injected as bot.userId into the context vars built for this handler. */
   runAs?: number;
@@ -94,6 +114,8 @@ export interface CronContext {
   config: Record<string, unknown>;
   /** Map of project slug → project context. */
   projects: Record<string, CronProjectContext>;
+  /** Run state for the current execution. */
+  cron: CronRunState;
 }
 
 /**
@@ -112,6 +134,14 @@ export interface ProjectCronContext {
   context: Record<string, string>;
   /** Call this project's AI engine with a prompt and return the response. */
   call(prompt: string): Promise<string>;
+}
+
+/** Run-state for a scheduled job — tracked in-memory by the scheduler. */
+export interface CronRunState {
+  /** How many times this job has executed so far (1 on the first run). */
+  runs: number;
+  /** Start timestamp of the previous execution. Undefined on the first run. */
+  lastRun?: Date;
 }
 
 /** Handle returned by cron startup functions. */

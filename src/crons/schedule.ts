@@ -71,3 +71,15 @@ export function resolveScheduleEnds(val: string): Date {
   if (ms !== null) return new Date(Date.now() + ms);
   return new Date(val);
 }
+
+/**
+ * Resolve a `scheduleStarts` value to a concrete Date.
+ * Accepts:
+ *   - A relative duration string (`"20d"`, `"2w"`, `"+1h"`) → now + duration
+ *   - An ISO 8601 datetime string                           → parsed as-is
+ */
+export function resolveScheduleStarts(val: string): Date {
+  const ms = parseDuration(val);
+  if (ms !== null) return new Date(Date.now() + ms);
+  return new Date(val);
+}

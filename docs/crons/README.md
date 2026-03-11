@@ -78,4 +78,4 @@ The `schedule` field and `runAt` field accept four formats. See the [scheduling 
 | Relative single-shot | `"!30s"` | Fire once after delay |
 | Absolute one-off | `runAt: "2026-06-01T09:00:00Z"` | Fire once at the given UTC time |
 
-Use `scheduleEnds` to stop a recurring job after a deadline — either a relative duration (`"20d"`) or an ISO 8601 datetime. See [scheduleEnds](./scheduling/README.md#scheduleends--expiry-for-recurring-jobs).
+Use `scheduleStarts` to delay when a job becomes active (relative duration or ISO 8601 datetime). Use `scheduleEnds` to stop a recurring job after a deadline. See [scheduleStarts](./scheduling/README.md#schedulestarts--delay-before-start) and [scheduleEnds](./scheduling/README.md#scheduleends--expiry-for-recurring-jobs).

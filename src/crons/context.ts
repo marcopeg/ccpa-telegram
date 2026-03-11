@@ -36,7 +36,9 @@ export function buildCronContext(
   }
 
   return {
-    cronCtx: { config: multiConfig, projects },
+    // cron run state is a placeholder here; the executor overwrites it with the
+    // real CronRunState snapshot via { ...cronCtx, cron: state } before each call.
+    cronCtx: { config: multiConfig, projects, cron: { runs: 0 } },
     internalProjectCtxs,
   };
 }

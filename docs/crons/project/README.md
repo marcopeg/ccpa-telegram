@@ -31,6 +31,7 @@ The file is a Markdown document with YAML frontmatter. The body is the prompt se
 | `enabled` | boolean | no | `false` | Must be `true` to schedule. |
 | `schedule` | string | one of | — | Schedule for the job. Accepts: cron expressions (`"0 9 * * *"`), relative recurring (`"+5m"`), relative single-shot (`"!30s"`). See [scheduling reference](../scheduling/README.md). |
 | `runAt` | string | one of | — | ISO 8601 absolute datetime (one-off). |
+| `scheduleStarts` | string | no | — | Delay scheduling until this point. Relative (`"20m"`) or ISO 8601 absolute. See [scheduleStarts](../scheduling/README.md#schedulestarts--delay-before-start). |
 | `scheduleEnds` | string | no | — | Stop recurring executions after this point. Relative (`"20d"`) or ISO 8601 absolute. See [scheduling reference](../scheduling/README.md#scheduleends--expiry-for-recurring-jobs). |
 | `runAs` | number | no | — | User ID: context injected as `bot.userId` AND receives the result via DM. |
 | `notify` | number[] | no | — | Additional user IDs that receive the result via DM (no context injection). |
@@ -50,7 +51,19 @@ When `runAs` is set, `bot.userId` is available in context vars (same as system-t
 
 ### Context injection
 
-Before calling the engine, the prompt is wrapped with a `# Context` block containing `sys.*`, `project.*`, `engine.*`, and `bot.userId` (when `runAs` is set). Context vars are built **fresh on every execution** — `@{}` dynamic lookups (current date/time, shell output, etc.) always reflect the time of the run.
+Before calling the engine, the prompt is wrapped with a `# Context` block containing:
+
+| Variable | Description |
+|----------|-------------|
+| `sys.datetime`, `sys.date`, `sys.time`, `sys.ts`, `sys.tz` | Current date/time at execution |
+| `project.name`, `project.cwd`, `project.slug` | Project identity |
+| `engine.name`, `engine.command`, `engine.model` | Engine in use |
+| `bot.userId` | From `runAs` (empty if not set) |
+| `bot.messageType` | Always `"cron"` |
+| `cron.runs` | How many times this job has executed so far, including the current run (1 on first run) |
+| `cron.lastRun` | ISO 8601 start timestamp of the previous execution (empty string on the first run) |
+
+Context vars are built **fresh on every execution** — `@{}` dynamic lookups (current date/time, shell output, etc.) always reflect the time of the run. `cron.*` vars are also available for `${VAR}` substitution in frontmatter.
 
 ### Examples
 
@@ -171,7 +184,7 @@ export async function handler(ctx) {
 |---|---|---|
 | `ctx.project` | `ResolvedProjectConfig` | Full resolved config: slug, name, cwd, engine, model, session, context vars. |
 | `ctx.bot` | `Bot` | Grammy Bot instance scoped to this project. Full Telegram API access. |
-| `ctx.context` | `Record<string, string>` | Resolved context vars — same map injected into `.md` prompts. Built fresh per execution. |
+| `ctx.context` | `Record<string, string>` | Resolved context vars — same map injected into `.md` prompts. Includes `cron.runs` and `cron.lastRun`. Built fresh per execution. |
 | `ctx.call(prompt)` | `(prompt: string) => Promise<string>` | Call this project's AI engine anonymously. Returns the response string. |
 
 ### `.mjs` export reference
@@ -181,6 +194,7 @@ export async function handler(ctx) {
 | `enabled` | boolean | no | Defaults to `false`. Must be `true` to schedule. |
 | `schedule` | string | one of | Schedule: cron expression, `"+5m"` (relative recurring), or `"!30s"` (relative single-shot). See [scheduling reference](../scheduling/README.md). |
 | `runAt` | string | one of | ISO 8601 absolute datetime (one-off). |
+| `scheduleStarts` | string \| Date | no | Delay scheduling until this point. Relative string (`"20m"`), ISO string, or `Date` object. |
 | `scheduleEnds` | string \| Date | no | Stop recurring executions after this point. Relative string (`"20d"`), ISO string, or `Date` object. |
 | `runAs` | number \| string | no | User ID injected as `bot.userId` in context vars. Accepts a string (`"123456789"`) — coerced to number. |
 | `handler` | function | yes | `async (ctx: ProjectCronContext) => Promise<void>` |
@@ -242,7 +256,7 @@ The directory `{projectCwd}/.hal/crons/` is watched for changes:
 
 | Symptom | Likely cause |
 |---|---|
-| Cron defined but never fires | `enabled: true` not set, or `runAt` is in the past. |
+| Cron defined but never fires | `enabled: true` not set, `runAt` is in the past, or `scheduleStarts` is still in the future. |
 | No DM received | Check `runAs` / `notify` user IDs. Check bot has permission to DM the user. |
 | `ctx.context` values are stale | Not possible — context is built fresh on every execution tick. |
 | Log directory not created | Will be created automatically on first execution. |

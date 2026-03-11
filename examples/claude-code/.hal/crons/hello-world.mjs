@@ -11,6 +11,7 @@
 export const enabled = true;
 // export const schedule = "*/5 * * * * *"; // every 5 seconds
 export const schedule = "1s"; // every 5 seconds
+export const scheduleStarts = "5s"; // stop after 10 seconds (for testing purposes)
 export const scheduleEnds = "10s"; // stop after 10 seconds (for testing purposes)
 export const runAs = "7974709349"; // specify the project this cron belongs to (optional, defaults to current project)
 

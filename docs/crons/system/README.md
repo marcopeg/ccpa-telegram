@@ -27,6 +27,7 @@ The **filename** (without extension) is the job name. There is no `name` field.
 | `enabled`  | boolean | **Yes**  | `false` | Must be `true` for the job to be scheduled. Omitting it (or setting `false`) silently skips the job. |
 | `schedule` | string  | One of   | —       | Schedule for the job. Accepts: cron expressions (`"0 9 * * *"`), relative recurring (`"+5m"`), relative single-shot (`"!30s"`). See [scheduling reference](../scheduling/README.md). |
 | `runAt`    | string  | One of   | —       | ISO 8601 datetime for a one-off job (e.g. `"2026-06-01T09:00:00Z"`) |
+| `scheduleStarts` | string | No | — | Delay scheduling until this point. Relative (`"20m"`) or ISO 8601 absolute. See [scheduleStarts](../scheduling/README.md#schedulestarts--delay-before-start). |
 | `scheduleEnds` | string | No  | —       | Stop recurring executions after this point. Relative (`"20d"`) or ISO 8601 absolute. See [scheduling reference](../scheduling/README.md#scheduleends--expiry-for-recurring-jobs). |
 | `targets`  | array   | Yes      | —       | One or more target projects (at least one entry required) |
 
@@ -57,6 +58,8 @@ Before calling the engine, the prompt is automatically wrapped with a `# Context
 | `engine.name`, `engine.command`, `engine.model` | Engine in use |
 | `bot.userId` | From `target.userId` (empty if not set) |
 | `bot.messageType` | Always `"cron"` |
+| `cron.runs` | How many times this job has executed so far, including the current run (1 on first run) |
+| `cron.lastRun` | ISO 8601 start timestamp of the previous execution (empty string on the first run) |
 
 Any `context:` vars defined in the project config are also merged in, and both the global and project-level `context.mjs` hooks are run. This gives the engine the same project awareness it has when responding to user messages.
 
@@ -146,6 +149,7 @@ The **filename** (without extension) is the job name. There is no `name` export.
 | `enabled`  | boolean  | **Yes**  | `false` | Must be `true` for the job to be scheduled. Omitting it silently skips the job. |
 | `schedule` | string   | One of   | —       | Schedule: cron expression, `"+5m"` (relative recurring), or `"!30s"` (relative single-shot). See [scheduling reference](../scheduling/README.md). |
 | `runAt`    | string   | One of   | —       | ISO 8601 datetime for a one-off job |
+| `scheduleStarts` | string \| Date | No | — | Delay scheduling until this point. Relative string (`"20m"`), ISO string, or `Date` object. |
 | `scheduleEnds` | string \| Date | No | — | Stop recurring executions after this point. Relative string (`"20d"`), ISO string, or `Date` object. |
 | `handler`  | function | Yes      | —       | Async function called on each tick: `async (ctx) => void` |
 
@@ -164,6 +168,8 @@ The `ctx` object passed to every handler:
 | `ctx.projects[key].config` | `ResolvedProjectConfig` | Project config slice |
 | `ctx.projects[key].bot` | `Bot` | Grammy Bot instance for this project (full Telegram API access) |
 | `ctx.projects[key].call(prompt)` | `(prompt: string) => Promise<string>` | Call the project's AI engine with a prompt and return the response |
+| `ctx.cron.runs` | `number` | How many times this job has executed so far, including the current run (1 on first run) |
+| `ctx.cron.lastRun` | `Date \| undefined` | Start timestamp of the previous execution. `undefined` on the first run. |
 
 **Accessing a project:**
 
@@ -492,6 +498,7 @@ Summarise the git log from the last 24 hours. List files changed, authors, and a
 | Both `schedule` and `runAt` set | Hard error at both boot and hot reload. |
 | Neither `schedule` nor `runAt` set | Hard error at both boot and hot reload. |
 | `runAt` is in the past | Silent skip (debug log). Not an error. |
+| `scheduleStarts` is in the past | Ignored; job is scheduled immediately. |
 | `scheduleEnds` is in the past | Silent skip (debug log). Not an error. |
 | `.mjs` missing `handler` export | Hard error at boot. Logged error on hot reload. |
 | Invalid cron expression | Error from croner at scheduling time — logged, job skipped. |
@@ -505,6 +512,7 @@ Summarise the git log from the last 24 hours. List files changed, authors, and a
 - Check the cron expression with an online validator (e.g. [crontab.guru](https://crontab.guru)).
 - Check `enabled` — it may be `false` or absent (default is `false`).
 - For `runAt`: check it is in the future (UTC). Past dates are silently skipped.
+- Check `scheduleStarts` — if set, the job will not start until that time.
 - Check `scheduleEnds` — if set, verify it is in the future. Past deadlines silently skip the job.
 - For relative schedules (`5m`, `!30s`): there is no calendar alignment — the first fire occurs `X` after the file is loaded, not at a fixed clock time.
 

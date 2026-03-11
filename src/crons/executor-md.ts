@@ -11,6 +11,7 @@ import type { ProjectContext } from "../types.js";
 import { writeCronLog } from "./log.js";
 import type {
   CronContext,
+  CronRunState,
   MdCronDefinition,
   ProjectMdCronDefinition,
 } from "./types.js";
@@ -36,6 +37,7 @@ export async function executeMdCron(
   logBaseDir: string,
   logger: pino.Logger,
   scope: string,
+  state: CronRunState,
 ): Promise<void> {
   for (const target of def.targets) {
     const projectCtx = internalProjectCtxs[target.projectId];
@@ -87,6 +89,8 @@ export async function executeMdCron(
         engineDefaultModel: defaultModel,
         userId: target.userId,
       });
+      contextVars["cron.runs"] = String(state.runs);
+      contextVars["cron.lastRun"] = state.lastRun?.toISOString() ?? "";
       const contextualPrompt = formatContextPrompt(contextVars, def.prompt);
 
       const agent = createAgent(projectCtx);
@@ -149,6 +153,7 @@ export async function executeMdProjectCron(
   logBaseDir: string,
   logger: pino.Logger,
   scope: string,
+  state: CronRunState,
 ): Promise<void> {
   const startedAt = new Date();
   let output = "";
@@ -175,6 +180,8 @@ export async function executeMdProjectCron(
       engineDefaultModel: defaultModel,
       userId: def.runAs,
     });
+    contextVars["cron.runs"] = String(state.runs);
+    contextVars["cron.lastRun"] = state.lastRun?.toISOString() ?? "";
 
     const contextualPrompt = formatContextPrompt(contextVars, def.prompt);
     const agent = createAgent(projectCtx);
