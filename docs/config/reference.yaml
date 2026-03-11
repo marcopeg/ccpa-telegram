@@ -26,8 +26,8 @@ globals:
       fullDiskAccess: false
       dangerouslyEnableYolo: false
     antigravity:  # Antigravity-only flags
-      approvalMode: default  # default|auto_edit|yolo
-      sandbox: true
+      approvalMode: yolo  # default|auto_edit|yolo
+      sandbox: false
 
   # See [Logging](logging/README.md)
   logging:

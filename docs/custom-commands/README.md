@@ -11,6 +11,17 @@ You can add your own slash commands as `.mjs` files. When a user sends `/mycomma
 
 Project-specific commands take precedence over global ones on name collision.
 
+## How command resolution works
+
+Slash commands are resolved in this order:
+
+1. **Built-in commands** (e.g. `/start`, `/help`, `/engine`, `/model`, `/reset`, `/clean`, `/info`, `/npm`, and `git_*`) are handled directly by the bot when enabled.
+2. **Custom `.mjs` commands** (project `.hal/commands/{name}.mjs`, then global `{configDir}/.hal/commands/{name}.mjs`).
+3. **Skills** with `telegram: true` in `SKILL.md`.
+4. **Fallback to the AI engine** when no command or skill matches.
+
+Custom command files can shadow skills with the same name. If you want a custom command to be reachable, avoid naming it after a built-in command that is enabled.
+
 ## Command file format
 
 ```js
@@ -101,6 +112,29 @@ Unlike regular user messages, agent calls have no session history and no context
 | `onProgress` | `(message: string) => void` | Called during execution with activity updates (e.g. `"Reading: /path/to/file"`). Use it to keep the user informed while the agent is working. |
 
 Returns the agent's final text output as a string. Throws on failure — the bot's command error handler will catch it and reply with `Command failed: {message}`.
+
+## Callback routing (inline buttons)
+
+If your command renders an inline keyboard, set the callback data to start with your command name and a colon (for example: `deploy:confirm`). HAL routes callbacks in this order:
+
+1. **Built-in handlers** for reserved prefixes:
+   - `en:` (engine picker)
+   - `md:` (model picker)
+   - `r:` (reset confirmation)
+   - `gc:` (git clean confirmations)
+   - `npm:` (npm script picker)
+2. **Generic `.mjs` dispatcher** for `commandName:` prefixes
+
+To handle your own callbacks, export a `callbackHandler` from the command file:
+
+```js
+export async function callbackHandler({ data, gram, projectCtx }) {
+  if (data === 'deploy:confirm') {
+    await gram.answerCallbackQuery('Deploying...');
+    // ... run your work ...
+  }
+}
+```
 
 ```js
 export default async function({ args, gram, agent }) {

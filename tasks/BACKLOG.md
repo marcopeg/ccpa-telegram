@@ -34,6 +34,7 @@ The commands in the menu should be sorted:
 - [056 — Debounce messages](./drafts/056.debounce-messages.md)
 - [060 — Stale session empty-response recovery](./drafts/060.stale-session-empty-response-recovery.md)
 - [063 — Shared engine progress fallback](./drafts/063.engine-progress-fallback.md)
+- [064 — CLI skill/command installer + updater](./drafts/064.cli-skill-command-installer.md)
 
 ## Completed
 

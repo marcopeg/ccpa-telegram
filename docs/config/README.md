@@ -132,6 +132,11 @@ Resolution order within each mode:
 - **Default mode:** `{config-dir}/.env`, then `{config-dir}/.env.local` (later overrides).
 - **Explicit mode:** The configured file, then that file’s `.local` sibling in the same directory (e.g. `path/to/secrets.env` then `path/to/secrets.env.local`).
 
+After file loading, any **unresolved** variables fall back to the shell environment (`process.env`). If a variable exists in both places, the file value wins. Effective precedence is:
+
+- **Default mode:** `{config-dir}/.env.local` → `{config-dir}/.env` → `process.env`.
+- **Explicit mode:** `{custom}.local` → `{custom}` → `process.env`.
+
 The `env` path is resolved relative to the config file’s directory, or as an absolute path. Tilde (`~`) is expanded to your home directory.
 
 ### Conflict (boot error)

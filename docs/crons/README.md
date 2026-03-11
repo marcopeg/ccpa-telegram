@@ -12,7 +12,7 @@ Jobs are defined as files — either prompt-based Markdown (`.md`) or programmat
 | Project | `{projectCwd}/.hal/crons/`            | Developer      | No                |
 | User    | `{dataDir}/{userId}/crons/`           | Bot user       | Yes               |
 
-All tiers use the same file format. All directories are hot-reloaded via file watchers — add, edit, or delete a file and the scheduler updates without a restart.
+All tiers accept the same two file formats (`.md` and `.mjs`). All directories are hot-reloaded via file watchers — add, edit, or delete a file and the scheduler updates without a restart.
 
 - [System crons](./system/README.md) — global scheduled tasks, available across all projects
 - Project crons — _coming soon (032b)_
@@ -21,6 +21,8 @@ All tiers use the same file format. All directories are hot-reloaded via file wa
 > **Crons are opt-in.** A job is only scheduled when `enabled: true` is explicitly set (frontmatter for `.md`, named export for `.mjs`). Omitting `enabled` or setting it to `false` loads and validates the file but never runs it — safe for committing draft crons to version control.
 
 ## File types
+
+Both formats are first-class and intentionally separate. The scheduler selects the loader by file extension and runs the matching executor; `.md` files run prompt-based jobs and `.mjs` files run programmatic handlers. Use whichever format fits the job — they can coexist in the same directory without ambiguity.
 
 ### `.md` — Prompt-based
 

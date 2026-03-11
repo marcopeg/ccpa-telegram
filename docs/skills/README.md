@@ -1,6 +1,6 @@
 # Skills
 
-Skills follow the [Agent Skills standard](https://agentskills.io/). Each engine looks for skills in engine-specific directories (highest priority first). HAL reads them at boot and whenever `SKILL.md` files change, and exposes each skill as a Telegram slash command.
+Skills follow the [Agent Skills standard](https://agentskills.io/). Each engine looks for skills in engine-specific directories (highest priority first). HAL reads them at boot and whenever `SKILL.md` files change. Skills are available to the engine, but only those with `telegram: true` are exposed as Telegram slash commands.
 
 ## Per-engine skill directories
 
