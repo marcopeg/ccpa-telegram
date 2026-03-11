@@ -13,12 +13,12 @@ The commands in the menu should be sorted:
 - [046 — Codex log streaming](./ready/046.codex-log-streaming.md) | [plan](./ready/046.codex-log-streaming.plan.md)
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
 - [062 — Wizard env file precedence when both .env and .env.local exist](./ready/062.wizard-env-file-precedence.md) | [plan](./ready/062.wizard-env-file-precedence.plan.md)
+- [032b — Project-level crons](./ready/032b.project-crons-and-logging.md) | [plan](./ready/032b.project-crons-and-logging.plan.md)
 
 
 ## Drafts
 
 - [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md) (parent)
-  - [032b — Project-level crons + logging refinement](./drafts/032b.project-crons-and-logging.md)
   - [032c — User-level crons + slash commands](./drafts/032c.user-crons-and-slash-commands.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
 - [061 — Copilot JSONL output + engine minimum version checks](./drafts/061.copilot-jsonl-output.md)
