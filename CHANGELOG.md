@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0](https://github.com/marcopeg/hal/compare/v1.2.0...v1.3.0) (2026-03-11)
+
+### Features
+
+* 32b project crons ([2d503e2](https://github.com/marcopeg/hal/commit/2d503e27d1e23c125124d2d38590921130c9368c))
+* 32b support scheduleEnds property ([b2b34e2](https://github.com/marcopeg/hal/commit/b2b34e2e459c61d8c3aeb79c9464766f865e07ae))
+* cron scheduleStarts ([20d3a29](https://github.com/marcopeg/hal/commit/20d3a29b76a2a5cf405f5e5db95c69e999893957))
+* cron supports relative schedules ([860e0a7](https://github.com/marcopeg/hal/commit/860e0a7056787cbbdb40acfa385d52045260b784))
+
 ## [1.2.0](https://github.com/marcopeg/hal/compare/v1.1.1...v1.2.0) (2026-03-10)
 
 ### Features
