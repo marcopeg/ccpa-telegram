@@ -1,5 +1,5 @@
-export const enabled = true;
-export const runAt = "2026-03-10T16:53:00Z"; // fires once, 5 minutes after creation
+export const enabled = false;
+export const schedule = "!5m"; // fires once 5 minutes after the file is loaded
 
 export async function handler(ctx) {
   const [slug, project] = Object.entries(ctx.projects)[0];

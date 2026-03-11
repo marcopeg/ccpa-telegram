@@ -1,6 +1,6 @@
 ---
-enabled: true
-runAt: "2026-03-10T16:52:00Z"
+enabled: false
+schedule: "!5m"
 targets:
   - projectId: claude-code
     userId: 7974709349

@@ -319,8 +319,8 @@ export async function handler(ctx) {
 Every log entry emitted by the scheduler includes a `jobId` field in the format `{scope}/{filename}`:
 
 - System crons: `system/health-check`
-- Project crons _(032b)_: `my-project/health-check`
-- User crons _(032c)_: `user/health-check`
+- Project crons: `my-project/health-check`
+- User crons: `user/health-check`
 
 This makes it easy to filter cron activity in the log stream by scope or by job.
 
@@ -332,7 +332,7 @@ Every job execution writes a log file to:
 # System crons
 {configDir}/.hal/logs/crons/system/{job-name}.{md|mjs}/{timestamp}.{job-name}.txt
 
-# Project crons (032b)
+# Project crons
 {configDir}/.hal/logs/crons/projects/{project-slug}/{job-name}.{md|mjs}/{timestamp}.{job-name}.txt
 ```
 
@@ -492,6 +492,7 @@ Summarise the git log from the last 24 hours. List files changed, authors, and a
 | Both `schedule` and `runAt` set | Hard error at both boot and hot reload. |
 | Neither `schedule` nor `runAt` set | Hard error at both boot and hot reload. |
 | `runAt` is in the past | Silent skip (debug log). Not an error. |
+| `scheduleEnds` is in the past | Silent skip (debug log). Not an error. |
 | `.mjs` missing `handler` export | Hard error at boot. Logged error on hot reload. |
 | Invalid cron expression | Error from croner at scheduling time — logged, job skipped. |
 | `projectId` not found at runtime | Logged error per target; a fallback log entry is written with `sys.*` context; other targets in the same job continue. |
@@ -504,6 +505,8 @@ Summarise the git log from the last 24 hours. List files changed, authors, and a
 - Check the cron expression with an online validator (e.g. [crontab.guru](https://crontab.guru)).
 - Check `enabled` — it may be `false` or absent (default is `false`).
 - For `runAt`: check it is in the future (UTC). Past dates are silently skipped.
+- Check `scheduleEnds` — if set, verify it is in the future. Past deadlines silently skip the job.
+- For relative schedules (`5m`, `!30s`): there is no calendar alignment — the first fire occurs `X` after the file is loaded, not at a fixed clock time.
 
 **`flowResult` DM not received**
 - Verify `userId` is the correct Telegram numeric user ID (not a username).

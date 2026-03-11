@@ -30,10 +30,10 @@ interface JobEntry {
 /**
  * Generic cron scheduler.
  *
- * Supports three schedule formats:
+ * Supports four schedule formats:
  *   - Standard cron expressions  ("0 9 * * *") via croner
  *   - Absolute one-offs          (runAt Date)  via croner
- *   - Relative recurring         ("+3s")       via setInterval
+ *   - Relative recurring         ("5s"/"+3s")  via chained setTimeout (next countdown starts after execution completes)
  *   - Relative single-shot       ("!3s")       via setTimeout
  *
  * Accepts an `executeJob` callback that captures all tier-specific state in its

@@ -182,6 +182,7 @@ export async function handler(ctx) {
 | `schedule` | string | one of | Schedule: cron expression, `"+5m"` (relative recurring), or `"!30s"` (relative single-shot). See [scheduling reference](../scheduling/README.md). |
 | `runAt` | string | one of | ISO 8601 absolute datetime (one-off). |
 | `scheduleEnds` | string \| Date | no | Stop recurring executions after this point. Relative string (`"20d"`), ISO string, or `Date` object. |
+| `runAs` | number \| string | no | User ID injected as `bot.userId` in context vars. Accepts a string (`"123456789"`) — coerced to number. |
 | `handler` | function | yes | `async (ctx: ProjectCronContext) => Promise<void>` |
 
 ### Example

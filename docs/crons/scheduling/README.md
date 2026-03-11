@@ -10,7 +10,7 @@ The `schedule` and `runAt` fields (`.md` frontmatter) and the `schedule` / `runA
 |--------|---------|-----------|
 | Cron expression | `"0 9 * * *"` | Recurring, calendar-aligned |
 | Absolute one-off | `runAt: "2026-06-01T09:00:00Z"` | Fires once at the given UTC time |
-| Relative recurring | `"5m"`, `"+5m"` | Fires after the delay, then repeats at the same interval |
+| Relative recurring | `"5m"`, `"+5m"` | Fires after the delay, then repeats — next countdown starts after execution completes |
 | Relative single-shot | `"!30s"`, `"!5m"` | Fires once after the delay |
 
 **`schedule` and `runAt` are mutually exclusive.** Exactly one must be set.
@@ -106,9 +106,13 @@ schedule: "7d"     # first run in 7 days, then every 7 days (same as 1w)
 schedule: "+22d"   # first run in 22 days, then every 22 days
 ```
 
+### Sequential execution guarantee
+
+The next countdown only starts **after the current execution fully completes**. If `+5m` is set and execution takes 2 minutes, the next run begins 5 minutes after the previous one *finished* — not 3 minutes later. The effective cadence is `execution time + interval`.
+
 ### Difference from cron expressions
 
-Cron expressions are calendar-aligned: `*/30 * * * * *` fires at :00 and :30 of every minute, regardless of when the process started. `+30s` always fires 30 seconds after the job was loaded, then 30 seconds after each previous execution. For long intervals (days, weeks), this means the job drifts with restarts rather than aligning to a wall-clock schedule. Use `+Xd` when you care about the interval, and a cron expression when you care about the time of day.
+Cron expressions are calendar-aligned: `*/30 * * * * *` fires at :00 and :30 of every minute, regardless of when the process started. `+30s` always fires 30 seconds after the job was loaded, then 30 seconds after each previous execution completes. For long intervals (days, weeks), this means the job drifts with restarts rather than aligning to a wall-clock schedule. Use `+Xd` when you care about the interval, and a cron expression when you care about the time of day.
 
 ### `.mjs` equivalent
 

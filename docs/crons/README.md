@@ -57,13 +57,7 @@ export async function handler(ctx) {
 
 ## Execution logs
 
-Every execution is logged to disk:
-
-```
-{tierRootDir}/.hal/logs/crons/{job-name}/{timestamp}.{job-name}.txt
-```
-
-All tiers write logs to the **centralised log directory** under `{configDir}/.hal/logs/crons/`:
+Every execution is written to the **centralised log directory** under `{configDir}/.hal/logs/crons/`:
 
 ```
 {configDir}/.hal/logs/crons/
@@ -73,18 +67,15 @@ All tiers write logs to the **centralised log directory** under `{configDir}/.ha
 
 Log files are plain text and contain the job name, source file, start/end timestamps, full output, and exit status.
 
-## One-off jobs
+## Scheduling formats
 
-Use `runAt` instead of `schedule` for a job that runs once at a specific time:
+The `schedule` field and `runAt` field accept four formats. See the [scheduling reference](./scheduling/README.md) for the complete guide.
 
-```markdown
----
-runAt: "2026-06-01T09:00:00Z"
-targets:
-  - projectId: my-project
----
+| Format | Example | Behaviour |
+|--------|---------|-----------|
+| Cron expression | `"0 9 * * *"` | Recurring, calendar-aligned |
+| Relative recurring | `"5m"` or `"+5m"` | Fire after delay, repeat after each execution completes |
+| Relative single-shot | `"!30s"` | Fire once after delay |
+| Absolute one-off | `runAt: "2026-06-01T09:00:00Z"` | Fire once at the given UTC time |
 
-Run the quarterly review checklist.
-```
-
-If `runAt` is in the past when the file is loaded, the job is silently skipped. Update `runAt` to a future date and the file watcher will re-arm it automatically.
+Use `scheduleEnds` to stop a recurring job after a deadline — either a relative duration (`"20d"`) or an ISO 8601 datetime. See [scheduleEnds](./scheduling/README.md#scheduleends--expiry-for-recurring-jobs).
