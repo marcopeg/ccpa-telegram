@@ -154,8 +154,8 @@ export function buildConfigFromResults(ctx: WizardContext): BuildResult {
       varName = `${k.replace(/[^A-Za-z0-9]+/g, "_").toUpperCase()}_TELEGRAM_TOKEN`;
     }
 
-    // Intentional placeholder — not a template literal
-    p.telegram.botToken = String.raw`\${${varName}}`;
+    // Intentional placeholder for runtime env substitution (must be `${VAR}` without a leading backslash)
+    p.telegram.botToken = `\${${varName}}`;
     envEntries = { ...(envEntries ?? {}), [varName]: token };
   }
 
@@ -181,6 +181,8 @@ export function buildConfigFromResults(ctx: WizardContext): BuildResult {
       base.globals.access.allowedUserIds = placeholders;
     }
   }
+
+  _omitRedundantProjectNames(base);
 
   // Serialize with fixed key order: providers, globals, projects
   const format: ConfigFormat = ctx.existingConfigFormat ?? "yaml";
@@ -226,4 +228,13 @@ function buildYamlContent(config: PartialConfig): string {
     .replace(/\n(globals:)/m, "\n\n$1")
     .replace(/\n(projects:)/m, "\n\n$1");
   return `${header}\n${withBlanks}`;
+}
+
+// Keep config compact: omit redundant project names equal to their map key.
+function _omitRedundantProjectNames(config: PartialConfig): void {
+  if (!config.projects) return;
+  for (const [key, project] of Object.entries(config.projects)) {
+    if (typeof project.name !== "string") continue;
+    if (project.name.trim() === key) delete project.name;
+  }
 }

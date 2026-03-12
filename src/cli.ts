@@ -350,22 +350,6 @@ async function runInit(
   await writeFile(configPath, yamlContent, "utf-8");
   console.log(`\nConfig: ${configPath}`);
 
-  const engine = getEngine(
-    engineName,
-    undefined,
-    getDefaultProviderModel(engineName, modelOverride),
-  );
-  const instrFile = engine.instructionsFile();
-  const instrPath = join(cwd, instrFile);
-  if (!existsSync(instrPath)) {
-    await writeFile(
-      instrPath,
-      "# Project Instructions\n\nAdd your project-specific instructions here.\n",
-      "utf-8",
-    );
-    console.log(`Created ${instrFile}`);
-  }
-
   console.log("\nNext steps:");
   console.log(
     "  1. Set TELEGRAM_BOT_TOKEN in .env or .env.local (see docs: " +

@@ -2,7 +2,6 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { confirm, select } from "@clack/prompts";
 import { resolveCustomEnvPaths } from "../config.js";
-import { getEngine } from "../engine/index.js";
 import { buildConfigFromResults } from "./config-builder.js";
 import { guardCancel } from "./runner.js";
 import type { WizardContext } from "./types.js";
@@ -72,32 +71,6 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
     } else {
       upsertEnvFile(chosenEnvPath, built.envEntries!);
       console.log(`  Env updated:    ${chosenEnvPath}`);
-    }
-  }
-
-  // Create engine instructions file if missing
-  const engineName = (ctx.results as Record<string, unknown>).engine as
-    | string
-    | undefined;
-  if (engineName) {
-    try {
-      const engine = getEngine(
-        engineName as Parameters<typeof getEngine>[0],
-        undefined,
-        "",
-      );
-      const instrFile = engine.instructionsFile();
-      const instrPath = join(ctx.cwd, instrFile);
-      if (!existsSync(instrPath)) {
-        writeFileSync(
-          instrPath,
-          "# Project Instructions\n\nAdd your project-specific instructions here.\n",
-          "utf-8",
-        );
-        console.log(`  Created:        ${instrFile}`);
-      }
-    } catch {
-      // engine lookup failed — not critical
     }
   }
 
