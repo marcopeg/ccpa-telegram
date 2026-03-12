@@ -29,10 +29,17 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
   console.log(built.content);
   console.log("─────────────────────────────────────────────────────────\n");
 
-  if (built.envEntries && Object.keys(built.envEntries).length > 0) {
-    const envPath = pickEnvPath(ctx);
-    console.log(`Proposed ${envPath} entries:\n`);
-    for (const [k, v] of Object.entries(built.envEntries)) {
+  const hasEnv = built.envEntries && Object.keys(built.envEntries).length > 0;
+  let chosenEnvPath: string | null = null;
+
+  if (hasEnv) {
+    chosenEnvPath = await pickEnvPath(ctx);
+    if (chosenEnvPath !== null) {
+      console.log(`Proposed ${chosenEnvPath} entries:\n`);
+    } else {
+      console.log("Proposed env entries (env file will be skipped):\n");
+    }
+    for (const [k, v] of Object.entries(built.envEntries!)) {
       console.log(`  ${k}=${v}`);
     }
     console.log(
@@ -42,7 +49,7 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
 
   const ok = await confirm({
     message:
-      built.envEntries && Object.keys(built.envEntries).length > 0
+      hasEnv && chosenEnvPath !== null
         ? "Write config and .env changes?"
         : "Write this configuration?",
   });
@@ -58,10 +65,14 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
   console.log(`\n  Config written: ${built.targetPath}`);
 
   // Write env entries
-  if (built.envEntries && Object.keys(built.envEntries).length > 0) {
-    const envPath = pickEnvPath(ctx);
-    upsertEnvFile(envPath, built.envEntries);
-    console.log(`  Env updated:    ${envPath}`);
+  if (hasEnv) {
+    if (chosenEnvPath === null) {
+      // pickEnvPath returned null (user chose Stop) — skip env write
+      console.log("  Env file not written. You can set the values manually.");
+    } else {
+      upsertEnvFile(chosenEnvPath, built.envEntries!);
+      console.log(`  Env updated:    ${chosenEnvPath}`);
+    }
   }
 
   // Create engine instructions file if missing
@@ -109,19 +120,66 @@ export async function runConfirmAndWrite(ctx: WizardContext): Promise<void> {
   }
 }
 
-function pickEnvPath(ctx: WizardContext): string {
-  // Respect existing config's custom env path (task 041).
+async function pickEnvPath(ctx: WizardContext): Promise<string | null> {
+  // Respect existing config's custom env path (task 041) — bypasses selection.
   const configured = ctx.existingConfig?.env;
   if (typeof configured === "string" && configured.trim() !== "") {
     const { mainPath } = resolveCustomEnvPaths(ctx.cwd, configured);
     return mainPath;
   }
 
-  const envLocal = join(ctx.cwd, ".env.local");
-  const env = join(ctx.cwd, ".env");
-  if (existsSync(env)) return env;
-  if (existsSync(envLocal)) return envLocal;
-  return env;
+  const envPath = join(ctx.cwd, ".env");
+  const envLocalPath = join(ctx.cwd, ".env.local");
+  const hasEnv = existsSync(envPath);
+  const hasEnvLocal = existsSync(envLocalPath);
+
+  // Case 1: neither file exists — write to .env silently
+  if (!hasEnv && !hasEnvLocal) {
+    return envPath;
+  }
+
+  // Case 2: only .env.local exists — prompt: write to .env.local or stop
+  if (!hasEnv && hasEnvLocal) {
+    const choice = await select({
+      message: "An existing .env.local was found. What should the wizard do?",
+      options: [
+        { value: envLocalPath, label: `Write to .env.local` },
+        { value: "stop", label: "Stop / don't write env file" },
+      ],
+    });
+    guardCancel(choice);
+    return choice === "stop" ? null : (choice as string);
+  }
+
+  // Case 3: only .env exists — prompt: write to .env, create .env.local, or stop
+  if (hasEnv && !hasEnvLocal) {
+    const choice = await select({
+      message: "An existing .env was found. What should the wizard do?",
+      options: [
+        { value: envPath, label: `Write inside .env` },
+        {
+          value: envLocalPath,
+          label: `Create .env.local (recommended for secrets)`,
+        },
+        { value: "stop", label: "Stop / don't write env file" },
+      ],
+    });
+    guardCancel(choice);
+    return choice === "stop" ? null : (choice as string);
+  }
+
+  // Case 4: both .env and .env.local exist — prompt: write to either, or stop
+  const choice = await select({
+    message:
+      "Both .env and .env.local exist. Which file should the wizard write to?",
+    options: [
+      { value: envPath, label: `Write to .env` },
+      { value: envLocalPath, label: `Write to .env.local` },
+      { value: "stop", label: "Stop / don't write env file" },
+    ],
+  });
+  guardCancel(choice);
+  return choice === "stop" ? null : (choice as string);
 }
 
 function upsertEnvFile(envPath: string, entries: Record<string, string>): void {

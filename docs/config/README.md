@@ -21,7 +21,7 @@ This section is the index for all configuration options; detailed subsections ar
 
 ### hal.config.{json,jsonc,yaml}
 
-Create a config file in your workspace directory (where you run the CLI from). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead.
+Create a config file in your workspace directory (where you run the CLI from). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead (see [Env files](env-files/README.md)).
 
 **YAML** is the recommended format for examples and for configs with comments. A full key reference (all options, with links to doc pages) is [reference.yaml](reference.yaml). A short copy-paste example is [examples/hal.config.yaml](../../examples/hal.config.yaml). JSON and JSONC are also supported — see [Configuration alternatives](#configuration-alternatives) below.
 
@@ -120,52 +120,11 @@ Minimal **JSONC** example (same structure with `//` comments and trailing commas
 
 ## Environment variable substitution
 
-Any string value in the config files can reference an environment variable with `${VAR_NAME}` syntax. Values inside `context` blocks support the same `${expr}` syntax but with a richer resolver (full context map + env) and two additional patterns (`#{cmd}` boot-time shell, `@{cmd}` message-time shell) — see [Context](context/README.md). This works identically for all config formats (JSON, JSONC, YAML). Variables are resolved at boot time from **one** of two modes:
+Any string value in the config files can reference an environment variable with `${VAR_NAME}` syntax. Values inside `context` blocks support the same `${expr}` syntax but with a richer resolver (full context map + env) and two additional patterns (`#{cmd}` boot-time shell, `@{cmd}` message-time shell) — see [Context](context/README.md). This works identically for all config formats (JSON, JSONC, YAML).
 
-### Single-source model
-
-- **Default (no `env` in config):** Env is loaded only from the config directory (the directory where you run the CLI): `{config-dir}/.env`, then `{config-dir}/.env.local`. The `.local` file overrides the base file. No per-project `.env` files are loaded.
-- **Explicit (`env` set):** Env is loaded only from the path you set in the top-level `env` key and its sibling `.local` file (e.g. `env: "secrets.env"` → `secrets.env` and `secrets.env.local` in the same directory). The config-dir `.env` is **not** loaded in this mode.
-
-Resolution order within each mode:
-
-- **Default mode:** `{config-dir}/.env`, then `{config-dir}/.env.local` (later overrides).
-- **Explicit mode:** The configured file, then that file’s `.local` sibling in the same directory (e.g. `path/to/secrets.env` then `path/to/secrets.env.local`).
-
-After file loading, any **unresolved** variables fall back to the shell environment (`process.env`). If a variable exists in both places, the file value wins. Effective precedence is:
-
-- **Default mode:** `{config-dir}/.env.local` → `{config-dir}/.env` → `process.env`.
-- **Explicit mode:** `{custom}.local` → `{custom}` → `process.env`.
-
-The `env` path is resolved relative to the config file’s directory, or as an absolute path. Tilde (`~`) is expanded to your home directory.
-
-### Conflict (boot error)
-
-If `env` is set and points to a **different** file than `{config-dir}/.env`, and `{config-dir}/.env` or `{config-dir}/.env.local` exists, the process exits at boot with an error. Use only one source: either remove `env` and use config-dir `.env`, or remove/rename the config-dir `.env` files and use `env`.
-
-### Missing or unreadable custom file (boot error)
-
-When `env` is set, the main file (the one you specified) must exist and be readable. If it is missing or unreadable, the process exits at boot with a clear error and a link to this documentation. The `.local` sibling remains optional.
-
-### Watcher
-
-When `env` is set, the config watcher also watches the custom env path and its `.local` sibling. Changes to either file (or creation of the `.local` file after startup) trigger a config reload, same as for other config files.
-
-### Example (default mode)
-
-```bash
-# {config-dir}/.env  (safe to commit — no real secrets)
-BACKEND_BOT_TOKEN=
-FRONTEND_BOT_TOKEN=
-
-# {config-dir}/.env.local  (gitignored — real secrets go here)
-BACKEND_BOT_TOKEN=7123456789:AAHActual-token-here
-FRONTEND_BOT_TOKEN=7987654321:AAHAnother-token-here
-```
+Variables are resolved at boot from env files next to your config (`.env` and `.env.local`). For full details on loading modes, precedence, the `env` config key, wizard file selection, and `.gitignore` guidance, see **[Env files](env-files/README.md)**.
 
 If a referenced variable cannot be resolved from any source the bot exits at boot with a clear error message naming the variable and the config field that references it.
-
-On every boot an `info`-level log lists all config and env files that were loaded, in order, so you can see exactly where each value came from.
 
 ## globals
 
@@ -322,6 +281,7 @@ With a config at `~/workspace/hal.config.yaml` (or `.json` / `.jsonc`):
 
 | Topic | Description |
 |-------|-------------|
+| [Env files](env-files/README.md) | Env file loading, wizard file selection, custom `env` path, `.gitignore` |
 | [Session](session/README.md) | Session mode: `false` \| `true` \| `"shared"` \| `"user"`; per-engine support and boot errors |
 | [Context](context/README.md) | Context injection — implicit keys, custom context, variable patterns, hooks |
 | [Commands](commands/README.md) | Built-in command config — `/start`, `/help`, `/reset`, `/clean`, `/model`, `/engine`, `/git` |

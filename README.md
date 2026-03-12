@@ -108,7 +108,7 @@ HAL is configured via a config file in the directory where you run the CLI. Use 
 <details>
 <summary>Minimal config example (YAML)</summary>
 
-Create a `hal.config.yaml` in your workspace (or use [examples/hal.config.yaml](examples/hal.config.yaml)). Use `${VAR_NAME}` for secrets and set them in `.env.local` **in the same directory where you run the HAL CLI**. See [Configuration — Environment variable substitution](docs/config/README.md#environment-variable-substitution). Full key reference: [docs/config/reference.yaml](docs/config/reference.yaml).
+Create a `hal.config.yaml` in your workspace (or use [examples/hal.config.yaml](examples/hal.config.yaml)). Use `${VAR_NAME}` for secrets and set them in `.env.local` **in the same directory where you run the HAL CLI**. See [Env files](docs/config/env-files/README.md) for loading precedence and wizard selection rules. Full key reference: [docs/config/reference.yaml](docs/config/reference.yaml).
 
 ```yaml
 globals:

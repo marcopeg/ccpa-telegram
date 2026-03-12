@@ -51,7 +51,7 @@ You get a bot token from **BotFather**, Telegram’s official bot for creating a
         botToken: "${BACKEND_BOT_TOKEN}"
   ```
 
-- HAL resolves `${BACKEND_BOT_TOKEN}` at startup from `.env.local` (or `.env` or the shell environment). See [Configuration — Environment variable substitution](../config/README.md#environment-variable-substitution) and [Configuration — Env files](../config/README.md#environment-variable-substitution) for details on `.env`/`.env.local`.
+- HAL resolves `${BACKEND_BOT_TOKEN}` at startup from `.env.local` (or `.env` or the shell environment). See [Env files](../config/env-files/README.md) for details on loading precedence and `.gitignore` guidance.
 
 ### One bot per project
 
@@ -94,7 +94,7 @@ HAL uses your **Telegram user ID** (a numeric ID) for access control and per-use
   ```
 
 - Use your **numeric** ID (no quotes). You can add multiple IDs: `[123456789, 987654321]`.
-- You can also use **strings** so the value comes from the environment: e.g. `["${TELEGRAM_USER_ID}"]` in config and set `TELEGRAM_USER_ID=123456789` in `.env.local`. See [Configuration — Environment variable substitution](../config/README.md#environment-variable-substitution) and [Access control](../config/README.md#access-control).
+- You can also use **strings** so the value comes from the environment: e.g. `["${TELEGRAM_USER_ID}"]` in config and set `TELEGRAM_USER_ID=123456789` in `.env.local`. See [Env files](../config/env-files/README.md) and [Access control](../config/README.md#access-control).
 - Users whose ID is not in the list will not be able to use that bot when the allowlist is enabled.
 
 ### Why use allowedUserIds?

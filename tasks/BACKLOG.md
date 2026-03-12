@@ -13,7 +13,6 @@ The commands in the menu should be sorted:
 ## Ready Tasks
 - [046 — Codex log streaming](./ready/046.codex-log-streaming.md) | [plan](./ready/046.codex-log-streaming.plan.md)
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
-- [062 — Wizard env file precedence when both .env and .env.local exist](./ready/062.wizard-env-file-precedence.md) | [plan](./ready/062.wizard-env-file-precedence.plan.md)
 
 
 ## Drafts
@@ -82,3 +81,4 @@ The commands in the menu should be sorted:
 - [059 — CLI env file sourcing](./completed/059.cli-env-file-sourcing.md) | [plan](./completed/059.cli-env-file-sourcing.plan.md)
 - [032a — Core scheduler + system-level crons](./completed/032a.core-scheduler-and-system-crons.md) | [plan](./completed/032a.core-scheduler-and-system-crons.plan.md)
 - [066 — Prompt body substitution for cron .md files](./completed/066.bar-substitution-md-skills-crons.md) | [plan](./completed/066.bar-substitution-md-skills-crons.plan.md)
+- [062 — Wizard env file precedence when both .env and .env.local exist](./completed/062.wizard-env-file-precedence.md) | [plan](./completed/062.wizard-env-file-precedence.plan.md)
