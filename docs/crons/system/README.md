@@ -484,7 +484,7 @@ targets:
 Summarise the git log from the last 24 hours. List files changed, authors, and a one-sentence summary per commit. Keep it under 10 lines.
 ```
 
-> **Note:** Variable substitution applies to `.md` frontmatter only. `.mjs` files are plain JavaScript — use `process.env.VAR_NAME` directly.
+> **Note:** Variable substitution applies to `.md` frontmatter only. The prompt body is sent as-is (no `${}`, `@{}`, or bar-style `|var|` substitution). `.mjs` files are plain JavaScript — use `process.env.VAR_NAME` directly.
 
 ---
 

@@ -41,6 +41,8 @@ Tell a short, funny joke about Chuck Norris.
 - **Folder name** is used as the command name. If the frontmatter `name` field differs from the folder name, the bot logs a warning and uses the folder name.
 - The **body** is the prompt sent to the AI when the user invokes the skill.
 
+> **Note:** The SKILL.md prompt body is sent as-is. There is no variable substitution (`${}`, `@{}`, or bar-style `|var|`) applied to skill prompts. If you need dynamic values, use a custom command.
+
 ## Exposing skills to Telegram
 
 By default, skills are **not** exposed as Telegram slash commands. To make a skill available in Telegram (in the `/help` menu and via direct invocation), you must add `telegram: true` to its YAML frontmatter. The `telegram: true` flag is case-insensitive.
