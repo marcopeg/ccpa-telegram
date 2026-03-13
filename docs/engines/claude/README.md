@@ -62,7 +62,7 @@ Claude Code supports aliases (always resolve to latest version) and pinned full 
 
 ### Instruction files and precedence
 
-Claude Code uses **CLAUDE.md** only; it does **not** read `AGENTS.md` as a root instruction file. There is no built-in support for the AGENTS.md convention.
+Claude Code uses **CLAUDE.md** only; it does **not** read `AGENTS.md` as a root instruction file. There is no built-in support for the AGENTS.md convention. HAL does not remap `.agents` for Claude Code — use `CLAUDE.md` and `.claude/skills/`.
 
 **Chain of instructions:** Yes. Multiple CLAUDE.md files are loaded and form a hierarchy:
 

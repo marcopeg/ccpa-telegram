@@ -1,6 +1,6 @@
 # Configuration
 
-HAL is configured via a config file in the directory where you run the CLI. The recommended way to create or complete your config is the **[Setup wizard](../setup-wizard/README.md)** — run `npx @marcopeg/hal wiz`, or run `npx @marcopeg/hal` and accept the prompt when HAL detects the config is missing/incomplete. Three formats are supported — only one per file is allowed.
+HAL is configured via a config file in the config directory (default: the current working directory, or `--config-dir` when set). The recommended way to create or complete your config is the **[Setup wizard](../setup-wizard/README.md)** — run `npx @marcopeg/hal wiz`, or run `npx @marcopeg/hal` and accept the prompt when HAL detects the config is missing/incomplete. Three formats are supported — only one per file is allowed.
 
 | Format | Extension | Features |
 |--------|-----------|----------|
@@ -21,7 +21,7 @@ This section is the index for all configuration options; detailed subsections ar
 
 ### hal.config.{json,jsonc,yaml}
 
-Create a config file in your workspace directory (where you run the CLI from). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead (see [Env files](env-files/README.md)).
+Create a config file in your config directory (default: the current working directory, or `--config-dir` when set). Secrets like bot tokens should be kept out of this file — use `${VAR_NAME}` placeholders and store the values in `.env.local` or the shell environment instead (see [Env files](env-files/README.md)).
 
 **YAML** is the recommended format for examples and for configs with comments. A full key reference (all options, with links to doc pages) is [reference.yaml](reference.yaml). A short copy-paste example is [examples/hal.config.yaml](../../examples/hal.config.yaml). JSON and JSONC are also supported — see [Configuration alternatives](#configuration-alternatives) below.
 

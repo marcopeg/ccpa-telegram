@@ -4,6 +4,8 @@ HAL supports multiple AI coding CLIs. Each engine has its own install steps, con
 
 **Root instructions and chains:** Each engine’s README has an *Instruction files and precedence* section: whether it uses AGENTS.md or a different root file (e.g. CLAUDE.md, GEMINI.md), whether multiple instruction files are merged or one wins, and what happens if both AGENTS.md and that engine’s native file (e.g. `.github/copilot-instructions.md`) exist. See the table below and the linked READMEs for details.
 
+**`.agents` as the shared convention:** For any engine that supports the `.agents` convention, HAL uses `AGENTS.md` and `.agents/skills/` so you can keep a single shared set of instructions and skills across Copilot, Codex, OpenCode, and Cursor. **Claude Code does not support `.agents`**, so it still requires `CLAUDE.md` and `.claude/skills/`.
+
 | Engine | Config name | Brief description |
 |----------|-------------|-------------------|
 | [Claude Code](claude/README.md) | `claude` | Anthropic’s Claude Code CLI. Instructions: `CLAUDE.md`. Skills: `.claude/skills/`. |

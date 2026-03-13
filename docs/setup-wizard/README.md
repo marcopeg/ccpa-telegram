@@ -69,7 +69,7 @@ npx @marcopeg/hal wiz --reset
 
 - **Config directory:** by default the wizard uses the current working directory. Use `--config-dir <path>` to run the wizard (and write config) in another directory.
 - **Existing config:** if a config file already exists, the wizard updates it in place and keeps the same format (YAML, JSON, or JSONC). If no config exists, it creates e.g. `hal.config.yaml` in the config directory.
-- **Secrets:** the wizard can store the bot token (and user IDs) in env files and put placeholders in the config so secrets aren’t committed. It writes to a single env file in the config directory (the directory where you run the CLI). When an existing `.env` or `.env.local` is found, the wizard prompts you to choose which file to use (or skip env writing). Bot token placeholders are per-project (based on the project key), e.g. `${MYBOT_TELEGRAM_TOKEN}`; user IDs use `${TELEGRAM_USER_ID}`, `${TELEGRAM_USER_ID_2}`, … See [Env files — Wizard file selection](../config/env-files/README.md#wizard-file-selection) for the full selection rules.
+- **Secrets:** the wizard can store the bot token (and user IDs) in env files and put placeholders in the config so secrets aren’t committed. It writes to a single env file in the config directory (default: the current working directory, or `--config-dir` when set). When an existing `.env` or `.env.local` is found, the wizard prompts you to choose which file to use (or skip env writing). Bot token placeholders are per-project (based on the project key), e.g. `${MYBOT_TELEGRAM_TOKEN}`; user IDs use `${TELEGRAM_USER_ID}`, `${TELEGRAM_USER_ID_2}`, … See [Env files — Wizard file selection](../config/env-files/README.md#wizard-file-selection) for the full selection rules.
 
 ## Legacy: `init` command
 

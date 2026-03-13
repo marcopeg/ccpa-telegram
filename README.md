@@ -24,8 +24,8 @@ This tool runs one AI coding agent subprocess per project, each in its configure
 
 The engine reads its standard config files from the project directory:
 
-- `AGENTS.md` — Project-specific instructions and context (filename may depend on engine)
-- `.agents/skills/` — Custom skills and slash commands (pattern may depend on engine)
+- `AGENTS.md` — Project-specific instructions for engines that support the `.agents` convention (Copilot, Codex, OpenCode, Cursor). Claude Code uses `CLAUDE.md` instead.
+- `.agents/skills/` — Custom skills for engines that support `.agents`. Claude Code uses `.claude/skills/` instead.
 - `.claude/settings.json` — Permissions and tool settings (Claude Code)
 - `.mcp.json` — MCP server configurations
 
@@ -95,7 +95,7 @@ Before running HAL you need a Telegram bot token and your own Telegram user ID. 
 
 ## Configuration
 
-HAL is configured via a config file in the directory where you run the CLI. Use the **[Setup wizard](docs/setup-wizard/README.md)** to create or complete your config interactively; you can run it directly with `wiz`, and HAL will suggest it if you run `start` with no or incomplete config. **YAML** is the recommended format; JSON and JSONC are also supported. See [Configuration](docs/config/README.md) and [Configuration alternatives](docs/config/README.md#configuration-alternatives) for details. Full reference:
+HAL is configured via a config file in the config directory (default: the current working directory, or `--config-dir` when set). Use the **[Setup wizard](docs/setup-wizard/README.md)** to create or complete your config interactively; you can run it directly with `wiz`, and HAL will suggest it if you run `start` with no or incomplete config. **YAML** is the recommended format; JSON and JSONC are also supported. See [Configuration](docs/config/README.md) and [Configuration alternatives](docs/config/README.md#configuration-alternatives) for details. Full reference:
 
 - **[Setup wizard](docs/setup-wizard/README.md)** — interactive config creation and completion, start-time suggestion, pre-fill flags
 - **[Configuration](docs/config/README.md)** — config files, [reference.yaml](docs/config/reference.yaml) (all keys), [examples/hal.config.yaml](examples/hal.config.yaml), env vars, `globals`, `projects` (map), dataDir, log files

@@ -13,7 +13,7 @@ Two env-file slots are available by default:
 | `.env` | Variable declarations without real values — safe to commit |
 | `.env.local` | Actual secret values (tokens, keys, IDs) — **gitignored** |
 
-Both files live next to your config file (the directory where you run the CLI). At runtime `.env.local` overrides `.env` for the same key, so you can keep `.env` as a template with placeholder values and put real values only in `.env.local`.
+Both files live next to your config file (the config directory; default: the current working directory, or `--config-dir` when set). At runtime `.env.local` overrides `.env` for the same key, so you can keep `.env` as a template with placeholder values and put real values only in `.env.local`.
 
 ---
 

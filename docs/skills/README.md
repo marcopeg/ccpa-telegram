@@ -2,6 +2,8 @@
 
 Skills follow the [Agent Skills standard](https://agentskills.io/). Each engine looks for skills in engine-specific directories (highest priority first). HAL reads them at boot and whenever `SKILL.md` files change. Skills are available to the engine, but only those with `telegram: true` are exposed as Telegram slash commands.
 
+**Shared convention:** HAL documents skills using the **`.agents/skills/`** standard, so you can keep one shared set of skills across Copilot, Codex, OpenCode, and Cursor. **Claude Code does not support `.agents`**, so it is the exception — its skills live under `.claude/skills/`.
+
 ## Per-engine skill directories
 
 | Engine       | Skill directories (priority order)                     |
@@ -21,7 +23,7 @@ Each skill is a **folder** containing a `SKILL.md` file with a YAML frontmatter 
 
 ```
 {project-cwd}/
-└── .agents/skills/       # or .claude/skills/, .github/skills/, etc.
+└── .agents/skills/
     └── chuck/
         └── SKILL.md
 ```
@@ -68,8 +70,8 @@ project .hal/commands/{name}.mjs  >  global .hal/commands/{name}.mjs  >  engine 
 
 ## Examples
 
-- [examples/obsidian/.claude/skills/chuck/](../../examples/obsidian/.claude/skills/chuck/SKILL.md)
-- [examples/obsidian/.claude/skills/weather/](../../examples/obsidian/.claude/skills/weather/SKILL.md)
+- [examples/obsidian/.agents/skills/chuck/](../../examples/obsidian/.agents/skills/chuck/SKILL.md)
+- [examples/obsidian/.agents/skills/weather/](../../examples/obsidian/.agents/skills/weather/SKILL.md)
 
 ## See also
 
