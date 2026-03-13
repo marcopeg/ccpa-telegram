@@ -5,7 +5,6 @@ Guide for contributors: local setup, running the bot, and releasing.
 ## Requirements
 
 - **Node.js** 18+
-- **pnpm** (or npm) — see `packageManager` in `package.json`
 - **ffmpeg** — required for voice messages (`brew install ffmpeg` on macOS)
 - At least one supported AI coding CLI installed and authenticated — see [Engines](../engines/README.md)
 - A Telegram bot token and your user ID — see [Telegram](../telegram/README.md)
@@ -13,8 +12,8 @@ Guide for contributors: local setup, running the bot, and releasing.
 ## Quick start
 
 ```bash
-pnpm install
-pnpm start
+npm install
+npm start
 ```
 
 The `start` script runs the bot with `--config-dir examples`, so HAL uses the config and env from the `examples/` folder. You must create your own env file there before it will work.
@@ -52,25 +51,25 @@ Releases use [release-it](https://github.com/release-it/release-it) with [conven
 | **release:patch** | Lint → build (fails if either fails) → bump patch → update `CHANGELOG.md` → commit → tag. Does **not** push or publish. |
 | **release:minor** | Same as above with minor bump. |
 | **release:major** | Same as above with major bump. |
-| **release:push** | Pushes the release commit and tag to the remote, then runs `pnpm publish --access public`. |
+| **release:push** | Pushes the release commit and tag to the remote, then runs `npm publish --access public`. |
 | **release** | Interactive: release-it prompts for version bump and options. |
 | **deploy** | Alias for `release:patch`. |
 
-**prepare** runs on `pnpm install` (sets up husky). **prepublishOnly** runs automatically before publish (runs build).
+**prepare** runs on `npm install` (sets up husky). **prepublishOnly** runs automatically before publish (runs build).
 
 ### Process
 
 1. **Clean tree** — Commit or stash all changes. release-it will refuse to run if the working directory is dirty.
 2. **Version + changelog (local only)** — Run one of:
-   - `pnpm run release:patch`
-   - `pnpm run release:minor`
-   - `pnpm run release:major`
+   - `npm run release:patch`
+   - `npm run release:minor`
+   - `npm run release:major`
    Each runs lint and build first; if either fails, the script stops. Then it bumps the version, updates `CHANGELOG.md`, commits, and creates the tag. Nothing is pushed.
-3. **Push and publish** — When ready: `pnpm run release:push`. This pushes the commit and tag, then runs `pnpm publish --access public`.
+3. **Push and publish** — When ready: `npm run release:push`. This pushes the commit and tag, then runs `npm publish --access public`.
 
 ### Local token for publish (no OTP)
 
-If your npm account uses 2FA, you can use an **automation token** so you don’t need to enter OTP each time:
+If your npm account uses 2FA, you can use an **automation token** so you don't need to enter OTP each time:
 
 1. **Create the token** — On [npmjs.com](https://www.npmjs.com): Account → Access Tokens → Generate New Token → **Automation**.
 2. **Store it in the project root** — Create a gitignored `.env` in the project root (not in `examples/`):
@@ -80,29 +79,29 @@ If your npm account uses 2FA, you can use an **automation token** so you don’t
    export NPM_TOKEN=npm_xxxxxxxxxxxxxxxx
    ```
 
-   Replace with your actual token. The `export` is required so child processes (npm, pnpm) receive the variable.
+   Replace with your actual token. The `export` is required so child processes receive the variable.
 3. **Configure npm** — The project `.npmrc` already contains:
 
    ```
    //registry.npmjs.org/:_authToken=${NPM_TOKEN}
    ```
 
-   pnpm/npm reads `NPM_TOKEN` from the environment.
+   npm reads `NPM_TOKEN` from the environment.
 4. **Run publish** — Before `release:push`, load the env:
 
    ```bash
    source .env
-   pnpm run release:push
+   npm run release:push
    ```
 
-   Or in one line: `source .env && pnpm run release:push`. pnpm will use the token and won’t prompt for OTP.
+   Or in one line: `source .env && npm run release:push`.
 
 ### Summary
 
 | Step | Command |
 |------|---------|
-| Version + changelog | `pnpm run release:patch` (or minor/major) |
-| Publish (with token) | `source .env && pnpm run release:push` |
-| Publish (with 2FA) | `pnpm run release:push` (npm will prompt for OTP in browser when you have 2FA) |
+| Version + changelog | `npm run release:patch` (or minor/major) |
+| Publish (with token) | `source .env && npm run release:push` |
+| Publish (with 2FA) | `npm run release:push` (npm will prompt for OTP in browser when you have 2FA) |
 
 Config: [.release-it.json](../../.release-it.json) (conventional-commits preset, `CHANGELOG.md` at repo root).

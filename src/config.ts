@@ -217,6 +217,10 @@ const GlobalsFileSchema = z
       .object({ max: z.number().positive(), windowMs: z.number().positive() })
       .partial()
       .optional(),
+    debounce: z
+      .object({ windowMs: z.number().positive() })
+      .partial()
+      .optional(),
     transcription: z
       .object({
         model: TranscriptionModelSchema,
@@ -265,6 +269,7 @@ const ProjectFileSchema = z.object({
     .object({ max: z.number().positive(), windowMs: z.number().positive() })
     .partial()
     .optional(),
+  debounce: z.object({ windowMs: z.number().positive() }).partial().optional(),
   transcription: z
     .object({
       model: TranscriptionModelSchema,
@@ -354,6 +359,7 @@ export interface ResolvedProjectConfig {
   };
   logging: { level: string; flow: boolean; persist: boolean };
   rateLimit: { max: number; windowMs: number };
+  debounce: { windowMs: number };
   transcription: { model: string; showTranscription: boolean } | undefined;
   context: Record<string, string> | undefined;
   providerModels: ProviderModel[];
@@ -799,6 +805,9 @@ export function resolveProjectConfig(
       max: project.rateLimit?.max ?? globals.rateLimit?.max ?? 10,
       windowMs:
         project.rateLimit?.windowMs ?? globals.rateLimit?.windowMs ?? 60000,
+    },
+    debounce: {
+      windowMs: project.debounce?.windowMs ?? globals.debounce?.windowMs ?? 300,
     },
     transcription: hasTranscription
       ? {

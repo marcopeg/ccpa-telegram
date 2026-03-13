@@ -18,11 +18,145 @@ import { shouldLoadSessionFromUserDir } from "./session.js";
 /**
  * Returns a handler for text messages.
  */
-export function createTextHandler(ctx: ProjectContext) {
+export function createTextHandler(
+  ctx: ProjectContext,
+  debounceActiveUsers: Set<number>,
+) {
+  const { config, logger } = ctx;
+  const windowMs = config.debounce.windowMs;
+
+  interface BufferEntry {
+    parts: Array<{ text: string; messageId: number }>;
+    timer: ReturnType<typeof setTimeout>;
+    gramCtx: Context;
+    statusMsgId: number;
+  }
+  const buffers = new Map<number, BufferEntry>();
+
+  async function dispatchMessage(
+    gramCtx: Context,
+    text: string,
+    existingStatusMsgId?: number,
+  ): Promise<void> {
+    const userId = gramCtx.from?.id;
+    if (!userId) return;
+
+    const userDir = resolve(join(config.dataDir, String(userId)));
+
+    await ensureUserSetup(userDir);
+
+    if (!text.trim()) {
+      await gramCtx.reply("Please provide a message.");
+      return;
+    }
+
+    const shouldLoadSession = shouldLoadSessionFromUserDir(
+      config.engineSession,
+      ctx.engine,
+    );
+    const sessionId = shouldLoadSession ? await getSessionId(userDir) : null;
+    logger.debug({ sessionId: sessionId || "new" }, "Session");
+
+    let statusMsgId: number;
+    if (existingStatusMsgId !== undefined) {
+      statusMsgId = existingStatusMsgId;
+      try {
+        await gramCtx.api.editMessageText(
+          gramCtx.chat!.id,
+          statusMsgId,
+          "_Processing..._",
+          { parse_mode: "Markdown" },
+        );
+      } catch {
+        // Ignore edit errors
+      }
+    } else {
+      const statusMsg = await gramCtx.reply("_Processing..._", {
+        parse_mode: "Markdown",
+      });
+      statusMsgId = statusMsg.message_id;
+    }
+
+    let lastProgressUpdate = Date.now();
+    let lastProgressText = "Processing...";
+
+    const onProgress = async (message: string) => {
+      const now = Date.now();
+      if (now - lastProgressUpdate > 2000 && message !== lastProgressText) {
+        lastProgressUpdate = now;
+        lastProgressText = message;
+        try {
+          await gramCtx.api.editMessageText(
+            gramCtx.chat!.id,
+            statusMsgId,
+            `_${message}_`,
+            { parse_mode: "Markdown" },
+          );
+        } catch {
+          // Ignore edit errors
+        }
+      }
+    };
+
+    const downloadsPath = getDownloadsPath(userDir);
+
+    logger.info("Executing engine query");
+    const result = await ctx.engine.execute(
+      {
+        prompt: text,
+        gramCtx,
+        userDir,
+        downloadsPath,
+        sessionId,
+        onProgress,
+      },
+      ctx,
+    );
+    logger.info(
+      {
+        success: result.success,
+        error: result.error,
+        response: result.output?.slice(0, 200),
+      },
+      "Engine result",
+    );
+
+    try {
+      await gramCtx.api.deleteMessage(gramCtx.chat!.id, statusMsgId);
+    } catch {
+      // Ignore delete errors
+    }
+
+    if (config.engineSession !== false && result.sessionId) {
+      await saveSessionId(userDir, result.sessionId);
+      logger.debug({ sessionId: result.sessionId }, "Session saved");
+    }
+
+    const parsed = ctx.engine.parse(result);
+    await sendChunkedResponse(gramCtx, parsed.text);
+
+    const filesSent = await sendDownloadFiles(gramCtx, userDir, ctx);
+    if (filesSent > 0) {
+      logger.info({ filesSent }, "Sent download files to user");
+    }
+  }
+
+  function flush(userId: number): void {
+    const buf = buffers.get(userId);
+    if (!buf) return;
+    buffers.delete(userId);
+    debounceActiveUsers.delete(userId);
+    const sorted = [...buf.parts].sort((a, b) => a.messageId - b.messageId);
+    const combined = sorted.map((p) => p.text).join("");
+    dispatchMessage(buf.gramCtx, combined, buf.statusMsgId).catch((err) => {
+      logger.error({ err }, "Debounce flush error");
+    });
+  }
+
   return async (gramCtx: Context): Promise<void> => {
-    const { config, logger } = ctx;
     const userId = gramCtx.from?.id;
     const messageText = gramCtx.message?.text;
+    const messageId = gramCtx.message?.message_id;
 
     if (!userId || !messageText) {
       return;
@@ -172,88 +306,34 @@ export function createTextHandler(ctx: ProjectContext) {
     }
     // ── End slash command interception ────────────────────────────────────────
 
-    const userDir = resolve(join(config.dataDir, String(userId)));
+    const existing = buffers.get(userId);
 
-    try {
-      await ensureUserSetup(userDir);
-
-      if (!messageText.trim()) {
-        await gramCtx.reply("Please provide a message.");
-        return;
-      }
-
-      const shouldLoadSession = shouldLoadSessionFromUserDir(
-        config.engineSession,
-        ctx.engine,
-      );
-      const sessionId = shouldLoadSession ? await getSessionId(userDir) : null;
-      logger.debug({ sessionId: sessionId || "new" }, "Session");
-
-      const statusMsg = await gramCtx.reply("_Processing..._", {
-        parse_mode: "Markdown",
-      });
-      let lastProgressUpdate = Date.now();
-      let lastProgressText = "Processing...";
-
-      const onProgress = async (message: string) => {
-        const now = Date.now();
-        if (now - lastProgressUpdate > 2000 && message !== lastProgressText) {
-          lastProgressUpdate = now;
-          lastProgressText = message;
-          try {
-            await gramCtx.api.editMessageText(
-              gramCtx.chat!.id,
-              statusMsg.message_id,
-              `_${message}_`,
-              { parse_mode: "Markdown" },
-            );
-          } catch {
-            // Ignore edit errors
-          }
-        }
-      };
-
-      const downloadsPath = getDownloadsPath(userDir);
-
-      logger.info("Executing engine query");
-      const result = await ctx.engine.execute(
-        {
-          prompt: messageText,
+    if (messageText.length >= 4096 || existing) {
+      if (!existing) {
+        // First part of a Telegram split — start buffering
+        const statusMsg = await gramCtx.reply("_Buffering..._", {
+          parse_mode: "Markdown",
+        });
+        debounceActiveUsers.add(userId);
+        buffers.set(userId, {
+          parts: [{ text: messageText, messageId: messageId ?? 0 }],
+          timer: setTimeout(() => flush(userId), windowMs),
           gramCtx,
-          userDir,
-          downloadsPath,
-          sessionId,
-          onProgress,
-        },
-        ctx,
-      );
-      logger.info(
-        {
-          success: result.success,
-          error: result.error,
-          response: result.output?.slice(0, 200),
-        },
-        "Engine result",
-      );
-
-      try {
-        await gramCtx.api.deleteMessage(gramCtx.chat!.id, statusMsg.message_id);
-      } catch {
-        // Ignore delete errors
+          statusMsgId: statusMsg.message_id,
+        });
+      } else {
+        // Subsequent part — reset timer
+        clearTimeout(existing.timer);
+        existing.parts.push({ text: messageText, messageId: messageId ?? 0 });
+        existing.gramCtx = gramCtx;
+        existing.timer = setTimeout(() => flush(userId), windowMs);
       }
+      return;
+    }
 
-      if (config.engineSession !== false && result.sessionId) {
-        await saveSessionId(userDir, result.sessionId);
-        logger.debug({ sessionId: result.sessionId }, "Session saved");
-      }
-
-      const parsed = ctx.engine.parse(result);
-      await sendChunkedResponse(gramCtx, parsed.text);
-
-      const filesSent = await sendDownloadFiles(gramCtx, userDir, ctx);
-      if (filesSent > 0) {
-        logger.info({ filesSent }, "Sent download files to user");
-      }
+    // Normal message (< 4096 chars, no active buffer) — dispatch immediately
+    try {
+      await dispatchMessage(gramCtx, messageText);
     } catch (error) {
       logger.error({ error }, "Text handler error");
       const errorMessage =

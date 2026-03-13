@@ -32,5 +32,3 @@ data/
 **/.hal/cache/
 
 manual-tests
-
-.pnpm-store/

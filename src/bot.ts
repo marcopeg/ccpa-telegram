@@ -70,9 +70,11 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
 
   const bot = new Bot(config.telegram.botToken);
 
+  const debounceActiveUsers = new Set<number>();
+
   // Wire per-bot middleware
   const { middleware: rateLimitMw, cleanup: rateLimitCleanup } =
-    createRateLimitMiddleware(projectCtx);
+    createRateLimitMiddleware(projectCtx, debounceActiveUsers);
   bot.use(createAuthMiddleware(projectCtx));
   bot.use(rateLimitMw);
 
@@ -141,7 +143,7 @@ export async function startBot(projectCtx: ProjectContext): Promise<BotHandle> {
   bot.on("callback_query:data", createMjsCallbackDispatcher(projectCtx));
 
   // Wire handlers
-  bot.on("message:text", createTextHandler(projectCtx));
+  bot.on("message:text", createTextHandler(projectCtx, debounceActiveUsers));
   bot.on("message:photo", createPhotoHandler(projectCtx));
   bot.on("message:document", createDocumentHandler(projectCtx));
   bot.on("message:voice", createVoiceHandler(projectCtx));

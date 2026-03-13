@@ -210,7 +210,7 @@ The engine can send files back through Telegram. Each user has a `downloads/` fo
 
 ## Development
 
-For local setup, running the bot, and releasing: **[Development](docs/development/README.md)** — requirements, quick start (`pnpm install`, `pnpm start`), examples folder and `.env`, release scripts, and npm token setup for publish.
+For local setup, running the bot, and releasing: **[Development](docs/development/README.md)** — requirements, quick start (`npm install`, `npm start`), examples folder and `.env`, release scripts, and npm token setup for publish.
 
 ## Security Notice
 

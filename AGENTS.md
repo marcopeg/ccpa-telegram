@@ -9,15 +9,13 @@ Telegram bot that runs Claude Code as a personal assistant.
 - Pino (logging)
 - Zod (config validation)
 - Biome (linting/formatting)
-- pnpm (package manager)
-
 ## Commands
 
 ```bash
-pnpm run dev       # Development with hot reload
-pnpm run build     # Compile TypeScript
-pnpm run lint      # Check linting and formatting
-pnpm run lint:fix  # Fix linting and formatting
+npm run dev       # Development with hot reload
+npm run build     # Compile TypeScript
+npm run lint      # Check linting and formatting
+npm run lint:fix  # Fix linting and formatting
 ```
 
 ## Project Structure

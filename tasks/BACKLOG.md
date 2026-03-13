@@ -30,13 +30,13 @@ The commands in the menu should be sorted:
 - [048 — Cursor log streaming](./drafts/048.cursor-log-streaming.md)
 - [049 — Antigravity log streaming](./drafts/049.antigravity-log-streaming.md)
 - [050 — Copilot log streaming](./drafts/050.copilot-log-streaming.md)
-- [056 — Debounce messages](./drafts/056.debounce-messages.md)
 - [060 — Stale session empty-response recovery](./drafts/060.stale-session-empty-response-recovery.md)
 - [063 — Shared engine progress fallback](./drafts/063.engine-progress-fallback.md)
 - [064 — CLI skill/command installer + updater](./drafts/064.cli-skill-command-installer.md)
 - [067 — Rename config-dir flag to config](./drafts/067.rename-config-dir-flag-to-config.md)
 - [068 — Voice recognition output stitching + transcript retention](./drafts/068.voice-recognition-output-stitching-and-transcript-retention.md)
 - [069 — Add system stop command that interrupts the ongoing prompt by killing the child process](./drafts/069.add-a-system-stop-command-that-interrupts-the-ongoing-prompt-by-killing-the-child-process.md)
+- [070 — Debounce voice messages](./drafts/070.debounce-voice-messages.md)
 
 ## Completed
 
@@ -85,3 +85,4 @@ The commands in the menu should be sorted:
 - [032a — Core scheduler + system-level crons](./completed/032a.core-scheduler-and-system-crons.md) | [plan](./completed/032a.core-scheduler-and-system-crons.plan.md)
 - [066 — Prompt body substitution for cron .md files](./completed/066.bar-substitution-md-skills-crons.md) | [plan](./completed/066.bar-substitution-md-skills-crons.plan.md)
 - [062 — Wizard env file precedence when both .env and .env.local exist](./completed/062.wizard-env-file-precedence.md) | [plan](./completed/062.wizard-env-file-precedence.plan.md)
+- [056 — Debounce messages (text)](./completed/056.debounce-messages.md) | [plan](./completed/056.debounce-messages.plan.md)

@@ -27,23 +27,20 @@ jobs:
           git commit -m "chore: bump version [skip ci]"
           git push
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+          cache: "npm"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build
-        run: pnpm run build
+        run: npm run build
 
       - name: Publish to npm
-        run: pnpm publish --access public --no-git-checks
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -10,7 +10,10 @@ interface RateLimitEntry {
  * Returns a per-bot rate limit middleware and a cleanup function.
  * Each bot gets its own in-memory store — no cross-bot state.
  */
-export function createRateLimitMiddleware(ctx: ProjectContext): {
+export function createRateLimitMiddleware(
+  ctx: ProjectContext,
+  debounceActiveUsers?: Set<number>,
+): {
   middleware: (gramCtx: Context, next: NextFunction) => Promise<void>;
   cleanup: () => void;
 } {
@@ -36,6 +39,12 @@ export function createRateLimitMiddleware(ctx: ProjectContext): {
     const userId = gramCtx.from?.id;
 
     if (!userId) {
+      await next();
+      return;
+    }
+
+    // Skip counting for messages that are buffered debounce parts (parts 2..N)
+    if (debounceActiveUsers?.has(userId)) {
       await next();
       return;
     }

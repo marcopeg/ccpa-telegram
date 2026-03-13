@@ -10,7 +10,7 @@ async function getWhisper() {
       whisperModule = await import("nodejs-whisper");
     } catch {
       throw new Error(
-        "nodejs-whisper is not installed. Run: pnpm add nodejs-whisper",
+        "nodejs-whisper is not installed. Run: npm install nodejs-whisper",
       );
     }
   }
