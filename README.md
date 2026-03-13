@@ -6,6 +6,10 @@
 
 **Run Claude Code, Copilot, and Codex from your phone.**
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/marcopeg/hal/main/images/hal_gif_640.gif" alt="HAL demo" width="640" />
+</p>
+
 HAL turns Telegram into a remote control for AI coding agents.
 
 Point a bot at a local project, pick an engine, and HAL runs the CLI while streaming results back to chat. You keep the same local setup, config files, and tool permissions. HAL just gives you a better interface when you are away from the keyboard.

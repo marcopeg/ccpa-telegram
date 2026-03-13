@@ -41,7 +41,7 @@ projects:
     telegram:
       botToken: ${HAL_OPENCODE_TELEGRAM_TOKEN}
   claude-code:
-    active: true
+    active: false
     cwd: ./claude-code
     engine:
       name: claude
@@ -70,6 +70,13 @@ projects:
   #     name: cursor
   #   telegram:
   #     botToken: ${HAL_CURSOR_TELEGRAM_TOKEN}
+  blog:
+    active: true
+    cwd: ./blog
+    engine:
+      name: claude
+    telegram:
+      botToken: ${HAL_BLOG_TELEGRAM_TOKEN}
 
 
 

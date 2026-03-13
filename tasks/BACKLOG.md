@@ -12,6 +12,8 @@ The commands in the menu should be sorted:
 ## Ready Tasks
 - [046 — Codex log streaming](./ready/046.codex-log-streaming.md) | [plan](./ready/046.codex-log-streaming.plan.md)
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
+- [067 — Rename config-dir flag to config](./ready/067.rename-config-dir-flag-to-config.md) | [plan](./ready/067.rename-config-dir-flag-to-config.plan.md)
+- [070 — Debounce voice messages](./ready/070.debounce-voice-messages.md) | [plan](./ready/070.debounce-voice-messages.plan.md)
 
 
 ## Drafts
@@ -32,10 +34,8 @@ The commands in the menu should be sorted:
 - [060 — Stale session empty-response recovery](./drafts/060.stale-session-empty-response-recovery.md)
 - [063 — Shared engine progress fallback](./drafts/063.engine-progress-fallback.md)
 - [064 — CLI skill/command installer + updater](./drafts/064.cli-skill-command-installer.md)
-- [067 — Rename config-dir flag to config](./drafts/067.rename-config-dir-flag-to-config.md)
 - [068 — Voice recognition output stitching + transcript retention](./drafts/068.voice-recognition-output-stitching-and-transcript-retention.md)
 - [069 — Add system stop command that interrupts the ongoing prompt by killing the child process](./drafts/069.add-a-system-stop-command-that-interrupts-the-ongoing-prompt-by-killing-the-child-process.md)
-- [070 — Debounce voice messages](./drafts/070.debounce-voice-messages.md)
 
 ## Completed
 
