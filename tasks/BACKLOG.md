@@ -12,6 +12,7 @@ The commands in the menu should be sorted:
 ## Ready Tasks
 - [046 — Codex log streaming](./ready/046.codex-log-streaming.md) | [plan](./ready/046.codex-log-streaming.plan.md)
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
+- [061 — Copilot JSONL output + engine minimum version checks](./ready/061.copilot-jsonl-output.md) | [plan](./ready/061.copilot-jsonl-output.plan.md)
 - [067 — Rename config-dir flag to config](./ready/067.rename-config-dir-flag-to-config.md) | [plan](./ready/067.rename-config-dir-flag-to-config.plan.md)
 - [070 — Debounce voice messages](./ready/070.debounce-voice-messages.md) | [plan](./ready/070.debounce-voice-messages.plan.md)
 
@@ -21,7 +22,6 @@ The commands in the menu should be sorted:
 - [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md) (parent)
   - [032c — User-level crons + slash commands](./drafts/032c.user-crons-and-slash-commands.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
-- [061 — Copilot JSONL output + engine minimum version checks](./drafts/061.copilot-jsonl-output.md)
 - [007 — Python commands + venv support](./drafts/007.python.md)
 - [014 — Multi-thread project isolation](./drafts/014.multi-thread.md)
 - [031 — Reset model with duration and cron scheduling](./drafts/031.reset-model-with-duration-and-cron.md)
