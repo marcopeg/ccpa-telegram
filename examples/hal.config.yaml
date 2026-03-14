@@ -19,7 +19,7 @@ globals:
     model: opencode/gpt-5-nano
 projects:
   copilot:
-    active: true
+    active: false
     cwd: ./copilot
     telegram:
       botToken: ${HAL_COPILOR_CODE_TELEGRAM_TOKEN}
@@ -50,7 +50,7 @@ projects:
     telegram:
       botToken: ${HAL_CLAUDE_CODE_TELEGRAM_TOKEN}
   codex:
-    active: false
+    active: true
     cwd: ./codex
     engine:
       name: codex
@@ -71,7 +71,7 @@ projects:
   #   telegram:
   #     botToken: ${HAL_CURSOR_TELEGRAM_TOKEN}
   blog:
-    active: true
+    active: false
     cwd: ./blog
     engine:
       name: claude

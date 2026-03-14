@@ -15,11 +15,25 @@ const PLACEHOLDER_SESSION_ID = "active";
 
 const DEFAULT_COMMAND = "codex";
 
+// eslint-disable-next-line no-control-regex
+const ANSI_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
+
+/** Strip ANSI escape codes and truncate to maxLen chars. */
+function cleanLine(line: string, maxLen = 80): string {
+  return line.replace(ANSI_RE, "").trim().slice(0, maxLen);
+}
+
+/** Truncate a string to maxLen chars, appending "…" if truncated. */
+function trunc(s: string, maxLen: number): string {
+  if (!s) return "";
+  return s.length <= maxLen ? s : `${s.slice(0, maxLen - 1)}…`;
+}
+
 /**
  * Adapter for OpenAI Codex CLI.
  * Fresh:    `codex exec -C <cwd> [-m model] [PROMPT]`
  * Continue: `codex exec resume --last [-m model] [PROMPT]`
- * Buffered stdout only (no streaming).
+ * Uses `--json` mode for JSONL progress streaming via `onProgress`.
  */
 export function createCodexAdapter(
   command?: string,
@@ -51,7 +65,7 @@ export function createCodexAdapter(
       options: EngineExecuteOptions,
       ctx: ProjectContext,
     ): Promise<EngineResult> {
-      const { continueSession, sessionId } = options;
+      const { continueSession, sessionId, onProgress } = options;
       const { config, logger } = ctx;
       const fullPrompt = await buildContextualPrompt(options, ctx);
       const cwd = config.cwd;
@@ -103,6 +117,10 @@ export function createCodexAdapter(
       if (model) {
         args.push("-m", model);
       }
+
+      // Enable JSONL streaming mode and suppress ANSI on stderr.
+      args.push("--json", "--color", "never");
+
       if (useResumeByUuid && sessionId) {
         args.push("resume", sessionId);
       } else if (useResumeLast) {
@@ -133,21 +151,143 @@ export function createCodexAdapter(
 
         let stdout = "";
         let stderrOutput = "";
+        let lineBuffer = "";
 
+        // --- Progress throttle state ---
+        const THROTTLE_MS = 3000;
+        let lastProgressTime = 0;
+        let lastProgressMsg = "";
+
+        function maybeProgress(msg: string): void {
+          if (!onProgress) return;
+          if (msg === lastProgressMsg) return;
+          const now = Date.now();
+          if (now - lastProgressTime < THROTTLE_MS) return;
+          lastProgressTime = now;
+          lastProgressMsg = msg;
+          onProgress(msg);
+        }
+
+        // --- Elapsed-time fallback ---
+        const startTime = Date.now();
+        if (onProgress) {
+          onProgress("Codex is working...");
+        }
+        const elapsedTimer = setInterval(() => {
+          if (!onProgress) return;
+          // Only fire elapsed-time if JSONL hasn't updated in the last tick
+          if (
+            lastProgressTime > 0 &&
+            Date.now() - lastProgressTime < THROTTLE_MS * 2
+          )
+            return;
+          const elapsed = Math.round((Date.now() - startTime) / 1000);
+          const msg = `Codex is working on it... ${elapsed}s`;
+          if (msg !== lastProgressMsg) {
+            lastProgressMsg = msg;
+            onProgress(msg);
+          }
+        }, THROTTLE_MS);
+
+        // --- JSONL progress message builder ---
+        function progressFromEvent(
+          event: Record<string, unknown>,
+        ): string | null {
+          const type = event.type as string | undefined;
+          if (!type) return null;
+
+          if (type === "turn.started") return "Codex is reasoning...";
+
+          if (type === "item.started" || type === "item.completed") {
+            const item = event.item as Record<string, unknown> | undefined;
+            if (!item) return null;
+            const itemType = item.type as string | undefined;
+
+            switch (itemType) {
+              case "command_execution": {
+                const cmd = item.command as string | undefined;
+                return `Running: ${trunc(cmd ?? "", 60)}`;
+              }
+              case "file_change":
+                return "Updating files...";
+              case "reasoning":
+                return "Thinking...";
+              case "mcp_tool_call": {
+                const toolName = item.tool_name as string | undefined;
+                return `Tool: ${trunc(toolName ?? "", 50)}`;
+              }
+              case "web_search": {
+                const query = item.query as string | undefined;
+                return `Searching: ${trunc(query ?? "", 50)}`;
+              }
+              case "agent_message":
+                if (type === "item.completed") return "Responding...";
+                return null;
+              default:
+                return null;
+            }
+          }
+
+          return null;
+        }
+
+        // --- JSONL stdout parsing ---
         proc.stdout.on("data", (data: Buffer) => {
-          stdout += data.toString();
+          const chunk = data.toString();
+          stdout += chunk;
+          lineBuffer += chunk;
+
+          const lines = lineBuffer.split("\n");
+          lineBuffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            try {
+              const event = JSON.parse(trimmed) as Record<string, unknown>;
+              const msg = progressFromEvent(event);
+              if (msg) maybeProgress(msg);
+            } catch {
+              // Non-JSON line — ignore
+            }
+          }
         });
+
+        // --- Stderr: semantic label prefixes as supplementary fallback ---
+        const STDERR_PREFIXES = [
+          "exec",
+          "file update",
+          "thinking",
+          "tool",
+          "hook",
+          "mcp",
+          "→",
+          "✓",
+          "🌐",
+        ];
 
         proc.stderr.on("data", (data: Buffer) => {
           const chunk = data.toString().trim();
           if (chunk) {
             stderrOutput += `${chunk}\n`;
             logger.debug({ stderr: chunk }, "Codex stderr");
+
+            for (const rawLine of chunk.split("\n")) {
+              const line = cleanLine(rawLine);
+              if (!line) continue;
+              const lower = line.toLowerCase();
+              const matched = STDERR_PREFIXES.some(
+                (prefix) => lower.startsWith(prefix) || line.startsWith(prefix),
+              );
+              if (matched) maybeProgress(line);
+            }
           }
         });
 
         proc.on("close", (code) => {
+          clearInterval(elapsedTimer);
           logger.debug({ code }, "Codex process closed");
+
           if (code === 0) {
             let resultSessionId: string | undefined;
             if (config.engineSession !== false) {
@@ -158,9 +298,31 @@ export function createCodexAdapter(
                 resultSessionId = "active";
               }
             }
+
+            // Extract final agent_message text from JSONL output.
+            let output = "";
+            for (const line of stdout.split("\n")) {
+              const trimmed = line.trim();
+              if (!trimmed) continue;
+              try {
+                const event = JSON.parse(trimmed) as Record<string, unknown>;
+                if (
+                  event.type === "item.completed" &&
+                  event.item &&
+                  (event.item as Record<string, unknown>).type ===
+                    "agent_message"
+                ) {
+                  const text = (event.item as Record<string, unknown>).text;
+                  if (typeof text === "string") output = text;
+                }
+              } catch {
+                // ignore
+              }
+            }
+
             resolve({
               success: true,
-              output: stdout.trim() || "No response received",
+              output: output || stdout.trim() || "No response received",
               sessionId: resultSessionId,
             });
           } else {
@@ -173,6 +335,7 @@ export function createCodexAdapter(
         });
 
         proc.on("error", (err) => {
+          clearInterval(elapsedTimer);
           logger.error({ error: err.message }, "Codex process error");
           resolve({
             success: false,

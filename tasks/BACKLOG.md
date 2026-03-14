@@ -10,9 +10,9 @@ The commands in the menu should be sorted:
 ## In Progress
 
 - [067 — Rename config-dir flag to config](./067.rename-config-dir-flag-to-config.md) | [plan](./067.rename-config-dir-flag-to-config.plan.md)
+- [046 — Codex log streaming](./046.codex-log-streaming.md) | [plan](./046.codex-log-streaming.plan.md)
 
 ## Ready Tasks
-- [046 — Codex log streaming](./ready/046.codex-log-streaming.md) | [plan](./ready/046.codex-log-streaming.plan.md)
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
 - [070 — Debounce voice messages](./ready/070.debounce-voice-messages.md) | [plan](./ready/070.debounce-voice-messages.plan.md)
 
