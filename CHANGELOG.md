@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/marcopeg/hal/compare/v1.3.0...v1.4.0) (2026-03-14)
+
+### Features
+
+* 56 debounce text messages ([1299d8a](https://github.com/marcopeg/hal/commit/1299d8ac148a59f60ad4be38a8ea6599c0687779))
+* 66 variable substitution in cron ([6639e91](https://github.com/marcopeg/hal/commit/6639e91db401df40290ef5a0709b3d0d7913df29))
+* streamline task backlog and complete Codex log streaming implementation ([f42d67a](https://github.com/marcopeg/hal/commit/f42d67ad89bd8306f459c3e6863c743fe474aa94))
+
+### Bug Fixes
+
+* copilot cwd boundary ([e73c8f1](https://github.com/marcopeg/hal/commit/e73c8f187402c8a9d816d77e8cae0bdd790b365f))
+
 ## [1.3.0](https://github.com/marcopeg/hal/compare/v1.2.0...v1.3.0) (2026-03-11)
 
 ### Features
