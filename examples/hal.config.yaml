@@ -17,6 +17,10 @@ globals:
   engine:
     name: opencode
     model: opencode/gpt-5-nano
+  transcription:
+    model: base.en
+    showTranscription: true
+    debugMsg: true
 projects:
   copilot:
     active: true

@@ -11,11 +11,11 @@ The commands in the menu should be sorted:
 
 ## Ready Tasks
 - [051 — Telegram skill frontmatter properties](./ready/051.telegram-skills.md) | [plan](./ready/051.telegram-skills.plan.md)
-- [070 — Debounce voice messages](./ready/070.debounce-voice-messages.md) | [plan](./ready/070.debounce-voice-messages.plan.md)
 
 
 ## Drafts
 
+- [075 — Handle voice messages exceeding Telegram's 20 MB download limit](./drafts/075.voice-message-20mb-limit.md)
 - [032 — Cron jobs and scheduled actions](./drafts/032.cron-jobs-and-scheduled-actions.md) (parent)
   - [032c — User-level crons + slash commands](./drafts/032c.user-crons-and-slash-commands.md)
 - [034 — Codex session ID investigation and user isolation](./drafts/034.codex-session-id-investigation-and-user-isolation.md)
@@ -90,3 +90,4 @@ The commands in the menu should be sorted:
 - [061 — Copilot JSONL output + engine minimum version checks](./completed/061.copilot-jsonl-output.md) | [plan](./completed/061.copilot-jsonl-output.plan.md)
 - [067 — Rename config-dir flag to config](./completed/067.rename-config-dir-flag-to-config.md) | [plan](./completed/067.rename-config-dir-flag-to-config.plan.md)
 - [046 — Codex log streaming](./completed/046.codex-log-streaming.md) | [plan](./completed/046.codex-log-streaming.plan.md)
+- [070 — Debounce voice messages](./completed/070.debounce-voice-messages.md) | [plan](./completed/070.debounce-voice-messages.plan.md) | [notes](./completed/070.debounce-voice-messages.notes.md) _(skipped — unnecessary)_
